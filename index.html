@@ -34,6 +34,9 @@
       .container {
         text-align: center;
       }
+      .container p {
+        margin: 0;
+      }
     </style>
   </head>
   <body>
@@ -41,26 +44,26 @@
       <h1>Day Counter (EST)</h1>
 
       <div id="springsem">
+        <p>until the start of NOVA, Spring 2025 Semester</p>
         <h1 id="day-springsem">0</h1>
-        <p>Days until the start of NOVA, Spring 2025 Semester</p>
       </div>
       <div id="graduation">
+        <p>until NOVA Graduation</p>
         <h1 id="day-graduation-nova">0</h1>
-        <p>Days until NOVA Graduation</p>
       </div>
       <div id="mason">
+        <p>until the start of Mason, Fall 2025 Semester</p>
         <h1 id="day-mason">0</h1>
-        <p>Days until the start of Mason, Fall 2025 Semester</p>
       </div>
       <div id="graduation">
+        <p>until Mason Graduation</p>
         <h1 id="day-graduation-mason">0</h1>
-        <p>Days until Mason Graduation</p>
       </div>
 
       <div class="container specific">
         <div id="specific">
+          <p id="day-specific-text">until a specific date</p>
           <h1 id="day-specific">0</h1>
-          <p id="day-specific-text">Days until a specific date</p>
           <input type="date" id="specific-date" />
         </div>
       </div>
@@ -152,7 +155,7 @@
         ).textContent = `${daysDifference} d ${hoursDifference} h ${minutesDifference} m ${secondsDifference} s`;
 
         if (textElementId) {
-          const prefix = timeDifference < 0 ? "Days from" : "Days until";
+          const prefix = timeDifference < 0 ? "from" : "until";
           document.getElementById(textElementId).textContent = `${prefix} ${
             endDate.toISOString().split("T")[0]
           }`;
