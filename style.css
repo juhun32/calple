@@ -1,0 +1,50 @@
+body {
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2em;
+  margin: 0;
+  background-color: #f0f0f0;
+  overflow: scroll;
+}
+
+#springsem,
+#specific,
+#mason,
+#graduation,
+#dating {
+  text-align: center;
+  padding: 2em;
+  border: 3px solid black;
+  border-radius: 10px;
+  margin: 2em;
+}
+
+#springsem h1,
+#specific h1,
+#mason h1,
+#graduation h1,
+#dating h1 {
+  font-size: 3em;
+  margin: 0;
+}
+
+.container {
+  text-align: center;
+  width: 100%;
+}
+
+.container p {
+  margin: 0;
+}
+
+#specific-date {
+  border: black 3px solid;
+  border-radius: 20px;
+  background-color: transparent;
+  font-family: Arial, sans-serif;
+  font-size: 1.5em;
+  text-align: center;
+  padding: .5em;
+}

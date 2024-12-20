@@ -4,45 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Day Counter (EST)</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 2em;
-        margin: 0;
-        background-color: #f0f0f0;
-      }
-      #springsem,
-      #specific,
-      #mason,
-      #graduation {
-        text-align: center;
-        padding: 2em;
-        border: 3px solid black;
-        border-radius: 10px;
-        margin: 2em;
-      }
-      #springsem h1,
-      #specific h1,
-      #mason h1,
-      #graduation h1 {
-        font-size: 3em;
-        margin: 0;
-      }
-      .container {
-        text-align: center;
-      }
-      .container p {
-        margin: 0;
-      }
-    </style>
+    <link rel="stylesheet" type="text/css" href="./style.css" />
+    <!-- <script src="script.js"></script> -->
   </head>
   <body>
-    <div class="container springsem">
-      <h1>Day Counter (EST)</h1>
-
+    <div class="container">
+      <h1>E&J Day Counter (EST)</h1>
+      <div id="dating">
+        <p>since the first kiss</p>
+        <h1 id="day-dating">0</h1>
+      </div>
       <div id="springsem">
         <p>until the start of NOVA, Spring 2025 Semester</p>
         <h1 id="day-springsem">0</h1>
@@ -68,101 +39,97 @@
         </div>
       </div>
     </div>
+  </body>
+  <script>
+    function calculateDays() {
+      const startDating = convertToEST(new Date("2024-01-21T00:00:00"));
+      const endDateSpring = convertToEST(new Date("2025-01-21T00:00:00"));
+      const endDateMason = convertToEST(new Date("2025-08-26T00:00:00"));
+      const endDateMasonGraduation = convertToEST(
+        new Date("2027-05-15T00:00:00")
+      );
+      const endDateNOVAGraduation = convertToEST(
+        new Date("2025-05-12T00:00:00")
+      );
+      const input = document.getElementById("specific-date");
 
-    <script>
-      function calculateDays() {
-        const endDateSpring = convertToEST(new Date("2025-01-21T00:00:00"));
-        const endDateMason = convertToEST(new Date("2025-08-26T00:00:00"));
-        const endDateMasonGraduation = convertToEST(
-          new Date("2027-05-15T00:00:00")
+      setInterval(() => {
+        const currentDate = getCurrentESTTime();
+        updateCounter(startDating, "day-dating", null, currentDate);
+        updateCounter(endDateSpring, "day-springsem", null, currentDate);
+        updateCounter(endDateMason, "day-mason", null, currentDate);
+        updateCounter(
+          endDateMasonGraduation,
+          "day-graduation-mason",
+          null,
+          currentDate
         );
-        const endDateNOVAGraduation = convertToEST(
-          new Date("2025-05-12T00:00:00")
+        updateCounter(
+          endDateNOVAGraduation,
+          "day-graduation-nova",
+          null,
+          currentDate
         );
-        const input = document.getElementById("specific-date");
+      }, 1000);
 
-        setInterval(() => {
+      let specificInterval;
+
+      input.addEventListener("change", () => {
+        if (specificInterval) clearInterval(specificInterval);
+
+        const endDate = convertToEST(new Date(input.value + "T00:00:00"));
+
+        specificInterval = setInterval(() => {
           const currentDate = getCurrentESTTime();
-          updateCounter(endDateSpring, "day-springsem", null, currentDate);
-          updateCounter(endDateMason, "day-mason", null, currentDate);
           updateCounter(
-            endDateMasonGraduation,
-            "day-graduation-mason",
-            null,
-            currentDate
-          );
-          updateCounter(
-            endDateNOVAGraduation,
-            "day-graduation-nova",
-            null,
+            endDate,
+            "day-specific",
+            "day-specific-text",
             currentDate
           );
         }, 1000);
+      });
+    }
 
-        let specificInterval;
+    function getCurrentESTTime() {
+      const now = new Date();
+      return new Date(
+        now.toLocaleString("en-US", { timeZone: "America/New_York" })
+      );
+    }
 
-        input.addEventListener("change", () => {
-          if (specificInterval) clearInterval(specificInterval);
+    function convertToEST(date) {
+      return new Date(
+        date.toLocaleString("en-US", { timeZone: "America/New_York" })
+      );
+    }
 
-          const endDate = convertToEST(new Date(input.value + "T00:00:00"));
+    function updateCounter(endDate, dayElementId, textElementId, currentDate) {
+      const timeDifference = endDate - currentDate;
+      const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+      const hoursDifference = Math.floor(
+        (timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+      );
+      const minutesDifference = Math.floor(
+        (timeDifference % (1000 * 60 * 60)) / (1000 * 60)
+      );
+      const secondsDifference = Math.floor(
+        (timeDifference % (1000 * 60)) / 1000
+      );
+      document.getElementById(dayElementId).textContent = `${Math.abs(
+        daysDifference
+      )} d ${Math.abs(hoursDifference)} h ${Math.abs(
+        minutesDifference
+      )} m ${Math.abs(secondsDifference)} s`;
 
-          specificInterval = setInterval(() => {
-            const currentDate = getCurrentESTTime();
-            updateCounter(
-              endDate,
-              "day-specific",
-              "day-specific-text",
-              currentDate
-            );
-          }, 1000);
-        });
+      if (textElementId) {
+        const prefix = timeDifference < 0 ? "from" : "until";
+        document.getElementById(textElementId).textContent = `${prefix} ${
+          endDate.toISOString().split("T")[0]
+        }`;
       }
+    }
 
-      function getCurrentESTTime() {
-        const now = new Date();
-        return new Date(
-          now.toLocaleString("en-US", { timeZone: "America/New_York" })
-        );
-      }
-
-      function convertToEST(date) {
-        return new Date(
-          date.toLocaleString("en-US", { timeZone: "America/New_York" })
-        );
-      }
-
-      function updateCounter(
-        endDate,
-        dayElementId,
-        textElementId,
-        currentDate
-      ) {
-        const timeDifference = endDate - currentDate;
-        const daysDifference = Math.floor(
-          timeDifference / (1000 * 60 * 60 * 24)
-        );
-        const hoursDifference = Math.floor(
-          (timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-        );
-        const minutesDifference = Math.floor(
-          (timeDifference % (1000 * 60 * 60)) / (1000 * 60)
-        );
-        const secondsDifference = Math.floor(
-          (timeDifference % (1000 * 60)) / 1000
-        );
-        document.getElementById(
-          dayElementId
-        ).textContent = `${daysDifference} d ${hoursDifference} h ${minutesDifference} m ${secondsDifference} s`;
-
-        if (textElementId) {
-          const prefix = timeDifference < 0 ? "from" : "until";
-          document.getElementById(textElementId).textContent = `${prefix} ${
-            endDate.toISOString().split("T")[0]
-          }`;
-        }
-      }
-
-      calculateDays();
-    </script>
-  </body>
+    calculateDays();
+  </script>
 </html>
