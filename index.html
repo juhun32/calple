@@ -3,11 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Day Counter (EST)</title>
+    <title>For Us</title>
     <link rel="stylesheet" type="text/css" href="./style.css" />
-    <!-- <script src="script.js"></script> -->
   </head>
   <body>
+    <canvas id="dotsCanvas"></canvas>
+
     <div class="container">
       <h1>E&J Day Counter (EST)</h1>
       <div id="dating">
@@ -17,119 +18,216 @@
       <div id="springsem">
         <p>until the start of NOVA, Spring 2025 Semester</p>
         <h1 id="day-springsem">0</h1>
+        <p>2025-01-21</p>
       </div>
       <div id="graduation">
         <p>until NOVA Graduation</p>
         <h1 id="day-graduation-nova">0</h1>
+        <p>2025-08-26</p>
       </div>
       <div id="mason">
         <p>until the start of Mason, Fall 2025 Semester</p>
         <h1 id="day-mason">0</h1>
+        <p>2025-05-12</p>
       </div>
       <div id="graduation">
         <p>until Mason Graduation</p>
         <h1 id="day-graduation-mason">0</h1>
+        <p>2027-05-15</p>
       </div>
 
       <div class="container specific">
         <div id="specific">
-          <p id="day-specific-text">until a specific date</p>
-          <h1 id="day-specific">0</h1>
+          <div>
+            <p id="day-specific-text">until a specific date</p>
+            <h1 id="day-specific">0</h1>
+          </div>
           <input type="date" id="specific-date" />
         </div>
       </div>
     </div>
-  </body>
-  <script>
-    function calculateDays() {
-      const startDating = convertToEST(new Date("2024-01-21T00:00:00"));
-      const endDateSpring = convertToEST(new Date("2025-01-21T00:00:00"));
-      const endDateMason = convertToEST(new Date("2025-08-26T00:00:00"));
-      const endDateMasonGraduation = convertToEST(
-        new Date("2027-05-15T00:00:00")
-      );
-      const endDateNOVAGraduation = convertToEST(
-        new Date("2025-05-12T00:00:00")
-      );
-      const input = document.getElementById("specific-date");
 
-      setInterval(() => {
-        const currentDate = getCurrentESTTime();
-        updateCounter(startDating, "day-dating", null, currentDate);
-        updateCounter(endDateSpring, "day-springsem", null, currentDate);
-        updateCounter(endDateMason, "day-mason", null, currentDate);
-        updateCounter(
-          endDateMasonGraduation,
-          "day-graduation-mason",
-          null,
-          currentDate
-        );
-        updateCounter(
-          endDateNOVAGraduation,
-          "day-graduation-nova",
-          null,
-          currentDate
-        );
-      }, 1000);
+    <script>
+      const canvas = document.getElementById("dotsCanvas");
+      const ctx = canvas.getContext("2d");
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
 
-      let specificInterval;
+      const dots = [];
+      const maxDots = 300;
+      const proximityDistance = 100;
+      const speedMultiplier = 0.7;
 
-      input.addEventListener("change", () => {
-        if (specificInterval) clearInterval(specificInterval);
+      class Dot {
+        constructor(x, y, dx, dy, radius) {
+          this.x = x;
+          this.y = y;
+          this.dx = dx;
+          this.dy = dy;
+          this.radius = radius;
+        }
 
-        const endDate = convertToEST(new Date(input.value + "T00:00:00"));
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          ctx.fillStyle = "white";
+          ctx.fill();
+        }
 
-        specificInterval = setInterval(() => {
-          const currentDate = getCurrentESTTime();
+        update() {
+          if (this.x + this.radius > canvas.width || this.x - this.radius < 0) {
+            this.dx = -this.dx;
+          }
+          if (
+            this.y + this.radius > canvas.height ||
+            this.y - this.radius < 0
+          ) {
+            this.dy = -this.dy;
+          }
+
+          this.x += this.dx;
+          this.y += this.dy;
+
+          this.draw();
+        }
+      }
+
+      function connectDots(cursorX, cursorY) {
+        for (let i = 0; i < dots.length; i++) {
+          const dx = dots[i].x - cursorX;
+          const dy = dots[i].y - cursorY;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance < proximityDistance) {
+            ctx.beginPath();
+            ctx.moveTo(cursorX, cursorY);
+            ctx.lineTo(dots[i].x, dots[i].y);
+            ctx.strokeStyle = `rgba(255, 255, 255, ${
+              1 - distance / proximityDistance
+            })`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        }
+      }
+
+      function initDots() {
+        for (let i = 0; i < maxDots; i++) {
+          const radius = Math.random();
+          const x = Math.random() * (canvas.width - radius * 2) + radius;
+          const y = Math.random() * (canvas.height - radius * 2) + radius;
+          const dx = (Math.random() - 0.5) * speedMultiplier;
+          const dy = (Math.random() - 0.5) * speedMultiplier;
+          dots.push(new Dot(x, y, dx, dy, radius));
+        }
+      }
+
+      let cursorX = 0;
+      let cursorY = 0;
+
+      canvas.addEventListener("mousemove", (e) => {
+        cursorX = e.clientX;
+        cursorY = e.clientY;
+      });
+
+      function animateDots() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        dots.forEach((dot) => dot.update());
+        connectDots(cursorX, cursorY);
+
+        requestAnimationFrame(animateDots);
+      }
+
+      window.addEventListener("resize", () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      });
+
+      initDots();
+      animateDots();
+
+      // Day Counter
+      function calculateDays() {
+        const startDating = new Date("2024-01-22T00:00:00");
+        const endDateSpring = new Date("2025-01-21T00:00:00");
+        const endDateMason = new Date("2025-08-26T00:00:00");
+        const endDateMasonGraduation = new Date("2027-05-15T00:00:00");
+        const endDateNOVAGraduation = new Date("2025-05-12T00:00:00");
+        const input = document.getElementById("specific-date");
+
+        setInterval(() => {
+          const currentDate = new Date();
+          updateCounter(startDating, "day-dating", null, currentDate);
+          updateCounter(endDateSpring, "day-springsem", null, currentDate);
+          updateCounter(endDateMason, "day-mason", null, currentDate);
           updateCounter(
-            endDate,
-            "day-specific",
-            "day-specific-text",
+            endDateMasonGraduation,
+            "day-graduation-mason",
+            null,
+            currentDate
+          );
+          updateCounter(
+            endDateNOVAGraduation,
+            "day-graduation-nova",
+            null,
             currentDate
           );
         }, 1000);
-      });
-    }
 
-    function getCurrentESTTime() {
-      const now = new Date();
-      return new Date(
-        now.toLocaleString("en-US", { timeZone: "America/New_York" })
-      );
-    }
+        let specificInterval;
 
-    function convertToEST(date) {
-      return new Date(
-        date.toLocaleString("en-US", { timeZone: "America/New_York" })
-      );
-    }
+        input.addEventListener("change", () => {
+          if (specificInterval) clearInterval(specificInterval);
 
-    function updateCounter(endDate, dayElementId, textElementId, currentDate) {
-      const timeDifference = endDate - currentDate;
-      const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
-      const hoursDifference = Math.floor(
-        (timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-      );
-      const minutesDifference = Math.floor(
-        (timeDifference % (1000 * 60 * 60)) / (1000 * 60)
-      );
-      const secondsDifference = Math.floor(
-        (timeDifference % (1000 * 60)) / 1000
-      );
-      document.getElementById(dayElementId).textContent = `${Math.abs(
-        daysDifference
-      )} d ${Math.abs(hoursDifference)} h ${Math.abs(
-        minutesDifference
-      )} m ${Math.abs(secondsDifference)} s`;
+          const endDate = new Date(input.value + "T00:00:00");
 
-      if (textElementId) {
-        const prefix = timeDifference < 0 ? "from" : "until";
-        document.getElementById(textElementId).textContent = `${prefix} ${
-          endDate.toISOString().split("T")[0]
-        }`;
+          specificInterval = setInterval(() => {
+            const currentDate = new Date();
+            updateCounter(
+              endDate,
+              "day-specific",
+              "day-specific-text",
+              currentDate
+            );
+          }, 1000);
+        });
       }
-    }
 
-    calculateDays();
-  </script>
+      function updateCounter(
+        endDate,
+        dayElementId,
+        textElementId,
+        currentDate
+      ) {
+        const timeDifference = endDate - currentDate;
+        const daysDifference = Math.floor(
+          timeDifference / (1000 * 60 * 60 * 24)
+        );
+        const hoursDifference = Math.floor(
+          (timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+        );
+        const minutesDifference = Math.floor(
+          (timeDifference % (1000 * 60 * 60)) / (1000 * 60)
+        );
+        const secondsDifference = Math.floor(
+          (timeDifference % (1000 * 60)) / 1000
+        );
+        document.getElementById(dayElementId).textContent = `${Math.abs(
+          daysDifference
+        )} d ${Math.abs(hoursDifference)} h ${Math.abs(
+          minutesDifference
+        )} m ${Math.abs(secondsDifference)} s`;
+
+        if (textElementId) {
+          const prefix = timeDifference < 0 ? "from" : "until";
+          document.getElementById(textElementId).textContent = `${prefix} ${
+            endDate.toISOString().split("T")[0]
+          }`;
+        }
+      }
+
+      calculateDays();
+    </script>
+  </body>
 </html>
