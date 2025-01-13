@@ -14,7 +14,12 @@
       <div class="content" id="dating">
         <h2 class="date" id="day-dating">0</h2>
         <p>since the first kiss</p>
-        <p>2025-01-22</p>
+        <p>2024-01-22</p>
+      </div>
+      <div class="content" id="graduation">
+        <h2 class="date" id="math-class">0</h2>
+        <p>since the start of MTH 167 class</p>
+        <p>2023-8-21</p>
       </div>
       <div class="content" id="springsem">
         <h2 class="date" id="day-springsem">0</h2>
@@ -39,7 +44,7 @@
 
       <div class="container specific content">
         <div id="specific">
-          <div>
+          <div class="specifit-container">
             <h2 class="date" id="day-specific">0</h2>
             <p id="day-specific-text">until a specific date</p>
           </div>
@@ -151,6 +156,7 @@
       // Day Counter
       function calculateDays() {
         const startDating = new Date("2024-01-22T00:00:00");
+        const startMathClass = new Date("2023-08-21T00:00:00");
         const endDateSpring = new Date("2025-01-21T00:00:00");
         const endDateMason = new Date("2025-08-26T00:00:00");
         const endDateMasonGraduation = new Date("2027-05-15T00:00:00");
@@ -160,6 +166,7 @@
         setInterval(() => {
           const currentDate = new Date();
           updateCounter(startDating, "day-dating", null, currentDate);
+          updateCounter(startMathClass, "math-class", null, currentDate);
           updateCounter(endDateSpring, "day-springsem", null, currentDate);
           updateCounter(endDateMason, "day-mason", null, currentDate);
           updateCounter(
