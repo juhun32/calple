@@ -5,7 +5,7 @@ body {
   align-items: center;
   padding: 2em;
   margin: 0;
-  background-color: #222222;
+  background-color: #161616;
   color: white;
 }
 
@@ -37,6 +37,11 @@ canvas {
   margin: 0;
 }
 
+.title {
+  padding-bottom: 1rem;
+  border-bottom: 2px solid white;
+}
+
 .container {
   pointer-events: none;
   position: relative;
@@ -45,7 +50,6 @@ canvas {
   width: max-content;
   height: 100%;
   display: grid;
-  justify-items: center;
   align-items: center;
 }
 
@@ -57,6 +61,12 @@ canvas {
   margin: 0;
 }
 
+.content {
+  display: flex;
+  align-items: center;
+  gap: 2em;
+}
+
 #specific {
   display: flex;
   gap: 2em;
@@ -64,7 +74,7 @@ canvas {
 
 #specific-date {
   border: black 3px solid;
-  border-radius: 20px;
+  border-radius: 10px;
   color: black;
   background-color: transparent;
   font-family: Arial, sans-serif;
@@ -73,4 +83,29 @@ canvas {
   padding: 0.2em;
   pointer-events: all;
   filter: invert(1);
+}
+
+.date {
+  padding: 1rem;
+  border: 3px white solid;
+  border-radius: 5px;
+}
+
+@media (max-width: 600px) {
+  .content {
+    flex-direction: column;
+  }
+
+  .content h1 {
+    font-size: .5em;
+  }
+
+  .container {
+    width: 100%;
+  }
+
+  #specific {
+    flex-direction: column;
+    align-items: center;
+  }
 }
