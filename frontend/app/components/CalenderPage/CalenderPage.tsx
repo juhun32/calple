@@ -144,14 +144,14 @@ export default function CalendarPage() {
         },
         {
             id: 2,
-            title: "Lunch with Sarah",
+            title: "Lunch with Emily",
             startTime: "12:30",
             endTime: "13:30",
             color: "bg-green-500",
             day: 1,
-            description: "Discuss project timeline",
+            description: "Date",
             location: "Cafe Nero",
-            attendees: ["Sarah Lee"],
+            attendees: ["Emily Roman"],
             organizer: "You",
         },
         {
@@ -328,7 +328,6 @@ export default function CalendarPage() {
 
                 {/* Calendar View */}
                 <div className={"flex-1 flex flex-col"}>
-                    {/* Week View */}
                     <div className="flex-1 flex flex-col">
                         {/* Calendar Controls */}
                         <div className="flex items-center justify-between p-4 border-b border-white/20">
