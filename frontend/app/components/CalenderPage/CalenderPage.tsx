@@ -117,6 +117,65 @@ export default function CalendarPage() {
     // Get required rows for current month
     const requiredRows = calculateRequiredRows();
 
+    const startDating = new Date("2024-01-22T00:00:00-05:00");
+    const startMathClass = new Date("2023-08-21T00:00:00-04:00"); // Summer, so EDT
+    const startMason = new Date("2025-08-26T00:00:00-04:00"); // Summer, so EDT
+
+    const endDateMasonGraduation = new Date("2027-05-15T00:00:00-04:00"); // Summer, so EDT
+    const endDateNOVAGraduation = new Date("2025-05-12T00:00:00-04:00");
+
+    function calculateDDay(targetDate: Date): string {
+        // Get current date (April 19, 2025 based on your context)
+        const now = new Date();
+
+        // Create dates set to midnight UTC to eliminate timezone issues
+        const today = new Date(
+            Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
+        );
+        const target = new Date(
+            Date.UTC(
+                targetDate.getFullYear(),
+                targetDate.getMonth(),
+                targetDate.getDate()
+            )
+        );
+
+        // Calculate difference in days precisely
+        const diffTime = Math.abs(today.getTime() - target.getTime());
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+        if (target < today) {
+            return `D+${diffDays}`;
+        } else if (target > today) {
+            return `D-${diffDays}`;
+        } else {
+            return "D-Day";
+        }
+    }
+
+    // Calculate days since for each milestone
+    const daysSinceDating = calculateDDay(startDating);
+    const daysSinceMathClass = calculateDDay(startMathClass);
+    const daysUntilMason = calculateDDay(startMason);
+    const daysUntilMasonGrad = calculateDDay(endDateMasonGraduation);
+    const daysUntilNOVAGrad = calculateDDay(endDateNOVAGraduation);
+
+    const ddays = [
+        { title: "Dating", date: startDating, days: daysSinceDating },
+        { title: "Math Class", date: startMathClass, days: daysSinceMathClass },
+        {
+            title: "NOVA Graduation",
+            date: endDateNOVAGraduation,
+            days: daysUntilNOVAGrad,
+        },
+        { title: "Mason Semester", date: startMason, days: daysUntilMason },
+        {
+            title: "Mason Graduation",
+            date: endDateMasonGraduation,
+            days: daysUntilMasonGrad,
+        },
+    ];
+
     // Updated sample calendar events with all events before 4 PM
     const events = [
         {
@@ -219,6 +278,27 @@ export default function CalendarPage() {
                                     )}
                                 </div>
                             ))}
+                        </div>
+
+                        <div>
+                            <h3 className="text-lg font-semibold text-white mt-4 mb-2">
+                                D-Days
+                            </h3>
+                            <div className="space-y-2">
+                                {ddays.map((d, i) => (
+                                    <div
+                                        key={i}
+                                        className="flex items-center justify-between p-2 bg-white/10 rounded-md"
+                                    >
+                                        <span className="text-sm text-white">
+                                            {d.title}
+                                        </span>
+                                        <span className="text-sm text-white">
+                                            {d.days}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
