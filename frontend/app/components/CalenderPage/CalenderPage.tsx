@@ -1,17 +1,29 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { ChevronLeft, ChevronRight, Plus, Calendar1 } from "lucide-react";
+
 import {
-    ChevronLeft,
-    ChevronRight,
-    Plus,
-    Search,
-    Settings,
-    Menu,
-    Calendar1,
-} from "lucide-react";
+    Drawer,
+    DrawerClose,
+    DrawerContent,
+    DrawerDescription,
+    DrawerFooter,
+    DrawerHeader,
+    DrawerTitle,
+    DrawerTrigger,
+} from "app/components/ui/drawer";
+import { Button } from "app/components/ui/button";
 
 export default function CalendarPage() {
+    interface Event {
+        id: string;
+        title: string;
+        date: Date;
+        isAnnual: boolean; // For recurring annual events
+        color?: string; // Optional styling
+    }
+
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState(new Date());
 
@@ -153,6 +165,30 @@ export default function CalendarPage() {
         }
     }
 
+    const getDDaysForDay = (day: number | null) => {
+        if (!day) return [];
+
+        return ddays.filter((dday) => {
+            const eventDate = dday.date;
+
+            // For non-annual events, check full date match
+            if (!dday.isAnnual) {
+                return (
+                    eventDate.getDate() === day &&
+                    eventDate.getMonth() === currentDate.getMonth() &&
+                    eventDate.getFullYear() === currentDate.getFullYear()
+                );
+            }
+            // For annual events, just match day and month
+            else {
+                return (
+                    eventDate.getDate() === day &&
+                    eventDate.getMonth() === currentDate.getMonth()
+                );
+            }
+        });
+    };
+
     // Calculate days since for each milestone
     const daysSinceDating = calculateDDay(startDating);
     const daysSinceMathClass = calculateDDay(startMathClass);
@@ -161,193 +197,118 @@ export default function CalendarPage() {
     const daysUntilNOVAGrad = calculateDDay(endDateNOVAGraduation);
 
     const ddays = [
-        { title: "Dating", date: startDating, days: daysSinceDating },
-        { title: "Math Class", date: startMathClass, days: daysSinceMathClass },
         {
-            title: "NOVA Graduation",
+            title: "Our Dating Anniversary",
+            date: startDating,
+            days: daysSinceDating,
+            isAnnual: true,
+        },
+        {
+            title: "Our First Math Class Together",
+            date: startMathClass,
+            days: daysSinceMathClass,
+            isAnnual: true,
+        },
+        {
+            title: "NOVA Graduation Date",
             date: endDateNOVAGraduation,
             days: daysUntilNOVAGrad,
+            isAnnual: false,
         },
-        { title: "Mason Semester", date: startMason, days: daysUntilMason },
         {
-            title: "Mason Graduation",
+            title: "Mason Fall Semester Start Date",
+            date: startMason,
+            days: daysUntilMason,
+            isAnnual: false,
+        },
+        {
+            title: "Mason Graduation Date",
             date: endDateMasonGraduation,
             days: daysUntilMasonGrad,
-        },
-    ];
-
-    // Updated sample calendar events with all events before 4 PM
-    const events = [
-        {
-            id: 1,
-            title: "Team Meeting",
-            startTime: "09:00",
-            endTime: "10:00",
-            color: "bg-blue-500",
-            day: 1,
-            description: "Weekly team sync-up",
-            location: "Conference Room A",
-            attendees: ["John Doe", "Jane Smith", "Bob Johnson"],
-            organizer: "Alice Brown",
-        },
-        {
-            id: 2,
-            title: "Lunch with Emily",
-            startTime: "12:30",
-            endTime: "13:30",
-            color: "bg-green-500",
-            day: 1,
-            description: "Date",
-            location: "Cafe Nero",
-            attendees: ["Emily Roman"],
-            organizer: "You",
-        },
-        {
-            id: 3,
-            title: "Project Review",
-            startTime: "14:00",
-            endTime: "15:30",
-            color: "bg-purple-500",
-            day: 3,
-            description: "Q2 project progress review",
-            location: "Meeting Room 3",
-            attendees: ["Team Alpha", "Stakeholders"],
-            organizer: "Project Manager",
+            isAnnual: false,
         },
     ];
 
     return (
-        <div className="grid grid-rows-[5rem_auto] min-h-screen w-full overflow-hidden bg-gray-800">
-            {/* Navigation */}
-            <div
-                className={"flex items-center justify-between px-8 py-6"}
-                style={{ animationDelay: "0.2s" }}
-            >
-                <div className="flex items-center gap-4">
-                    <Menu className="h-6 w-6 text-white" />
-                    <span className="text-2xl font-semibold text-white">
-                        Calendar
-                    </span>
-                </div>
-
-                <div className="flex items-center gap-4">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/70" />
-                        <input
-                            type="text"
-                            placeholder="Search"
-                            className="rounded-full bg-white/10 backdrop-blur-sm pl-10 pr-4 py-2 text-white placeholder:text-white/70 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
-                        />
-                    </div>
-                    <Settings className="h-6 w-6 text-white drop-shadow-md" />
-                    <div className="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold shadow-md">
-                        U
-                    </div>
-                </div>
-            </div>
-
-            {/* Main Content */}
-            <main className="h-[100vh_-_5rem] w-full flex">
-                {/* Sidebar */}
-                <div
-                    className={
-                        "w-1/2 bg-white/10 p-4 rounded-tr-xl flex flex-col justify-between"
-                    }
-                >
-                    <div>
-                        <button className="flex justify-center items-center px-4 py-2 text-white bg-blue-500 rounded-md gap-1">
+        <div className="w-full h-screen grid grid-rows-[2fr_3fr] items-center justify-center">
+            <div className="w-full h-full border-b border-dashed flex justify-center">
+                <main className="container h-full w-full flex items-center justify-center border-x border-dashed">
+                    <div className="w-full p-8">
+                        <Button className="flex justify-center items-center hover:cursor-pointer">
                             <Plus className="h-5" />
                             <span>Create</span>
-                        </button>
+                        </Button>
 
-                        <div className="mt-4 flex flex-col">
-                            {events.map((event, i) => (
-                                <div
-                                    key={i}
-                                    className={`p-2 text-sm text-white rounded flex items-center`}
-                                >
-                                    {event.title}
-                                    {event.startTime} - {event.endTime}
-                                    <div
-                                        className={`w-2 h-2 rounded-full ml-2 ${event.color}`}
-                                    ></div>
-                                    {event.location && (
-                                        <span className="ml-2">
-                                            {event.location}
-                                        </span>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-
-                        <div>
-                            <h3 className="text-lg font-semibold text-white mt-4 mb-2">
+                        <div className="">
+                            <h3 className="text-lg font-semibold mt-4 mb-2">
                                 D-Days
                             </h3>
-                            <div className="space-y-2">
-                                {ddays.map((d, i) => (
+                            <div className="grid md:grid-cols-2 gap-2">
+                                {ddays.map((day, i) => (
                                     <div
                                         key={i}
-                                        className="flex items-center justify-between p-2 bg-white/10 rounded-md"
+                                        className="flex items-center justify-between p-2 border rounded-md"
                                     >
-                                        <span className="text-sm text-white">
-                                            {d.title}
+                                        <span className="text-md flex items-baseline gap-2">
+                                            <p>{day.title}</p>
+                                            <p className="text-xs text-gray-500">
+                                                [{day.date.toLocaleDateString()}
+                                                ]
+                                            </p>
                                         </span>
-                                        <span className="text-sm text-white">
-                                            {d.days}
+                                        <span className="text-md">
+                                            {day.days}
                                         </span>
                                     </div>
                                 ))}
                             </div>
                         </div>
                     </div>
-                </div>
+                </main>
+            </div>
 
-                {/* Calendar View */}
-                <div className={"flex-1 flex flex-col"}>
-                    <div className="flex-1 flex flex-col">
-                        {/* Calendar Controls */}
-                        <div className="flex items-center justify-between p-4 border-b border-white/10">
-                            <div className="flex items-center gap-4">
-                                <div className="flex">
-                                    <button
-                                        className="p-2 text-white hover:bg-white/10 rounded-l-md"
+            <div className="w-full h-full border-b border-dashed flex justify-center">
+                <main className="container h-full w-full flex items-center justify-center border-x border-dashed">
+                    <div className="flex-1 flex flex-col h-full py-8">
+                        <div className="flex items-center justify-between px-8">
+                            <div className="flex items-center gap-8">
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        className="hover:cursor-pointer"
                                         onClick={goToPrevMonth}
                                     >
                                         <ChevronLeft className="h-5 w-5" />
-                                    </button>
-                                    <button
-                                        className="p-2 text-white hover:bg-white/10 rounded-r-md"
+                                    </Button>
+                                    <Button
+                                        className="hover:cursor-pointer"
                                         onClick={goToNextMonth}
                                     >
                                         <ChevronRight className="h-5 w-5" />
-                                    </button>
+                                    </Button>
                                 </div>
-                                <h2 className="text-xl font-semibold text-white">
+                                <h2 className="text-xl font-semibold">
                                     {formatMonth(currentDate)}
                                 </h2>
                             </div>
-                            <button
-                                className="px-4 py-2 text-white bg-blue-500 rounded-md hover:cursor-pointer"
+                            <Button
+                                className="hover:cursor-pointer"
                                 onClick={goToToday}
                             >
                                 <div className="flex items-center gap-1">
                                     <Calendar1 className="h-5" />
                                     Today
                                 </div>
-                            </button>
+                            </Button>
                         </div>
 
-                        {/* Month View */}
-                        <div className="flex-1 overflow-auto p-4 flex flex-col h-full">
-                            <div className="rounded-xl border border-white/20 shadow-xl flex flex-col flex-grow">
-                                {/* Days of week header */}
-                                <div className="grid grid-cols-7 p-2 bg-white/10 rounded-t-xl">
+                        <div className="flex-1 overflow-auto p-8 flex flex-col h-full">
+                            <div className="rounded-xl border flex flex-col flex-grow">
+                                <div className="grid grid-cols-7 p-2 border-b">
                                     {["S", "M", "T", "W", "T", "F", "S"].map(
                                         (day, i) => (
                                             <div
                                                 key={i}
-                                                className="text-center text-white/50 font-medium"
+                                                className="text-center font-medium"
                                             >
                                                 {day}
                                             </div>
@@ -355,9 +316,8 @@ export default function CalendarPage() {
                                     )}
                                 </div>
 
-                                {/* Calendar grid - use auto-rows and h-full */}
                                 <div
-                                    className={`grid grid-cols-7 flex-grow grid-rows-[repeat(${requiredRows},1fr)] border-l border-t border-white/10`}
+                                    className={`grid grid-cols-7 flex-grow grid-rows-[repeat(${requiredRows},1fr)]`}
                                 >
                                     {monthData.map((day, i) => {
                                         const weekNumber =
@@ -373,7 +333,7 @@ export default function CalendarPage() {
                                                     p-1 flex flex-col
                                                     ${
                                                         isHighlightedWeek
-                                                            ? "border-y border-white/10"
+                                                            ? "border-y border-dashed"
                                                             : ""
                                                     }
                                                     ${
@@ -383,14 +343,14 @@ export default function CalendarPage() {
                                                     }
                                                     ${
                                                         isToday(day)
-                                                            ? "bg-white/10"
+                                                            ? "bg-stone-100"
                                                             : day
-                                                            ? "hover:bg-white/10"
+                                                            ? "hover:bg-stone-100"
                                                             : ""
                                                     }
                                                     ${
                                                         isSelected(day)
-                                                            ? "border-x border-white/10"
+                                                            ? "border-x border-dashed"
                                                             : ""
                                                     }
                                                 `}
@@ -400,11 +360,27 @@ export default function CalendarPage() {
                                             >
                                                 {day && (
                                                     <div className="flex flex-col h-full">
-                                                        <span className="px-1 text-md text-white/90 font-light">
+                                                        <span className="px-1 font-light">
                                                             {day}
                                                         </span>
                                                         <div className="mt-1 space-y-1 flex-grow overflow-y-auto">
-                                                            {/* Event indicators would go here */}
+                                                            {getDDaysForDay(
+                                                                day
+                                                            ).map(
+                                                                (dday, idx) => (
+                                                                    <div
+                                                                        key={
+                                                                            idx
+                                                                        }
+                                                                        className="px-2 py-1 text-xs rounded-md truncate border"
+                                                                        title={`${dday.title} (${dday.days})`}
+                                                                    >
+                                                                        {
+                                                                            dday.title
+                                                                        }
+                                                                    </div>
+                                                                )
+                                                            )}
                                                         </div>
                                                     </div>
                                                 )}
@@ -415,8 +391,8 @@ export default function CalendarPage() {
                             </div>
                         </div>
                     </div>
-                </div>
-            </main>
+                </main>
+            </div>
         </div>
     );
 }
