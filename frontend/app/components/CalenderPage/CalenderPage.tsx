@@ -235,7 +235,7 @@ export default function CalendarPage() {
                 <div className="container border-x border-dashed w-full p-8">
                     <div className="flex justify-between items-center pb-8">
                         <h2 className="text-xl font-semibold">D-Days</h2>
-                        <Button className="w-32 flex justify-center items-center hover:cursor-pointer">
+                        <Button className="w-24 flex justify-center items-center hover:cursor-pointer">
                             <Plus className="h-5" />
                             <span>Create</span>
                         </Button>
@@ -247,14 +247,14 @@ export default function CalendarPage() {
                                 className="flex items-center justify-between p-2 border rounded-md"
                             >
                                 <span className="text-md flex items-baseline gap-2">
-                                    <p className="truncate sm: max-w-full md:max-w-[10rem] lg:max-w-full">
+                                    <p className="truncate text-sm md:text-md max-w-[10rem] sm:max-w-full md:max-w-[10rem] lg:max-w-full">
                                         {day.title}
                                     </p>
                                     <p className="text-xs text-gray-500">
                                         [{day.date.toLocaleDateString()}]
                                     </p>
                                 </span>
-                                <span className="text-md">{day.days}</span>
+                                <span className="text-sm md:text-md">{day.days}</span>
                             </div>
                         ))}
                     </div>
@@ -284,7 +284,7 @@ export default function CalendarPage() {
                             </h2>
                         </div>
                         <Button
-                            className="w-32 flex items-center gap-2 hover:cursor-pointer"
+                            className="w-24 flex items-center gap-2 hover:cursor-pointer"
                             onClick={goToToday}
                         >
                             <Calendar1 className="h-5" />
