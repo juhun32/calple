@@ -230,106 +230,95 @@ export default function CalendarPage() {
     ];
 
     return (
-        <div className="w-full h-screen grid grid-rows-[2fr_3fr] items-center justify-center">
-            <div className="w-full h-full border-b border-dashed flex justify-center">
-                <main className="container h-full w-full flex items-center justify-center border-x border-dashed">
-                    <div className="w-full p-8">
-                        <Button className="flex justify-center items-center hover:cursor-pointer">
+        <div className="h-screen grid grid-rows-[2fr_3fr] items-center justify-center">
+            <div className="w-screen h-full border-b border-dashed flex justify-center">
+                <div className="container border-x border-dashed w-full p-8">
+                    <div className="flex justify-between items-center pb-8">
+                        <h2 className="text-xl font-semibold">D-Days</h2>
+                        <Button className="w-32 flex justify-center items-center hover:cursor-pointer">
                             <Plus className="h-5" />
                             <span>Create</span>
                         </Button>
-
-                        <div className="">
-                            <h3 className="text-lg font-semibold mt-4 mb-2">
-                                D-Days
-                            </h3>
-                            <div className="grid md:grid-cols-2 gap-2">
-                                {ddays.map((day, i) => (
-                                    <div
-                                        key={i}
-                                        className="flex items-center justify-between p-2 border rounded-md"
-                                    >
-                                        <span className="text-md flex items-baseline gap-2">
-                                            <p>{day.title}</p>
-                                            <p className="text-xs text-gray-500">
-                                                [{day.date.toLocaleDateString()}
-                                                ]
-                                            </p>
-                                        </span>
-                                        <span className="text-md">
-                                            {day.days}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
                     </div>
-                </main>
+                    <div className="grid md:grid-cols-2 gap-2">
+                        {ddays.map((day, i) => (
+                            <div
+                                key={i}
+                                className="flex items-center justify-between p-2 border rounded-md"
+                            >
+                                <span className="text-md flex items-baseline gap-2">
+                                    <p className="truncate sm: max-w-full md:max-w-[10rem] lg:max-w-full">
+                                        {day.title}
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                        [{day.date.toLocaleDateString()}]
+                                    </p>
+                                </span>
+                                <span className="text-md">{day.days}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
 
             <div className="w-full h-full border-b border-dashed flex justify-center">
-                <main className="container h-full w-full flex items-center justify-center border-x border-dashed">
-                    <div className="flex-1 flex flex-col h-full py-8">
-                        <div className="flex items-center justify-between px-8">
-                            <div className="flex items-center gap-8">
-                                <div className="flex items-center gap-2">
-                                    <Button
-                                        className="hover:cursor-pointer"
-                                        onClick={goToPrevMonth}
-                                    >
-                                        <ChevronLeft className="h-5 w-5" />
-                                    </Button>
-                                    <Button
-                                        className="hover:cursor-pointer"
-                                        onClick={goToNextMonth}
-                                    >
-                                        <ChevronRight className="h-5 w-5" />
-                                    </Button>
-                                </div>
-                                <h2 className="text-xl font-semibold">
-                                    {formatMonth(currentDate)}
-                                </h2>
-                            </div>
-                            <Button
-                                className="hover:cursor-pointer"
-                                onClick={goToToday}
-                            >
-                                <div className="flex items-center gap-1">
-                                    <Calendar1 className="h-5" />
-                                    Today
-                                </div>
-                            </Button>
-                        </div>
-
-                        <div className="flex-1 overflow-auto p-8 flex flex-col h-full">
-                            <div className="rounded-xl border flex flex-col flex-grow">
-                                <div className="grid grid-cols-7 p-2 border-b">
-                                    {["S", "M", "T", "W", "T", "F", "S"].map(
-                                        (day, i) => (
-                                            <div
-                                                key={i}
-                                                className="text-center font-medium"
-                                            >
-                                                {day}
-                                            </div>
-                                        )
-                                    )}
-                                </div>
-
-                                <div
-                                    className={`grid grid-cols-7 flex-grow grid-rows-[repeat(${requiredRows},1fr)]`}
+                <div className="flex flex-col h-full w-screen container border-x border-dashed">
+                    <div className="flex items-center justify-between px-8 pt-8">
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    className="hover:cursor-pointer"
+                                    onClick={goToPrevMonth}
                                 >
-                                    {monthData.map((day, i) => {
-                                        const weekNumber =
-                                            Math.floor(i / 7) + 1;
-                                        const isHighlightedWeek =
-                                            weekNumber === 2 ||
-                                            weekNumber === 4;
+                                    <ChevronLeft className="h-5 w-5" />
+                                </Button>
+                                <Button
+                                    className="hover:cursor-pointer"
+                                    onClick={goToNextMonth}
+                                >
+                                    <ChevronRight className="h-5 w-5" />
+                                </Button>
+                            </div>
+                            <h2 className="text-xl font-semibold">
+                                {formatMonth(currentDate)}
+                            </h2>
+                        </div>
+                        <Button
+                            className="w-32 flex items-center gap-2 hover:cursor-pointer"
+                            onClick={goToToday}
+                        >
+                            <Calendar1 className="h-5" />
+                            <span className="text-sm">Today</span>
+                        </Button>
+                    </div>
 
-                                        return (
-                                            <div
-                                                key={i}
-                                                className={`
+                    <div className="flex-1 overflow-auto p-8 flex flex-col h-full">
+                        <div className="rounded-xl border flex flex-col flex-grow">
+                            <div className="grid grid-cols-7 p-2 border-b">
+                                {["S", "M", "T", "W", "T", "F", "S"].map(
+                                    (day, i) => (
+                                        <div
+                                            key={i}
+                                            className="text-center font-medium"
+                                        >
+                                            {day}
+                                        </div>
+                                    )
+                                )}
+                            </div>
+
+                            <div
+                                className={`grid grid-cols-7 flex-grow grid-rows-[repeat(${requiredRows},1fr)]`}
+                            >
+                                {monthData.map((day, i) => {
+                                    const weekNumber = Math.floor(i / 7) + 1;
+                                    const isHighlightedWeek =
+                                        weekNumber === 2 || weekNumber === 4;
+
+                                    return (
+                                        <div
+                                            key={i}
+                                            className={`
                                                     p-1 flex flex-col
                                                     ${
                                                         isHighlightedWeek
@@ -337,15 +326,10 @@ export default function CalendarPage() {
                                                             : ""
                                                     }
                                                     ${
-                                                        day
-                                                            ? "cursor-pointer"
-                                                            : "cursor-default"
-                                                    }
-                                                    ${
                                                         isToday(day)
                                                             ? "bg-stone-100"
                                                             : day
-                                                            ? "hover:bg-stone-100"
+                                                            ? "hover:bg-stone-50/50"
                                                             : ""
                                                     }
                                                     ${
@@ -354,44 +338,71 @@ export default function CalendarPage() {
                                                             : ""
                                                     }
                                                 `}
-                                                onClick={() =>
-                                                    day && selectDate(day)
-                                                }
-                                            >
-                                                {day && (
-                                                    <div className="flex flex-col h-full">
-                                                        <span className="px-1 font-light">
-                                                            {day}
-                                                        </span>
-                                                        <div className="mt-1 space-y-1 flex-grow overflow-y-auto">
-                                                            {getDDaysForDay(
-                                                                day
-                                                            ).map(
-                                                                (dday, idx) => (
-                                                                    <div
-                                                                        key={
-                                                                            idx
-                                                                        }
-                                                                        className="px-2 py-1 text-xs rounded-md truncate border"
-                                                                        title={`${dday.title} (${dday.days})`}
-                                                                    >
-                                                                        {
-                                                                            dday.title
-                                                                        }
-                                                                    </div>
-                                                                )
-                                                            )}
-                                                        </div>
+                                            onClick={() =>
+                                                day && selectDate(day)
+                                            }
+                                        >
+                                            {day && (
+                                                <div className="flex flex-col h-full">
+                                                    <span className="px-1 font-light">
+                                                        {day}
+                                                    </span>
+                                                    <div className="space-y-1 px-1 flex-grow overflow-y-auto">
+                                                        {getDDaysForDay(
+                                                            day
+                                                        ).map((dday, idx) => (
+                                                            <Drawer>
+                                                                <DrawerTrigger
+                                                                    key={idx}
+                                                                    className="h-5 w-full px-1 rounded text-xs truncate border hover:cursor-pointer"
+                                                                    title={`${dday.title} (${dday.days})`}
+                                                                >
+                                                                    {dday.title}
+                                                                </DrawerTrigger>
+                                                                <DrawerContent>
+                                                                    <DrawerHeader>
+                                                                        <DrawerTitle>
+                                                                            <div className="flex justify-between items-baseline gap-2 px-4">
+                                                                                <div className="flex items-baseline gap-2">
+                                                                                    {
+                                                                                        dday.title
+                                                                                    }
+                                                                                    <span className="text-xs text-gray-500">
+                                                                                        [
+                                                                                        {dday.date.toLocaleDateString()}
+
+                                                                                        ]
+                                                                                    </span>
+                                                                                </div>
+                                                                                {
+                                                                                    dday.days
+                                                                                }
+                                                                            </div>
+                                                                        </DrawerTitle>
+                                                                    </DrawerHeader>
+                                                                    <DrawerFooter>
+                                                                        <DrawerClose>
+                                                                            <Button
+                                                                                className="w-full hover:cursor-pointer"
+                                                                                variant="outline"
+                                                                            >
+                                                                                Close
+                                                                            </Button>
+                                                                        </DrawerClose>
+                                                                    </DrawerFooter>
+                                                                </DrawerContent>
+                                                            </Drawer>
+                                                        ))}
                                                     </div>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>
-                </main>
+                </div>
             </div>
         </div>
     );
