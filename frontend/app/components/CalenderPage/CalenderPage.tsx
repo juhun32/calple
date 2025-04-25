@@ -230,26 +230,34 @@ export default function CalendarPage() {
     ];
 
     const [selectedColor, setSelectedColor] = useState("white");
+    const [selectedBgColor, setSelectedBgColor] = useState("white");
 
     const bgColor = (color: string) => {
         if (color === "white") {
             setSelectedColor("white");
+            setSelectedBgColor("white");
         } else if (color === "red") {
-            setSelectedColor("bg-red-100/50");
+            setSelectedColor("bg-red-50");
+            setSelectedBgColor("bg-red-200");
         } else if (color === "yellow") {
-            setSelectedColor("bg-yellow-100/50");
+            setSelectedColor("bg-yellow-50");
+            setSelectedBgColor("bg-yellow-200");
         } else if (color === "blue") {
-            setSelectedColor("bg-blue-100/50");
+            setSelectedColor("bg-blue-50");
+            setSelectedBgColor("bg-blue-200");
         } else if (color === "green") {
-            setSelectedColor("bg-green-100/50");
+            setSelectedColor("bg-green-50");
+            setSelectedBgColor("bg-green-200");
         }
     };
 
     return (
-        <div className={`h-screen grid grid-rows-[4rem_4fr_7fr] items-center justify-center 
-            ${selectedColor === "white" ? "" : selectedColor}`}>
+        <div
+            className={`h-screen grid grid-rows-[3rem_4fr_7fr] items-center justify-center 
+            ${selectedBgColor}`}
+        >
             <div className="w-screen h-full border-b border-dashed flex justify-center">
-                <div className="container border-x border-dashed w-full p-8 flex justify-end items-center">
+                <div className="container border-x border-dashed w-full px-8 flex justify-end items-center">
                     <div className="flex gap-2">
                         <Button
                             className="h-5 w-5 px-0 py-0 rounded-full bg-white hover:bg-whte/70 border"
@@ -292,7 +300,7 @@ export default function CalendarPage() {
                         </h2>
                         <Button
                             variant={"outline"}
-                            className="w-24 h-8 flex items-center gap-2 hover:cursor-pointer"
+                            className={`w-24 h-8 flex items-center gap-2 hover:cursor-pointer ${selectedColor}`}
                         >
                             <Plus className="h-6" />
                             <span>Create</span>
@@ -302,7 +310,7 @@ export default function CalendarPage() {
                         {ddays.map((day, i) => (
                             <div
                                 key={i}
-                                className="flex items-center justify-between p-2 border rounded-md bg-white"
+                                className={`flex items-center justify-between p-2 border rounded-md ${selectedColor}`}
                             >
                                 <span className="text-md flex items-baseline gap-2">
                                     <p className="truncate text-sm md:text-md max-w-[10rem] sm:max-w-full md:max-w-[10rem] lg:max-w-full">
@@ -328,14 +336,14 @@ export default function CalendarPage() {
                             <div className="flex items-center gap-2">
                                 <Button
                                     variant={"outline"}
-                                    className="w-6 h-6 hover:cursor-pointer"
+                                    className={`w-6 h-6 hover:cursor-pointer ${selectedColor}`}
                                     onClick={goToPrevMonth}
                                 >
                                     <ChevronLeft className="h-5 w-5" />
                                 </Button>
                                 <Button
                                     variant={"outline"}
-                                    className="w-6 h-6 hover:cursor-pointer"
+                                    className={`w-6 h-6 hover:cursor-pointer ${selectedColor}`}
                                     onClick={goToNextMonth}
                                 >
                                     <ChevronRight className="h-5 w-5" />
@@ -346,7 +354,7 @@ export default function CalendarPage() {
                             </h2>
                         </div>
                         <Button
-                            className="w-24 h-8 flex items-center gap-2 hover:cursor-pointer"
+                            className={`w-24 h-8 flex items-center gap-2 hover:cursor-pointer ${selectedColor}`}
                             variant={"outline"}
                             onClick={goToToday}
                         >
@@ -356,7 +364,7 @@ export default function CalendarPage() {
                     </div>
 
                     <div className="flex-1 overflow-auto p-8 flex flex-col h-full">
-                        <div className="rounded-xl border flex flex-col flex-grow bg-white">
+                        <div className={`rounded-xl border flex flex-col flex-grow ${selectedColor}`}>
                             <div className="grid grid-cols-7 p-2 border-b">
                                 {["S", "M", "T", "W", "T", "F", "S"].map(
                                     (day, i) => (
@@ -390,7 +398,7 @@ export default function CalendarPage() {
                                                     }
                                                     ${
                                                         isToday(day)
-                                                            ? "bg-stone-100"
+                                                            ? `${selectedColor} brightness-97`
                                                             : day
                                                             ? "hover:bg-stone-50/50"
                                                             : ""
@@ -410,14 +418,14 @@ export default function CalendarPage() {
                                                     <span className="px-1 font-light">
                                                         {day}
                                                     </span>
-                                                    <div className="space-y-1 px-1 flex-grow overflow-y-auto h-1">
+                                                    <div className="space-y-1 px-1 flex-grow overflow-y-auto">
                                                         {getDDaysForDay(
                                                             day
                                                         ).map((dday, idx) => (
                                                             <Drawer>
                                                                 <DrawerTrigger
                                                                     key={idx}
-                                                                    className="flex sm:hidden h-3 w-3 rounded-full text-xs truncate border hover:cursor-pointer"
+                                                                    className={`flex sm:hidden h-5 w-5 rounded-full text-xs truncate border hover:cursor-pointer ${selectedColor}`}
                                                                     title={`${dday.title} (${dday.days})`}
                                                                 >
                                                                     &nbsp;
