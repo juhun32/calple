@@ -1,19 +1,37 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, Plus, Calendar1 } from "lucide-react";
+import {
+    ChevronLeft,
+    ChevronRight,
+    Plus,
+    Calendar1,
+    CalendarHeart,
+} from "lucide-react";
 
 import {
     Drawer,
     DrawerClose,
     DrawerContent,
-    DrawerDescription,
     DrawerFooter,
     DrawerHeader,
     DrawerTitle,
     DrawerTrigger,
 } from "app/components/ui/drawer";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "app/components/ui/alert-dialog";
+import { Checkbox } from "app/components/ui/checkbox";
 import { Button } from "app/components/ui/button";
+import { Input } from "app/components/ui/input";
 
 export default function CalendarPage() {
     interface Event {
@@ -238,16 +256,16 @@ export default function CalendarPage() {
             setSelectedBgColor("white");
         } else if (color === "red") {
             setSelectedColor("bg-red-50");
-            setSelectedBgColor("bg-red-200");
+            setSelectedBgColor("bg-red-100");
         } else if (color === "yellow") {
             setSelectedColor("bg-yellow-50");
-            setSelectedBgColor("bg-yellow-200");
+            setSelectedBgColor("bg-yellow-100");
         } else if (color === "blue") {
             setSelectedColor("bg-blue-50");
-            setSelectedBgColor("bg-blue-200");
+            setSelectedBgColor("bg-blue-100");
         } else if (color === "green") {
             setSelectedColor("bg-green-50");
-            setSelectedBgColor("bg-green-200");
+            setSelectedBgColor("bg-green-100");
         }
     };
 
@@ -256,8 +274,8 @@ export default function CalendarPage() {
             className={`h-screen grid grid-rows-[3rem_4fr_7fr] items-center justify-center 
             ${selectedBgColor}`}
         >
-            <div className="w-screen h-full border-b border-dashed flex justify-center">
-                <div className="container border-x border-dashed w-full px-8 flex justify-end items-center">
+            <div className="w-screen h-full border-b border-dashed border-black flex justify-center">
+                <div className="container border-x border-dashed border-black w-full px-8 flex justify-end items-center">
                     <div className="flex gap-2">
                         <Button
                             className="h-5 w-5 px-0 py-0 rounded-full bg-white hover:bg-whte/70 border"
@@ -292,25 +310,87 @@ export default function CalendarPage() {
                     </div>
                 </div>
             </div>
-            <div className="w-screen h-full border-b border-dashed flex justify-center">
-                <div className="container border-x border-dashed w-full p-8">
+            <div className="w-screen h-full border-b border-dashed border-black flex justify-center">
+                <div className="container border-x border-dashed border-black w-full p-8">
                     <div className="flex justify-between items-center pb-8">
-                        <h2 className="text-lg md:text-xl font-semibold">
+                        <h2 className="flex gap-2 items-center text-lg md:text-xl font-semibold">
+                            <CalendarHeart className="h-6" />
                             D-Days
                         </h2>
-                        <Button
-                            variant={"outline"}
-                            className={`w-24 h-8 flex items-center gap-2 hover:cursor-pointer ${selectedColor}`}
-                        >
-                            <Plus className="h-6" />
-                            <span>Create</span>
-                        </Button>
+
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button
+                                    variant={"outline"}
+                                    className={`w-24 h-8 flex items-center gap-2 border-dashed border-black hover:cursor-pointer ${selectedColor}`}
+                                >
+                                    <Plus className="h-6" />
+                                    <span>Create</span>
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>
+                                        Add D-Day
+                                    </AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        <div className="flex flex-col gap-2">
+                                            <div className="flex items-center gap-2">
+                                                <label
+                                                    htmlFor="title"
+                                                    className="text-sm font-medium"
+                                                >
+                                                    Title:
+                                                </label>
+                                                <Input
+                                                    type="text"
+                                                    id="title"
+                                                    className="border border-gray-300 rounded-md py-1 px-2 text-sm w-full"
+                                                />
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <label
+                                                    htmlFor="date"
+                                                    className="text-sm font-medium"
+                                                >
+                                                    Date:
+                                                </label>
+                                                <div className="flex items-center border border-gray-300 rounded-md text-sm w-full">
+                                                    <Input
+                                                        type="date"
+                                                        id="date"
+                                                        className="border-none"
+                                                    />
+                                                    <label
+                                                        htmlFor="isAnnual"
+                                                        className="text-sm font-medium ml-2"
+                                                    >
+                                                        Annual:
+                                                    </label>
+
+                                                    <Checkbox
+                                                        id="isAnnual"
+                                                        className="ml-1 mr-3"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>
+                                        Cancel
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction>Add</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                     </div>
                     <div className="grid md:grid-cols-2 gap-2">
                         {ddays.map((day, i) => (
                             <div
                                 key={i}
-                                className={`flex items-center justify-between p-2 border rounded-md ${selectedColor}`}
+                                className={`flex items-center justify-between p-2 border border-dashed border-black rounded-md ${selectedColor}`}
                             >
                                 <span className="text-md flex items-baseline gap-2">
                                     <p className="truncate text-sm md:text-md max-w-[10rem] sm:max-w-full md:max-w-[10rem] lg:max-w-full">
@@ -329,21 +409,21 @@ export default function CalendarPage() {
                 </div>
             </div>
 
-            <div className="w-full h-full border-b border-dashed flex justify-center">
-                <div className="flex flex-col h-full w-screen container border-x border-dashed">
+            <div className="w-full h-full flex justify-center">
+                <div className="flex flex-col h-full w-screen container border-x border-dashed border-black">
                     <div className="flex items-center justify-between px-8 pt-8">
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-2">
                                 <Button
                                     variant={"outline"}
-                                    className={`w-6 h-6 hover:cursor-pointer ${selectedColor}`}
+                                    className={`w-6 h-6 border-dashed border-black hover:cursor-pointer ${selectedColor}`}
                                     onClick={goToPrevMonth}
                                 >
                                     <ChevronLeft className="h-5 w-5" />
                                 </Button>
                                 <Button
                                     variant={"outline"}
-                                    className={`w-6 h-6 hover:cursor-pointer ${selectedColor}`}
+                                    className={`w-6 h-6 border-dashed border-black hover:cursor-pointer ${selectedColor}`}
                                     onClick={goToNextMonth}
                                 >
                                     <ChevronRight className="h-5 w-5" />
@@ -354,7 +434,7 @@ export default function CalendarPage() {
                             </h2>
                         </div>
                         <Button
-                            className={`w-24 h-8 flex items-center gap-2 hover:cursor-pointer ${selectedColor}`}
+                            className={`w-24 h-8 flex items-center gap-2 border-dashed border-black hover:cursor-pointer ${selectedColor}`}
                             variant={"outline"}
                             onClick={goToToday}
                         >
@@ -364,8 +444,10 @@ export default function CalendarPage() {
                     </div>
 
                     <div className="flex-1 overflow-auto p-8 flex flex-col h-full">
-                        <div className={`rounded-xl border flex flex-col flex-grow ${selectedColor}`}>
-                            <div className="grid grid-cols-7 p-2 border-b">
+                        <div
+                            className={`rounded-xl sm:p-4 border border-dashed border-black flex flex-col flex-grow ${selectedColor}`}
+                        >
+                            <div className="grid grid-cols-7 p-2 border-b border-stone-500">
                                 {["S", "M", "T", "W", "T", "F", "S"].map(
                                     (day, i) => (
                                         <div
@@ -425,14 +507,14 @@ export default function CalendarPage() {
                                                             <Drawer>
                                                                 <DrawerTrigger
                                                                     key={idx}
-                                                                    className={`flex sm:hidden h-5 w-5 rounded-full text-xs truncate border hover:cursor-pointer ${selectedColor}`}
+                                                                    className={`flex sm:hidden h-5 w-5 rounded-full text-xs truncate border hover:cursor-pointer ${selectedBgColor}`}
                                                                     title={`${dday.title} (${dday.days})`}
                                                                 >
                                                                     &nbsp;
                                                                 </DrawerTrigger>
                                                                 <DrawerTrigger
                                                                     key={idx}
-                                                                    className="hidden sm:flex h-5 w-full px-1 rounded text-xs truncate border hover:cursor-pointer"
+                                                                    className={`hidden sm:flex w-full px-1 rounded text-xs truncate border hover:cursor-pointer ${selectedBgColor}`}
                                                                     title={`${dday.title} (${dday.days})`}
                                                                 >
                                                                     {dday.title}
