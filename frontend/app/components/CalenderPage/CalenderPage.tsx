@@ -12,6 +12,8 @@ import {
     Sun,
     Heart,
     Paintbrush,
+    KeyRound,
+    LogOut,
 } from "lucide-react";
 
 import {
@@ -305,7 +307,7 @@ export default function CalendarPage() {
 
     return (
         <div
-            className={`min-h-screen grid grid-rows-[auto_4fr_7fr] items-center justify-center 
+            className={`min-h-screen grid grid-rows-[auto_3fr_7fr] items-center justify-center 
             ${selectedBgColor} ${selectedTextColor}`}
         >
             <div
@@ -314,47 +316,59 @@ export default function CalendarPage() {
                 <div
                     className={`container border-x border-dashed ${selectedBorderColor} w-full px-8 py-2 flex justify-between items-center`}
                 >
-                    <div className="flex gap-2"></div>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger
-                            asChild
+                    <div className="flex gap-2">[Calple]</div>
+                    <div className="flex items-center gap-2">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger
+                                asChild
+                                className={`${selectedColor} ${selectedTextColor} ${selectedBorderColor}`}
+                            >
+                                <Button variant="outline" size="icon">
+                                    <Paintbrush />
+                                    <span className="sr-only">
+                                        Toggle theme
+                                    </span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                                align="end"
+                                className={`${selectedColor} ${selectedTextColor} ${selectedBorderColor}`}
+                            >
+                                <DropdownMenuItem
+                                    onClick={() => userSetColor("red")}
+                                >
+                                    <span className="h-4 w-4 px-0 py-0 rounded-full bg-red-200 hover:bg-red-200/70 border">
+                                        &nbsp;
+                                    </span>
+                                    Pink
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() => userSetColor("white")}
+                                >
+                                    <span className="h-4 w-4 px-0 py-0 rounded-full bg-white hover:bg-whte/70 border">
+                                        &nbsp;
+                                    </span>
+                                    Light
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() => userSetColor("dark")}
+                                >
+                                    <span className="h-4 w-4 px-0 py-0 rounded-full bg-gray-800 hover:bg-gray-800/70 border">
+                                        &nbsp;
+                                    </span>
+                                    Dark
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Button
+                            variant="outline"
                             className={`${selectedColor} ${selectedTextColor} ${selectedBorderColor}`}
+                            onClick={() => window.location.href = "/"}
                         >
-                            <Button variant="outline" size="icon">
-                                <Paintbrush />
-                                <span className="sr-only">Toggle theme</span>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                            align="end"
-                            className={`${selectedColor} ${selectedTextColor} ${selectedBorderColor}`}
-                        >
-                            <DropdownMenuItem
-                                onClick={() => userSetColor("red")}
-                            >
-                                <span className="h-4 w-4 px-0 py-0 rounded-full bg-red-200 hover:bg-red-200/70 border">
-                                    &nbsp;
-                                </span>
-                                Pink
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() => userSetColor("white")}
-                            >
-                                <span className="h-4 w-4 px-0 py-0 rounded-full bg-white hover:bg-whte/70 border">
-                                    &nbsp;
-                                </span>
-                                Light
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() => userSetColor("dark")}
-                            >
-                                <span className="h-4 w-4 px-0 py-0 rounded-full bg-gray-800 hover:bg-gray-800/70 border">
-                                    &nbsp;
-                                </span>
-                                Dark
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                            <LogOut className="h-6" />
+                            <span>Logout</span>
+                        </Button>
+                    </div>
                 </div>
             </div>
             <div
@@ -373,7 +387,7 @@ export default function CalendarPage() {
                             <AlertDialogTrigger asChild>
                                 <Button
                                     variant={"outline"}
-                                    className={`w-24 h-8 flex items-center gap-2 border-dashed border-black hover:cursor-pointer ${selectedColor}`}
+                                    className={`w-24 h-8 flex items-center gap-2 hover:cursor-pointer ${selectedColor} ${selectedTextColor} ${selectedBorderColor}`}
                                 >
                                     <Plus className="h-6" />
                                     <span>Create</span>
@@ -473,14 +487,14 @@ export default function CalendarPage() {
                             <div className="flex items-center gap-2">
                                 <Button
                                     variant={"outline"}
-                                    className={`w-6 h-6 border-dashed border-black hover:cursor-pointer ${selectedColor}`}
+                                    className={`w-6 h-6 hover:cursor-pointer ${selectedColor} ${selectedTextColor} ${selectedBorderColor}`}
                                     onClick={goToPrevMonth}
                                 >
                                     <ChevronLeft className="h-5 w-5" />
                                 </Button>
                                 <Button
                                     variant={"outline"}
-                                    className={`w-6 h-6 border-dashed border-black hover:cursor-pointer ${selectedColor}`}
+                                    className={`w-6 h-6 hover:cursor-pointer ${selectedColor} ${selectedTextColor} ${selectedBorderColor}`}
                                     onClick={goToNextMonth}
                                 >
                                     <ChevronRight className="h-5 w-5" />
@@ -488,7 +502,7 @@ export default function CalendarPage() {
                             </div>
                         </div>
                         <Button
-                            className={`w-24 h-8 flex items-center gap-2 border-dashed border-black hover:cursor-pointer ${selectedColor}`}
+                            className={`w-24 h-8 flex items-center gap-2 hover:cursor-pointer ${selectedColor} ${selectedTextColor} ${selectedBorderColor}`}
                             variant={"outline"}
                             onClick={goToToday}
                         >
@@ -501,7 +515,9 @@ export default function CalendarPage() {
                         <div
                             className={`rounded-xl sm:p-4 flex flex-col flex-grow ${selectedColor}`}
                         >
-                            <div className="grid grid-cols-7 p-2 border-b border-stone-500">
+                            <div
+                                className={`grid grid-cols-7 p-2 border-b ${selectedBorderColor}`}
+                            >
                                 {["S", "M", "T", "W", "T", "F", "S"].map(
                                     (day, i) => (
                                         <div
@@ -529,19 +545,19 @@ export default function CalendarPage() {
                                                     p-1 flex flex-col
                                                     ${
                                                         isHighlightedWeek
-                                                            ? "border-y border-dashed"
+                                                            ? `border-y border-dashed ${selectedBorderColor}`
                                                             : ""
                                                     }
                                                     ${
                                                         isToday(day)
-                                                            ? `${selectedColor} brightness-97`
+                                                            ? `${selectedColor} brightness-98`
                                                             : day
-                                                            ? "hover:bg-stone-50/50"
+                                                            ? "hover:bg-stone-50/30"
                                                             : ""
                                                     }
                                                     ${
                                                         isSelected(day)
-                                                            ? "border-x border-dashed"
+                                                            ? `border-x border-dashed ${selectedBorderColor}`
                                                             : ""
                                                     }
                                                 `}
