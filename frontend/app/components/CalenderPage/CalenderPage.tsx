@@ -1,12 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     ChevronLeft,
     ChevronRight,
     Plus,
+    Calendar,
     Calendar1,
     CalendarHeart,
+    Moon,
+    Sun,
+    Heart,
+    Paintbrush,
 } from "lucide-react";
 
 import {
@@ -32,16 +37,14 @@ import {
 import { Checkbox } from "app/components/ui/checkbox";
 import { Button } from "app/components/ui/button";
 import { Input } from "app/components/ui/input";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "app/components/ui/dropdown-menu";
 
 export default function CalendarPage() {
-    interface Event {
-        id: string;
-        title: string;
-        date: Date;
-        isAnnual: boolean; // For recurring annual events
-        color?: string; // Optional styling
-    }
-
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState(new Date());
 
@@ -247,71 +250,119 @@ export default function CalendarPage() {
         },
     ];
 
-    const [selectedColor, setSelectedColor] = useState("white");
-    const [selectedBgColor, setSelectedBgColor] = useState("white");
+    const [selectedColor, setSelectedColor] = useState("bg-white");
+    const [selectedBgColor, setSelectedBgColor] = useState("bg-stone-100");
+    const [selectedBorderColor, setSelectedBorderColor] = useState("");
+    const [selectedTextColor, setSelectedTextColor] = useState("text-black");
 
-    const bgColor = (color: string) => {
-        if (color === "white") {
-            setSelectedColor("white");
-            setSelectedBgColor("white");
-        } else if (color === "red") {
-            setSelectedColor("bg-red-50");
-            setSelectedBgColor("bg-red-100");
-        } else if (color === "yellow") {
-            setSelectedColor("bg-yellow-50");
-            setSelectedBgColor("bg-yellow-100");
-        } else if (color === "blue") {
-            setSelectedColor("bg-blue-50");
-            setSelectedBgColor("bg-blue-100");
-        } else if (color === "green") {
-            setSelectedColor("bg-green-50");
-            setSelectedBgColor("bg-green-100");
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const savedColor = localStorage.getItem("calpleColor");
+            const savedBgColor = localStorage.getItem("calpleBg");
+            const savedBorderColor = localStorage.getItem("calpleBorder");
+            const savedTextColor = localStorage.getItem("calpleTextColor");
+
+            if (savedColor) setSelectedColor(savedColor);
+            if (savedBgColor) setSelectedBgColor(savedBgColor);
+            if (savedBorderColor) setSelectedBorderColor(savedBorderColor);
+            if (savedTextColor) setSelectedTextColor(savedTextColor);
         }
+    }, []);
+
+    const userSetColor = (color: string) => {
+        let newColor: string = "bg-white";
+        let newBgColor: string = "bg-stone-100";
+        let newBorderColor: string = "";
+        let newTextColor: string = "text-black";
+
+        if (color === "white") {
+            newColor = "bg-white";
+            newBgColor = "bg-stone-100";
+            newBorderColor = "";
+            newTextColor = "text-black";
+        } else if (color === "red") {
+            newColor = "bg-red-50";
+            newBgColor = "bg-red-100";
+            newBorderColor = "border-red-200";
+            newTextColor = "text-red-900";
+        } else if (color === "dark") {
+            newColor = "bg-stone-800";
+            newBgColor = "bg-stone-900";
+            newBorderColor = "border-stone-700";
+            newTextColor = "text-stone-200";
+        }
+
+        localStorage.setItem("calpleColor", newColor);
+        localStorage.setItem("calpleBg", newBgColor);
+        localStorage.setItem("calpleBorder", newBorderColor);
+        localStorage.setItem("calpleTextColor", newTextColor);
+
+        setSelectedColor(newColor);
+        setSelectedBgColor(newBgColor);
+        setSelectedBorderColor(newBorderColor);
+        setSelectedTextColor(newTextColor);
     };
 
     return (
         <div
-            className={`h-screen grid grid-rows-[3rem_4fr_7fr] items-center justify-center 
-            ${selectedBgColor}`}
+            className={`min-h-screen grid grid-rows-[auto_4fr_7fr] items-center justify-center 
+            ${selectedBgColor} ${selectedTextColor}`}
         >
-            <div className="w-screen h-full border-b border-dashed border-black flex justify-center">
-                <div className="container border-x border-dashed border-black w-full px-8 flex justify-end items-center">
-                    <div className="flex gap-2">
-                        <Button
-                            className="h-5 w-5 px-0 py-0 rounded-full bg-white hover:bg-whte/70 border"
-                            onClick={() => bgColor("white")}
+            <div
+                className={`w-screen h-full border-b border-dashed ${selectedBorderColor} flex justify-center`}
+            >
+                <div
+                    className={`container border-x border-dashed ${selectedBorderColor} w-full px-8 py-2 flex justify-between items-center`}
+                >
+                    <div className="flex gap-2"></div>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger
+                            asChild
+                            className={`${selectedColor} ${selectedTextColor} ${selectedBorderColor}`}
                         >
-                            &nbsp;
-                        </Button>
-                        <Button
-                            className="h-5 w-5 px-0 py-0 rounded-full bg-red-200 hover:bg-red-200/70 border"
-                            onClick={() => bgColor("red")}
+                            <Button variant="outline" size="icon">
+                                <Paintbrush />
+                                <span className="sr-only">Toggle theme</span>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                            align="end"
+                            className={`${selectedColor} ${selectedTextColor} ${selectedBorderColor}`}
                         >
-                            &nbsp;
-                        </Button>
-                        <Button
-                            className="h-5 w-5 px-0 py-0 rounded-full bg-yellow-100 hover:bg-yellow-100/70 border"
-                            onClick={() => bgColor("yellow")}
-                        >
-                            &nbsp;
-                        </Button>
-                        <Button
-                            className="h-5 w-5 px-0 py-0 rounded-full bg-blue-200 hover:bg-blue-200/70 border"
-                            onClick={() => bgColor("blue")}
-                        >
-                            &nbsp;
-                        </Button>
-                        <Button
-                            className="h-5 w-5 px-0 py-0 rounded-full bg-green-100 hover:bg-green-200/70 border"
-                            onClick={() => bgColor("green")}
-                        >
-                            &nbsp;
-                        </Button>
-                    </div>
+                            <DropdownMenuItem
+                                onClick={() => userSetColor("red")}
+                            >
+                                <span className="h-4 w-4 px-0 py-0 rounded-full bg-red-200 hover:bg-red-200/70 border">
+                                    &nbsp;
+                                </span>
+                                Pink
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => userSetColor("white")}
+                            >
+                                <span className="h-4 w-4 px-0 py-0 rounded-full bg-white hover:bg-whte/70 border">
+                                    &nbsp;
+                                </span>
+                                Light
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => userSetColor("dark")}
+                            >
+                                <span className="h-4 w-4 px-0 py-0 rounded-full bg-gray-800 hover:bg-gray-800/70 border">
+                                    &nbsp;
+                                </span>
+                                Dark
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </div>
-            <div className="w-screen h-full border-b border-dashed border-black flex justify-center">
-                <div className="container border-x border-dashed border-black w-full p-8">
+            <div
+                className={`w-screen h-full border-b border-dashed ${selectedBorderColor} flex justify-center`}
+            >
+                <div
+                    className={`container border-x border-dashed ${selectedBorderColor} w-full p-8`}
+                >
                     <div className="flex justify-between items-center pb-8">
                         <h2 className="flex gap-2 items-center text-lg md:text-xl font-semibold">
                             <CalendarHeart className="h-6" />
@@ -390,7 +441,7 @@ export default function CalendarPage() {
                         {ddays.map((day, i) => (
                             <div
                                 key={i}
-                                className={`flex items-center justify-between p-2 border border-dashed border-black rounded-md ${selectedColor}`}
+                                className={`flex items-center justify-between p-2 rounded-md ${selectedColor}`}
                             >
                                 <span className="text-md flex items-baseline gap-2">
                                     <p className="truncate text-sm md:text-md max-w-[10rem] sm:max-w-full md:max-w-[10rem] lg:max-w-full">
@@ -410,9 +461,15 @@ export default function CalendarPage() {
             </div>
 
             <div className="w-full h-full flex justify-center">
-                <div className="flex flex-col h-full w-screen container border-x border-dashed border-black">
+                <div
+                    className={`flex flex-col h-full w-screen container border-x border-dashed ${selectedBorderColor}`}
+                >
                     <div className="flex items-center justify-between px-8 pt-8">
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                            <h2 className="flex gap-2 justify-center items-center text-lg md:text-xl font-semibold mr-4">
+                                <Calendar className="h-6" />
+                                {formatMonth(currentDate)}
+                            </h2>
                             <div className="flex items-center gap-2">
                                 <Button
                                     variant={"outline"}
@@ -429,9 +486,6 @@ export default function CalendarPage() {
                                     <ChevronRight className="h-5 w-5" />
                                 </Button>
                             </div>
-                            <h2 className="text-lg md:text-xl font-semibold mr-4">
-                                {formatMonth(currentDate)}
-                            </h2>
                         </div>
                         <Button
                             className={`w-24 h-8 flex items-center gap-2 border-dashed border-black hover:cursor-pointer ${selectedColor}`}
@@ -445,7 +499,7 @@ export default function CalendarPage() {
 
                     <div className="flex-1 overflow-auto p-8 flex flex-col h-full">
                         <div
-                            className={`rounded-xl sm:p-4 border border-dashed border-black flex flex-col flex-grow ${selectedColor}`}
+                            className={`rounded-xl sm:p-4 flex flex-col flex-grow ${selectedColor}`}
                         >
                             <div className="grid grid-cols-7 p-2 border-b border-stone-500">
                                 {["S", "M", "T", "W", "T", "F", "S"].map(
