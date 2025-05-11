@@ -1,0 +1,4 @@
+.env
+venv/
+firebase_credentials.json
+client_secret.json

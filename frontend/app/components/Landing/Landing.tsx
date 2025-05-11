@@ -15,6 +15,8 @@ import {
 } from "app/components/ui/dropdown-menu";
 
 export default function Landing() {
+    const backendURL = "http://localhost:5000";
+
     const [selectedColor, setSelectedColor] = useState("bg-white");
     const [selectedBgColor, setSelectedBgColor] = useState("bg-stone-100");
     const [selectedBorderColor, setSelectedBorderColor] = useState("");
@@ -126,7 +128,7 @@ export default function Landing() {
                         <Button
                             variant="outline"
                             className={`${selectedColor} ${selectedTextColor} ${selectedBorderColor}`}
-                            onClick={() => (window.location.href = "/main")}
+                            onClick={() => (window.location.href = `${backendURL}/google/oauth/login`)}
                         >
                             <KeyRound className="h-6" />
                             <span>LogIn</span>
