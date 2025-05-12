@@ -387,7 +387,7 @@ export default function CalendarPage() {
                             <Button
                                 variant="outline"
                                 className={`${selectedColor} ${selectedTextColor} ${selectedBorderColor}`}
-                                onClick={() => (window.location.href = "/")}
+                                onClick={logout}
                             >
                                 <LogOut className="h-6" />
                                 <span>Logout</span>
@@ -418,7 +418,7 @@ export default function CalendarPage() {
                         </h2>
                         {authState.isAuthenticated ? (
                             <AlertDialog>
-                                <AlertDialogTrigger asChild>
+                                <AlertDialogTrigger>
                                     <Button
                                         variant={"outline"}
                                         className={`w-24 h-8 flex items-center gap-2 hover:cursor-pointer ${selectedColor} ${selectedTextColor} ${selectedBorderColor}`}
