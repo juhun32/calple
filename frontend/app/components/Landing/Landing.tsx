@@ -1,11 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-    Paintbrush,
-    LogOut,
-    KeyRound,
-} from "lucide-react";
+import { checkAuthStatus, login, logout } from "app/lib/utils";
+
+import { Paintbrush, LogOut, KeyRound } from "lucide-react";
 import { Button } from "app/components/ui/button";
 import {
     DropdownMenu,
@@ -70,6 +68,23 @@ export default function Landing() {
         setSelectedTextColor(newTextColor);
     };
 
+    const [authState, setAuthState] = useState({
+        isAuthenticated: false,
+        user: null,
+        isLoading: true,
+    });
+
+    useEffect(() => {
+        // Check auth status when component mounts
+        checkAuthStatus().then((result) => {
+            setAuthState({
+                isAuthenticated: result.isAuthenticated,
+                user: result.user,
+                isLoading: false,
+            });
+        });
+    }, []);
+
     return (
         <div
             className={`min-h-screen grid grid-rows-[auto_1fr] items-center justify-center 
@@ -81,7 +96,9 @@ export default function Landing() {
                 <div
                     className={`container border-x border-dashed ${selectedBorderColor} w-full px-8 py-2 flex justify-between items-center`}
                 >
-                    <div className="flex gap-2">[Calple]</div>
+                    <div className="flex gap-2">
+                        <a href="/">[Calple]</a>
+                    </div>
                     <div className="flex items-center gap-2">
                         <DropdownMenu>
                             <DropdownMenuTrigger
@@ -125,14 +142,16 @@ export default function Landing() {
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
-                        <Button
-                            variant="outline"
-                            className={`${selectedColor} ${selectedTextColor} ${selectedBorderColor}`}
-                            onClick={() => (window.location.href = `${backendURL}/google/oauth/login`)}
-                        >
-                            <KeyRound className="h-6" />
-                            <span>LogIn</span>
-                        </Button>
+                        {authState.isAuthenticated ? (
+                            <Button
+                                variant="outline"
+                                className={`${selectedColor} ${selectedTextColor} ${selectedBorderColor}`}
+                                onClick={logout}
+                            >
+                                <LogOut className="h-6" />
+                                <span>LogOut</span>
+                            </Button>
+                        ) : null}
                     </div>
                 </div>
             </div>
@@ -140,14 +159,27 @@ export default function Landing() {
                 className={`w-screen h-full border-b border-dashed ${selectedBorderColor} flex justify-center`}
             >
                 <div
-                    className={`container border-x border-dashed ${selectedBorderColor} w-full p-8`}
-                ></div>
+                    className={`container flex justify-center items-center border-x border-dashed ${selectedBorderColor} w-full p-8`}
+                >
+                    {!authState.isAuthenticated ? (
+                        <Button
+                            variant="outline"
+                            className={`${selectedColor} ${selectedTextColor} ${selectedBorderColor}`}
+                            onClick={login}
+                        >
+                            <KeyRound className="h-6" />
+                            <span>LogIn</span>
+                        </Button>
+                    ) : null}
+                </div>
             </div>
 
             <div className="w-full h-full flex justify-center">
                 <div
                     className={`flex flex-col h-full w-screen container border-x border-dashed ${selectedBorderColor}`}
-                ></div>
+                >
+                    footer
+                </div>
             </div>
         </div>
     );

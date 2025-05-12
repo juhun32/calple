@@ -3,6 +3,7 @@ import google_auth_oauthlib.flow
 from firebase import FirebaseInit
 from dotenv import load_dotenv
 from flask import Flask, redirect, url_for, session, request, jsonify
+from flask_cors import CORS
 
 import os
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # FOR DEVELOPMENT ONLY
@@ -11,7 +12,10 @@ os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # FOR DEVELOPMENT ONLY
 load_dotenv()
 
 app = Flask(__name__)
+CORS(app, supports_credentials=True)
 app.secret_key = os.getenv("SECRET_KEY")
+
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
 OAUTH_CLIENT_SECRET = "client_secret.json"
 SCOPES = [
@@ -21,6 +25,8 @@ SCOPES = [
 ]
 
 db = FirebaseInit().db
+
+# google oauth2.0 setup
 
 
 @app.route("/google/oauth/login")
@@ -38,7 +44,7 @@ def login():
     return redirect(auth_url)
 
 
-@app.route("/oauth/callback")
+@app.route("/google/oauth/callback")
 def oauth2callback():
     # Verify state
     state = session.pop("state", None)
@@ -78,29 +84,33 @@ def oauth2callback():
 
     # Keep user ID in session for subsequent requests
     session["user_id"] = info["id"]
-    return redirect(url_for("profile"))
+    # return redirect(url_for("auth_status"))
+    return redirect(f"{FRONTEND_URL}/main")
 
 
-@app.route("/profile")
-def profile():
+@app.route("/api/auth/status")
+def auth_status():
     uid = session.get("user_id")
     if not uid:
-        return redirect(url_for("login"))
+        return jsonify({"authenticated": False}), 401
 
     doc = db.collection("users").document(uid).get()
     if not doc.exists:
-        return "User not found", 404
+        return jsonify({"authenticated": False}), 401
 
     data = doc.to_dict()
-    # Don’t send secrets back to the client
+    # Don't send secrets back to the client
     data.pop("tokens", None)
-    return jsonify(data)
+    return jsonify({
+        "authenticated": True,
+        "user": data
+    })
 
 
 @app.route("/google/oauth/logout")
 def logout():
     session.clear()
-    return redirect("/")
+    return redirect(f"{FRONTEND_URL}")
 
 
 if __name__ == "__main__":

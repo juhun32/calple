@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { checkAuthStatus, login, logout } from "app/lib/utils";
+
 import {
     ChevronLeft,
     ChevronRight,
@@ -47,6 +49,25 @@ import {
 } from "app/components/ui/dropdown-menu";
 
 export default function CalendarPage() {
+    const backendURL = "http://localhost:5000";
+
+    const [authState, setAuthState] = useState({
+        isAuthenticated: false,
+        user: null,
+        isLoading: true,
+    });
+
+    useEffect(() => {
+        checkAuthStatus().then((result) => {
+            setAuthState({
+                isAuthenticated: result.isAuthenticated,
+                user: result.user,
+                isLoading: false,
+            });
+        });
+    }, []);
+    console.log("Auth State:", authState);
+
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState(new Date());
 
@@ -316,7 +337,9 @@ export default function CalendarPage() {
                 <div
                     className={`container border-x border-dashed ${selectedBorderColor} w-full px-8 py-2 flex justify-between items-center`}
                 >
-                    <div className="flex gap-2">[Calple]</div>
+                    <div className="flex gap-2">
+                        <a href="/">[Calple]</a>
+                    </div>
                     <div className="flex items-center gap-2">
                         <DropdownMenu>
                             <DropdownMenuTrigger
@@ -360,14 +383,25 @@ export default function CalendarPage() {
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
-                        <Button
-                            variant="outline"
-                            className={`${selectedColor} ${selectedTextColor} ${selectedBorderColor}`}
-                            onClick={() => window.location.href = "/"}
-                        >
-                            <LogOut className="h-6" />
-                            <span>Logout</span>
-                        </Button>
+                        {authState.isAuthenticated ? (
+                            <Button
+                                variant="outline"
+                                className={`${selectedColor} ${selectedTextColor} ${selectedBorderColor}`}
+                                onClick={() => (window.location.href = "/")}
+                            >
+                                <LogOut className="h-6" />
+                                <span>Logout</span>
+                            </Button>
+                        ) : (
+                            <Button
+                                variant="outline"
+                                className={`${selectedColor} ${selectedTextColor} ${selectedBorderColor}`}
+                                onClick={login}
+                            >
+                                <KeyRound className="h-6" />
+                                <span>Login</span>
+                            </Button>
+                        )}
                     </div>
                 </div>
             </div>
@@ -382,166 +416,185 @@ export default function CalendarPage() {
                             <CalendarHeart className="h-6" />
                             D-Days
                         </h2>
-
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button
-                                    variant={"outline"}
-                                    className={`w-24 h-8 flex items-center gap-2 hover:cursor-pointer ${selectedColor} ${selectedTextColor} ${selectedBorderColor}`}
-                                >
-                                    <Plus className="h-6" />
-                                    <span>Create</span>
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>
-                                        Add D-Day
-                                    </AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        <div className="flex flex-col gap-2">
-                                            <div className="flex items-center gap-2">
-                                                <label
-                                                    htmlFor="title"
-                                                    className="text-sm font-medium"
-                                                >
-                                                    Title:
-                                                </label>
-                                                <Input
-                                                    type="text"
-                                                    id="title"
-                                                    className="border border-gray-300 rounded-md py-1 px-2 text-sm w-full"
-                                                />
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <label
-                                                    htmlFor="date"
-                                                    className="text-sm font-medium"
-                                                >
-                                                    Date:
-                                                </label>
-                                                <div className="flex items-center border border-gray-300 rounded-md text-sm w-full">
-                                                    <Input
-                                                        type="date"
-                                                        id="date"
-                                                        className="border-none"
-                                                    />
+                        {authState.isAuthenticated ? (
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button
+                                        variant={"outline"}
+                                        className={`w-24 h-8 flex items-center gap-2 hover:cursor-pointer ${selectedColor} ${selectedTextColor} ${selectedBorderColor}`}
+                                    >
+                                        <Plus className="h-6" />
+                                        <span>Create</span>
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>
+                                            Add D-Day
+                                        </AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            <div className="flex flex-col gap-2">
+                                                <div className="flex items-center gap-2">
                                                     <label
-                                                        htmlFor="isAnnual"
-                                                        className="text-sm font-medium ml-2"
+                                                        htmlFor="title"
+                                                        className="text-sm font-medium"
                                                     >
-                                                        Annual:
+                                                        Title:
                                                     </label>
-
-                                                    <Checkbox
-                                                        id="isAnnual"
-                                                        className="ml-1 mr-3"
+                                                    <Input
+                                                        type="text"
+                                                        id="title"
+                                                        className="border border-gray-300 rounded-md py-1 px-2 text-sm w-full"
                                                     />
                                                 </div>
+                                                <div className="flex items-center gap-2">
+                                                    <label
+                                                        htmlFor="date"
+                                                        className="text-sm font-medium"
+                                                    >
+                                                        Date:
+                                                    </label>
+                                                    <div className="flex items-center border border-gray-300 rounded-md text-sm w-full">
+                                                        <Input
+                                                            type="date"
+                                                            id="date"
+                                                            className="border-none"
+                                                        />
+                                                        <label
+                                                            htmlFor="isAnnual"
+                                                            className="text-sm font-medium ml-2"
+                                                        >
+                                                            Annual:
+                                                        </label>
+
+                                                        <Checkbox
+                                                            id="isAnnual"
+                                                            className="ml-1 mr-3"
+                                                        />
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>
-                                        Cancel
-                                    </AlertDialogCancel>
-                                    <AlertDialogAction>Add</AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>
+                                            Cancel
+                                        </AlertDialogCancel>
+                                        <AlertDialogAction>
+                                            Add
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        ) : null}
                     </div>
-                    <div className="grid md:grid-cols-2 gap-2">
-                        {ddays.map((day, i) => (
-                            <div
-                                key={i}
-                                className={`flex items-center justify-between p-2 rounded-md ${selectedColor}`}
-                            >
+                    <div>
+                        {authState.isAuthenticated ? (
+                            <div className="grid md:grid-cols-2 gap-2">
+                                {ddays.map((day, i) => (
+                                    <div
+                                        key={i}
+                                        className={`flex items-center justify-between p-2 rounded-md ${selectedColor}`}
+                                    >
+                                        <span className="text-md flex items-baseline gap-2">
+                                            <p className="truncate text-sm md:text-md max-w-[10rem] sm:max-w-full md:max-w-[10rem] lg:max-w-full">
+                                                {day.title}
+                                            </p>
+                                            <p className="text-xs text-gray-500">
+                                                [{day.date.toLocaleDateString()}
+                                                ]
+                                            </p>
+                                        </span>
+                                        <span className="text-sm md:text-md">
+                                            {day.days}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="flex items-center justify-center p-2 rounded-md">
                                 <span className="text-md flex items-baseline gap-2">
                                     <p className="truncate text-sm md:text-md max-w-[10rem] sm:max-w-full md:max-w-[10rem] lg:max-w-full">
-                                        {day.title}
+                                        Please log in to view D-Days.
                                     </p>
-                                    <p className="text-xs text-gray-500">
-                                        [{day.date.toLocaleDateString()}]
-                                    </p>
-                                </span>
-                                <span className="text-sm md:text-md">
-                                    {day.days}
                                 </span>
                             </div>
-                        ))}
+                        )}
                     </div>
                 </div>
             </div>
 
             <div className="w-full h-full flex justify-center">
-                <div
-                    className={`flex flex-col h-full w-screen container border-x border-dashed ${selectedBorderColor}`}
-                >
-                    <div className="flex items-center justify-between px-8 pt-8">
-                        <div className="flex items-center gap-2">
-                            <h2 className="flex gap-2 justify-center items-center text-lg md:text-xl font-semibold mr-4">
-                                <Calendar className="h-6" />
-                                {formatMonth(currentDate)}
-                            </h2>
+                {authState.isAuthenticated ? (
+                    <div
+                        className={`flex flex-col h-full w-screen container border-x border-dashed ${selectedBorderColor}`}
+                    >
+                        <div className="flex items-center justify-between px-8 pt-8">
                             <div className="flex items-center gap-2">
-                                <Button
-                                    variant={"outline"}
-                                    className={`w-6 h-6 hover:cursor-pointer ${selectedColor} ${selectedTextColor} ${selectedBorderColor}`}
-                                    onClick={goToPrevMonth}
-                                >
-                                    <ChevronLeft className="h-5 w-5" />
-                                </Button>
-                                <Button
-                                    variant={"outline"}
-                                    className={`w-6 h-6 hover:cursor-pointer ${selectedColor} ${selectedTextColor} ${selectedBorderColor}`}
-                                    onClick={goToNextMonth}
-                                >
-                                    <ChevronRight className="h-5 w-5" />
-                                </Button>
+                                <h2 className="flex gap-2 justify-center items-center text-lg md:text-xl font-semibold mr-4">
+                                    <Calendar className="h-6" />
+                                    {formatMonth(currentDate)}
+                                </h2>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant={"outline"}
+                                        className={`w-6 h-6 hover:cursor-pointer ${selectedColor} ${selectedTextColor} ${selectedBorderColor}`}
+                                        onClick={goToPrevMonth}
+                                    >
+                                        <ChevronLeft className="h-5 w-5" />
+                                    </Button>
+                                    <Button
+                                        variant={"outline"}
+                                        className={`w-6 h-6 hover:cursor-pointer ${selectedColor} ${selectedTextColor} ${selectedBorderColor}`}
+                                        onClick={goToNextMonth}
+                                    >
+                                        <ChevronRight className="h-5 w-5" />
+                                    </Button>
+                                </div>
                             </div>
+                            <Button
+                                className={`w-24 h-8 flex items-center gap-2 hover:cursor-pointer ${selectedColor} ${selectedTextColor} ${selectedBorderColor}`}
+                                variant={"outline"}
+                                onClick={goToToday}
+                            >
+                                <Calendar1 className="h-6" />
+                                <span className="text-md">Today</span>
+                            </Button>
                         </div>
-                        <Button
-                            className={`w-24 h-8 flex items-center gap-2 hover:cursor-pointer ${selectedColor} ${selectedTextColor} ${selectedBorderColor}`}
-                            variant={"outline"}
-                            onClick={goToToday}
-                        >
-                            <Calendar1 className="h-6" />
-                            <span className="text-md">Today</span>
-                        </Button>
-                    </div>
 
-                    <div className="flex-1 overflow-auto p-8 flex flex-col h-full">
-                        <div
-                            className={`rounded-xl sm:p-4 flex flex-col flex-grow ${selectedColor}`}
-                        >
+                        <div className="flex-1 overflow-auto p-8 flex flex-col h-full">
                             <div
-                                className={`grid grid-cols-7 p-2 border-b ${selectedBorderColor}`}
+                                className={`rounded-xl sm:p-4 flex flex-col flex-grow ${selectedColor}`}
                             >
-                                {["S", "M", "T", "W", "T", "F", "S"].map(
-                                    (day, i) => (
-                                        <div
-                                            key={i}
-                                            className="text-center font-medium"
-                                        >
-                                            {day}
-                                        </div>
-                                    )
-                                )}
-                            </div>
+                                <div
+                                    className={`grid grid-cols-7 p-2 border-b ${selectedBorderColor}`}
+                                >
+                                    {["S", "M", "T", "W", "T", "F", "S"].map(
+                                        (day, i) => (
+                                            <div
+                                                key={i}
+                                                className="text-center font-medium"
+                                            >
+                                                {day}
+                                            </div>
+                                        )
+                                    )}
+                                </div>
 
-                            <div
-                                className={`grid grid-cols-7 flex-grow grid-rows-[repeat(${requiredRows},1fr)]`}
-                            >
-                                {monthData.map((day, i) => {
-                                    const weekNumber = Math.floor(i / 7) + 1;
-                                    const isHighlightedWeek =
-                                        weekNumber === 2 || weekNumber === 4;
+                                <div
+                                    className={`grid grid-cols-7 flex-grow grid-rows-[repeat(${requiredRows},1fr)]`}
+                                >
+                                    {monthData.map((day, i) => {
+                                        const weekNumber =
+                                            Math.floor(i / 7) + 1;
+                                        const isHighlightedWeek =
+                                            weekNumber === 2 ||
+                                            weekNumber === 4;
 
-                                    return (
-                                        <div
-                                            key={i}
-                                            className={`
+                                        return (
+                                            <div
+                                                key={i}
+                                                className={`
                                                     p-1 flex flex-col
                                                     ${
                                                         isHighlightedWeek
@@ -561,78 +614,99 @@ export default function CalendarPage() {
                                                             : ""
                                                     }
                                                 `}
-                                            onClick={() =>
-                                                day && selectDate(day)
-                                            }
-                                        >
-                                            {day && (
-                                                <div className="flex flex-col h-full">
-                                                    <span className="px-1 font-light">
-                                                        {day}
-                                                    </span>
-                                                    <div className="space-y-1 px-1 flex-grow overflow-y-auto">
-                                                        {getDDaysForDay(
-                                                            day
-                                                        ).map((dday, idx) => (
-                                                            <Drawer>
-                                                                <DrawerTrigger
-                                                                    key={idx}
-                                                                    className={`flex sm:hidden h-5 w-5 rounded-full text-xs truncate border hover:cursor-pointer ${selectedBgColor}`}
-                                                                    title={`${dday.title} (${dday.days})`}
-                                                                >
-                                                                    &nbsp;
-                                                                </DrawerTrigger>
-                                                                <DrawerTrigger
-                                                                    key={idx}
-                                                                    className={`hidden sm:flex w-full px-1 rounded text-xs truncate border hover:cursor-pointer ${selectedBgColor}`}
-                                                                    title={`${dday.title} (${dday.days})`}
-                                                                >
-                                                                    {dday.title}
-                                                                </DrawerTrigger>
-                                                                <DrawerContent>
-                                                                    <DrawerHeader>
-                                                                        <DrawerTitle>
-                                                                            <div className="flex justify-between items-baseline gap-2 px-4">
-                                                                                <div className="flex items-baseline gap-2">
-                                                                                    {
-                                                                                        dday.title
-                                                                                    }
-                                                                                    <span className="text-xs text-gray-500">
-                                                                                        [
-                                                                                        {dday.date.toLocaleDateString()}
+                                                onClick={() =>
+                                                    day && selectDate(day)
+                                                }
+                                            >
+                                                {day && (
+                                                    <div className="flex flex-col h-full">
+                                                        <span className="px-1 font-light">
+                                                            {day}
+                                                        </span>
+                                                        <div className="space-y-1 px-1 flex-grow overflow-y-auto">
+                                                            {getDDaysForDay(
+                                                                day
+                                                            ).map(
+                                                                (dday, idx) => (
+                                                                    <Drawer>
+                                                                        <DrawerTrigger
+                                                                            key={
+                                                                                idx
+                                                                            }
+                                                                            className={`flex sm:hidden h-5 w-5 rounded-full text-xs truncate border hover:cursor-pointer ${selectedBgColor}`}
+                                                                            title={`${dday.title} (${dday.days})`}
+                                                                        >
+                                                                            &nbsp;
+                                                                        </DrawerTrigger>
+                                                                        <DrawerTrigger
+                                                                            key={
+                                                                                idx
+                                                                            }
+                                                                            className={`hidden sm:flex w-full px-1 rounded text-xs truncate border hover:cursor-pointer ${selectedBgColor}`}
+                                                                            title={`${dday.title} (${dday.days})`}
+                                                                        >
+                                                                            {
+                                                                                dday.title
+                                                                            }
+                                                                        </DrawerTrigger>
+                                                                        <DrawerContent>
+                                                                            <DrawerHeader>
+                                                                                <DrawerTitle>
+                                                                                    <div className="flex justify-between items-baseline gap-2 px-4">
+                                                                                        <div className="flex items-baseline gap-2">
+                                                                                            {
+                                                                                                dday.title
+                                                                                            }
+                                                                                            <span className="text-xs text-gray-500">
+                                                                                                [
+                                                                                                {dday.date.toLocaleDateString()}
 
-                                                                                        ]
-                                                                                    </span>
-                                                                                </div>
-                                                                                {
-                                                                                    dday.days
-                                                                                }
-                                                                            </div>
-                                                                        </DrawerTitle>
-                                                                    </DrawerHeader>
-                                                                    <DrawerFooter>
-                                                                        <DrawerClose>
-                                                                            <Button
-                                                                                className="w-full hover:cursor-pointer"
-                                                                                variant="outline"
-                                                                            >
-                                                                                Close
-                                                                            </Button>
-                                                                        </DrawerClose>
-                                                                    </DrawerFooter>
-                                                                </DrawerContent>
-                                                            </Drawer>
-                                                        ))}
+                                                                                                ]
+                                                                                            </span>
+                                                                                        </div>
+                                                                                        {
+                                                                                            dday.days
+                                                                                        }
+                                                                                    </div>
+                                                                                </DrawerTitle>
+                                                                            </DrawerHeader>
+                                                                            <DrawerFooter>
+                                                                                <DrawerClose>
+                                                                                    <Button
+                                                                                        className="w-full hover:cursor-pointer"
+                                                                                        variant="outline"
+                                                                                    >
+                                                                                        Close
+                                                                                    </Button>
+                                                                                </DrawerClose>
+                                                                            </DrawerFooter>
+                                                                        </DrawerContent>
+                                                                    </Drawer>
+                                                                )
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                ) : (
+                    <div
+                        className={`flex flex-col h-full w-screen container border-x border-dashed ${selectedBorderColor}`}
+                    >
+                        <div className="flex items-center justify-center p-2 rounded-md">
+                            <span className="text-md flex items-baseline gap-2">
+                                <p className="truncate text-sm md:text-md max-w-[10rem] sm:max-w-full md:max-w-[10rem] lg:max-w-full">
+                                    Please log in to view the calendar.
+                                </p>
+                            </span>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
