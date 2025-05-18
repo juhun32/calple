@@ -14,6 +14,7 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:3000"], supports_credentials=True)
 app.secret_key = os.getenv("SECRET_KEY")
+app.config["SESSION_COOKIE_NAME"] = "calple_session"
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 

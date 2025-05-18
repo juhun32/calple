@@ -1,23 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { checkAuthStatus, login, logout } from "@/lib/utils";
-import { useTheme } from "next-themes";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 import {
     ChevronLeft,
     ChevronRight,
     Plus,
-    Calendar,
+    Calendar as CalendarIcon,
     Calendar1,
-    CalendarHeart,
-    Moon,
-    Sun,
-    Heart,
-    Paintbrush,
-    KeyRound,
-    LogOut,
 } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
 
 import {
     Drawer,
@@ -39,37 +32,39 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+    Sheet,
+    SheetClose,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from "@/components/ui/sheet";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Label } from "@radix-ui/react-dropdown-menu";
+import { format } from "date-fns";
 
-export default function CalendarPage() {
-    const { setTheme } = useTheme();
-
-    const [authState, setAuthState] = useState({
-        isAuthenticated: false,
-        user: null,
-        isLoading: true,
-    });
-
-    useEffect(() => {
-        checkAuthStatus().then((result: any) => {
-            setAuthState({
-                isAuthenticated: result.isAuthenticated,
-                user: result.user,
-                isLoading: false,
-            });
-        });
-    }, []);
-
+export default function Dates() {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState(new Date());
+    const [date, setDate] = useState<Date>();
 
     const getDaysInMonth = (year: number, month: number) => {
         return new Date(year, month + 1, 0).getDate();
@@ -197,9 +192,9 @@ export default function CalendarPage() {
         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
         if (target < today) {
-            return "D+${diffDays}";
+            return `D+${diffDays}`;
         } else if (target > today) {
-            return "D-${diffDays}";
+            return `D-${diffDays}`;
         } else {
             return "D-Day";
         }
@@ -265,188 +260,19 @@ export default function CalendarPage() {
     ];
 
     return (
-        <div
-            className={
-                "min-h-screen grid grid-rows-[auto_3fr_7fr] items-center justify-center "
-            }
-        >
-            <div
-                className={
-                    "w-screen h-full border-b border-dashed flex justify-center"
-                }
-            >
-                <div
-                    className={
-                        "container border-x border-dashed w-full px-8 py-2 flex justify-between items-center"
-                    }
-                >
-                    <div className="flex gap-2">
-                        <a href="/">[Calple]</a>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="icon">
-                                    <Paintbrush />
-                                    <span className="sr-only">
-                                        Toggle theme
-                                    </span>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem>
-                                    <Heart />
-                                    Pink
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    onClick={() => setTheme("light")}
-                                >
-                                    <Sun />
-                                    Light
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    onClick={() => setTheme("dark")}
-                                >
-                                    <Moon />
-                                    Dark
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                        {authState.isAuthenticated ? (
-                            <Button variant="outline" onClick={logout}>
-                                <LogOut className="h-6" />
-                                <span>Logout</span>
-                            </Button>
-                        ) : (
-                            <Button variant="outline" onClick={login}>
-                                <KeyRound className="h-6" />
-                                <span>Login</span>
-                            </Button>
-                        )}
-                    </div>
-                </div>
-            </div>
-            <div
-                className={
-                    "w-screen h-full border-b border-dashed  flex justify-center"
-                }
-            >
-                <div className={"container border-x border-dashed  w-full p-8"}>
-                    <div className="flex justify-between items-center pb-8">
-                        <h2 className="flex gap-2 items-center text-lg md:text-xl font-semibold">
-                            <CalendarHeart className="h-6" />
-                            D-Days
-                        </h2>
-                        <AlertDialog>
-                            <AlertDialogTrigger>
-                                <Button
-                                    variant={"outline"}
-                                    className={
-                                        "w-24 h-8 flex items-center gap-2 hover:cursor-pointer"
-                                    }
-                                >
-                                    <Plus className="h-6" />
-                                    <span>Create</span>
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>
-                                        Add D-Day
-                                    </AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        <div className="flex flex-col gap-2">
-                                            <div className="flex items-center gap-2">
-                                                <label
-                                                    htmlFor="title"
-                                                    className="text-sm font-medium"
-                                                >
-                                                    Title:
-                                                </label>
-                                                <Input
-                                                    type="text"
-                                                    id="title"
-                                                    className="border border-gray-300 rounded-md py-1 px-2 text-sm w-full"
-                                                />
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <label
-                                                    htmlFor="date"
-                                                    className="text-sm font-medium"
-                                                >
-                                                    Date:
-                                                </label>
-                                                <div className="flex items-center border border-gray-300 rounded-md text-sm w-full">
-                                                    <Input
-                                                        type="date"
-                                                        id="date"
-                                                        className="border-none"
-                                                    />
-                                                    <label
-                                                        htmlFor="isAnnual"
-                                                        className="text-sm font-medium ml-2"
-                                                    >
-                                                        Annual:
-                                                    </label>
-
-                                                    <Checkbox
-                                                        id="isAnnual"
-                                                        className="ml-1 mr-3"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>
-                                        Cancel
-                                    </AlertDialogCancel>
-                                    <AlertDialogAction>Add</AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                    </div>
-                    <div>
-                        <div className="grid md:grid-cols-2 gap-2">
-                            {ddays.map((day, i) => (
-                                <div
-                                    key={i}
-                                    className={
-                                        "flex items-center justify-between p-2 rounded-md"
-                                    }
-                                >
-                                    <span className="text-md flex items-baseline gap-2">
-                                        <p className="truncate text-sm md:text-md max-w-[10rem] sm:max-w-full md:max-w-[10rem] lg:max-w-full">
-                                            {day.title}
-                                        </p>
-                                        <p className="text-xs text-gray-500">
-                                            [{day.date.toLocaleDateString()}]
-                                        </p>
-                                    </span>
-                                    <span className="text-sm md:text-md">
-                                        {day.days}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="w-full h-full flex justify-center">
-                <div
-                    className={
-                        "flex flex-col h-full w-screen container border-x border-dashed "
-                    }
-                >
+        <div className="min-h-screen grid grid-rows-[auto_1fr] items-center justify-center ">
+            <div className="h-full border-b border-dashed  flex justify-center">
+                <div className="flex flex-col h-full container border-x border-dashed ">
                     <div className="flex items-center justify-between px-8 pt-8">
                         <div className="flex items-center gap-2">
-                            <h2 className="flex gap-2 justify-center items-center text-lg md:text-xl font-semibold mr-4">
-                                <Calendar className="h-6" />
-                                {formatMonth(currentDate)}
-                            </h2>
                             <div className="flex items-center gap-2">
+                                <Button
+                                    className="w-14 h-6 flex items-center gap-2 hover:cursor-pointer"
+                                    variant={"ghost"}
+                                    onClick={goToToday}
+                                >
+                                    <span className="text-xs">Today</span>
+                                </Button>
                                 <Button
                                     variant={"outline"}
                                     className={"w-6 h-6 hover:cursor-pointer"}
@@ -454,6 +280,12 @@ export default function CalendarPage() {
                                 >
                                     <ChevronLeft className="h-5 w-5" />
                                 </Button>
+                                <div className="flex items-center gap-1">
+                                    <Calendar className="h-5" />
+                                    <h2 className="flex gap-2 justify-center items-center text-md md:text-lg font-semibold">
+                                        {formatMonth(currentDate)}
+                                    </h2>
+                                </div>
                                 <Button
                                     variant={"outline"}
                                     className={"w-6 h-6 hover:cursor-pointer"}
@@ -463,16 +295,171 @@ export default function CalendarPage() {
                                 </Button>
                             </div>
                         </div>
-                        <Button
-                            className={
-                                "w-24 h-8 flex items-center gap-2 hover:cursor-pointer"
-                            }
-                            variant={"outline"}
-                            onClick={goToToday}
-                        >
-                            <Calendar1 className="h-6" />
-                            <span className="text-md">Today</span>
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <Sheet>
+                                <SheetTrigger asChild>
+                                    <Button variant="outline" className="h-8">
+                                        <Calendar1 className="h-6" />
+                                        View D-Days
+                                    </Button>
+                                </SheetTrigger>
+                                <SheetContent side="top">
+                                    <SheetHeader>
+                                        <SheetTitle>D-Days</SheetTitle>
+                                        <SheetDescription>
+                                            Days until or since, and the date of
+                                            the event.
+                                        </SheetDescription>
+                                    </SheetHeader>
+                                    <div className="grid gap-4">
+                                        <div className="px-6">
+                                            <Table>
+                                                <TableHeader>
+                                                    <TableRow>
+                                                        <TableHead className="w-4/5">
+                                                            Event
+                                                        </TableHead>
+                                                        <TableHead>
+                                                            Date
+                                                        </TableHead>
+                                                        <TableHead className="text-right">
+                                                            Count
+                                                        </TableHead>
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {ddays.map((day, i) => (
+                                                        <TableRow key={i}>
+                                                            <TableCell className="truncate max-w-3/4">
+                                                                {day.title}
+                                                            </TableCell>
+                                                            <TableCell className="text-muted-foreground">
+                                                                {day.date.toLocaleDateString()}
+                                                            </TableCell>
+                                                            <TableCell className="text-right">
+                                                                {day.days}
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+                                        </div>
+                                    </div>
+                                    <SheetFooter>
+                                        <SheetClose asChild>
+                                            <Button
+                                                variant={"outline"}
+                                                type="submit"
+                                            >
+                                                Close
+                                            </Button>
+                                        </SheetClose>
+                                    </SheetFooter>
+                                </SheetContent>
+                            </Sheet>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button
+                                        variant={"outline"}
+                                        className={
+                                            "w-24 h-8 flex items-center gap-2 hover:cursor-pointer"
+                                        }
+                                    >
+                                        <Plus className="h-6" />
+                                        <span>Create</span>
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>
+                                            Add D-Day
+                                        </AlertDialogTitle>
+                                        <AlertDialogDescription asChild>
+                                            <div className="flex flex-col gap-2">
+                                                <div className="flex items-center gap-2">
+                                                    <label
+                                                        htmlFor="title"
+                                                        className="text-sm font-medium"
+                                                    >
+                                                        Title:
+                                                    </label>
+                                                    <Input
+                                                        type="text"
+                                                        id="title"
+                                                        className="border border-gray-300 rounded-md py-1 px-2 text-sm w-full"
+                                                    />
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <Popover>
+                                                        <PopoverTrigger asChild>
+                                                            <Button
+                                                                variant={
+                                                                    "outline"
+                                                                }
+                                                                className={cn(
+                                                                    "w-[240px] justify-start text-left font-normal",
+                                                                    !date &&
+                                                                        "text-muted-foreground"
+                                                                )}
+                                                            >
+                                                                <CalendarIcon />
+                                                                {date ? (
+                                                                    format(
+                                                                        date,
+                                                                        "PPP"
+                                                                    )
+                                                                ) : (
+                                                                    <span>
+                                                                        Pick a
+                                                                        date
+                                                                    </span>
+                                                                )}
+                                                            </Button>
+                                                        </PopoverTrigger>
+                                                        <PopoverContent
+                                                            className="w-auto p-0"
+                                                            align="start"
+                                                        >
+                                                            <Calendar
+                                                                mode="single"
+                                                                selected={date}
+                                                                onSelect={
+                                                                    setDate
+                                                                }
+                                                                initialFocus
+                                                            />
+                                                        </PopoverContent>
+                                                    </Popover>
+                                                    <div className="flex items-center border border-gray-300 rounded-md text-sm w-full">
+                                                        <Input
+                                                            type="date"
+                                                            id="date"
+                                                            className="border-none"
+                                                        />
+                                                        <Label className="text-sm font-medium ml-2">
+                                                            Annual:
+                                                        </Label>
+
+                                                        <Checkbox
+                                                            id="isAnnual"
+                                                            className="ml-1 mr-3"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>
+                                            Cancel
+                                        </AlertDialogCancel>
+                                        <AlertDialogAction>
+                                            Add
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        </div>
                     </div>
 
                     <div className="flex-1 overflow-auto p-8 flex flex-col h-full">
@@ -495,9 +482,7 @@ export default function CalendarPage() {
                             </div>
 
                             <div
-                                className={
-                                    "grid grid-cols-7 flex-grow grid-rows-[repeat(${requiredRows},1fr)]"
-                                }
+                                className={`grid grid-cols-7 flex-grow grid-rows-[repeat(${requiredRows},1fr)]`}
                             >
                                 {monthData.map((day, i) => {
                                     const weekNumber = Math.floor(i / 7) + 1;
@@ -539,28 +524,21 @@ export default function CalendarPage() {
                                                         {getDDaysForDay(
                                                             day
                                                         ).map((dday, idx) => (
-                                                            <Drawer>
+                                                            <Drawer
+                                                                key={`dday-${day}-${idx}`}
+                                                            >
                                                                 <DrawerTrigger
-                                                                    key={idx}
-                                                                    className={
-                                                                        "flex sm:hidden h-5 w-5 rounded-full text-xs truncate border hover:cursor-pointer "
-                                                                    }
-                                                                    title={
-                                                                        "${dday.title} (${dday.days})"
-                                                                    }
+                                                                    className="w-full"
+                                                                    title={`${dday.title} (${dday.days})`}
                                                                 >
-                                                                    &nbsp;
-                                                                </DrawerTrigger>
-                                                                <DrawerTrigger
-                                                                    key={idx}
-                                                                    className={
-                                                                        "hidden sm:flex w-full px-1 rounded text-xs truncate border hover:cursor-pointer "
-                                                                    }
-                                                                    title={
-                                                                        "${dday.title} (${dday.days})"
-                                                                    }
-                                                                >
-                                                                    {dday.title}
+                                                                    <div className="flex sm:hidden h-5 w-5 rounded-full text-xs truncate border hover:cursor-pointer">
+                                                                        &nbsp;
+                                                                    </div>
+                                                                    <div className="hidden sm:flex w-full px-1 rounded text-xs truncate border hover:cursor-pointer">
+                                                                        {
+                                                                            dday.title
+                                                                        }
+                                                                    </div>
                                                                 </DrawerTrigger>
                                                                 <DrawerContent>
                                                                     <DrawerHeader>
@@ -584,7 +562,9 @@ export default function CalendarPage() {
                                                                         </DrawerTitle>
                                                                     </DrawerHeader>
                                                                     <DrawerFooter>
-                                                                        <DrawerClose>
+                                                                        <DrawerClose
+                                                                            asChild
+                                                                        >
                                                                             <Button
                                                                                 className="w-full hover:cursor-pointer"
                                                                                 variant="outline"
