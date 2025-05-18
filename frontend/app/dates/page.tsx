@@ -61,7 +61,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@radix-ui/react-dropdown-menu";
 import { format } from "date-fns";
 
+import { useAuth } from "@/components/auth-provider";
+
 export default function Dates() {
+    // check if userr is authenticated
+    // if not, redirect to the login page
+    const { authState } = useAuth();
+    if (!authState.isAuthenticated) {
+        if (typeof window !== "undefined") {
+            window.location.href = "/";
+            return null;
+        }
+    }
+
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [date, setDate] = useState<Date>();
@@ -260,15 +272,16 @@ export default function Dates() {
     ];
 
     return (
-        <div className="min-h-screen grid grid-rows-[auto_1fr] items-center justify-center ">
-            <div className="h-full border-b border-dashed  flex justify-center">
-                <div className="flex flex-col h-full container border-x border-dashed ">
-                    <div className="flex items-center justify-between px-8 pt-8">
+        <div className="min-h-screen items-center justify-center">
+            <div className="h-screen border-b border-dashed flex justify-center">
+                <div className="flex flex-col h-full container border-x border-dashed pt-12">
+                    {/* auth */}
+                    <div className="flex items-center justify-between px-4 md:px-8 pt-8">
                         <div className="flex items-center gap-2">
                             <div className="flex items-center gap-2">
                                 <Button
                                     className="w-14 h-6 flex items-center gap-2 hover:cursor-pointer"
-                                    variant={"ghost"}
+                                    variant={"outline"}
                                     onClick={goToToday}
                                 >
                                     <span className="text-xs">Today</span>
@@ -281,7 +294,10 @@ export default function Dates() {
                                     <ChevronLeft className="h-5 w-5" />
                                 </Button>
                                 <div className="flex items-center gap-1">
-                                    <Calendar className="h-5" />
+                                    <CalendarIcon
+                                        className="h-5"
+                                        strokeWidth={1.5}
+                                    />
                                     <h2 className="flex gap-2 justify-center items-center text-md md:text-lg font-semibold">
                                         {formatMonth(currentDate)}
                                     </h2>
@@ -345,11 +361,21 @@ export default function Dates() {
                                             </Table>
                                         </div>
                                     </div>
-                                    <SheetFooter>
+                                    <SheetFooter className="max-w-screen flex flex-row px-5 justify-center">
+                                        <Button
+                                            variant="outline"
+                                            className="w-1/2 hover:cursor-pointer"
+                                            onClick={() => {
+                                                // Handle edit action
+                                            }}
+                                        >
+                                            Edit
+                                        </Button>
                                         <SheetClose asChild>
                                             <Button
                                                 variant={"outline"}
                                                 type="submit"
+                                                className="w-1/2 hover:cursor-pointer"
                                             >
                                                 Close
                                             </Button>
@@ -376,74 +402,85 @@ export default function Dates() {
                                         </AlertDialogTitle>
                                         <AlertDialogDescription asChild>
                                             <div className="flex flex-col gap-2">
-                                                <div className="flex items-center gap-2">
-                                                    <label
-                                                        htmlFor="title"
-                                                        className="text-sm font-medium"
-                                                    >
+                                                <div className="grid grid-cols-[1fr_5fr] gap-2 items-center">
+                                                    <Label className="text-sm font-medium">
                                                         Title:
-                                                    </label>
+                                                    </Label>
                                                     <Input
                                                         type="text"
                                                         id="title"
-                                                        className="border border-gray-300 rounded-md py-1 px-2 text-sm w-full"
+                                                        className="border border-gray-300 rounded-md py-1 px- text-sm w-full"
+                                                        placeholder="Title"
                                                     />
                                                 </div>
-                                                <div className="flex items-center gap-2">
-                                                    <Popover>
-                                                        <PopoverTrigger asChild>
-                                                            <Button
-                                                                variant={
-                                                                    "outline"
-                                                                }
-                                                                className={cn(
-                                                                    "w-[240px] justify-start text-left font-normal",
-                                                                    !date &&
-                                                                        "text-muted-foreground"
-                                                                )}
+                                                <div className="grid grid-cols-[1fr_5fr] gap-2 items-center">
+                                                    <Label className="text-sm font-medium">
+                                                        Description:
+                                                    </Label>
+                                                    <Input
+                                                        type="text"
+                                                        id="description"
+                                                        className="border py-1 px-2 text-sm w-full"
+                                                        placeholder="Optional"
+                                                    />
+                                                </div>
+                                                <div className="grid grid-cols-[1fr_5fr] gap-2 items-center">
+                                                    <Label className="text-sm font-medium">
+                                                        Date:
+                                                    </Label>
+                                                    <div className="flex">
+                                                        <Popover>
+                                                            <PopoverTrigger
+                                                                asChild
                                                             >
-                                                                <CalendarIcon />
-                                                                {date ? (
-                                                                    format(
-                                                                        date,
-                                                                        "PPP"
-                                                                    )
-                                                                ) : (
-                                                                    <span>
-                                                                        Pick a
+                                                                <Button
+                                                                    variant={
+                                                                        "outline"
+                                                                    }
+                                                                    className={cn(
+                                                                        "justify-start text-left font-normal w-3/4",
+                                                                        !date &&
+                                                                            "text-muted-foreground"
+                                                                    )}
+                                                                >
+                                                                    <CalendarIcon />
+                                                                    {date ? (
+                                                                        format(
+                                                                            date,
+                                                                            "PPP"
+                                                                        )
+                                                                    ) : (
+                                                                        <span>
+                                                                            Pick
+                                                                            a
+                                                                            date
+                                                                        </span>
+                                                                    )}
+                                                                </Button>
+                                                            </PopoverTrigger>
+                                                            <PopoverContent
+                                                                className="w-auto p-0"
+                                                                align="start"
+                                                            >
+                                                                <Calendar
+                                                                    mode="single"
+                                                                    selected={
                                                                         date
-                                                                    </span>
-                                                                )}
-                                                            </Button>
-                                                        </PopoverTrigger>
-                                                        <PopoverContent
-                                                            className="w-auto p-0"
-                                                            align="start"
-                                                        >
-                                                            <Calendar
-                                                                mode="single"
-                                                                selected={date}
-                                                                onSelect={
-                                                                    setDate
-                                                                }
-                                                                initialFocus
-                                                            />
-                                                        </PopoverContent>
-                                                    </Popover>
-                                                    <div className="flex items-center border border-gray-300 rounded-md text-sm w-full">
-                                                        <Input
-                                                            type="date"
-                                                            id="date"
-                                                            className="border-none"
-                                                        />
-                                                        <Label className="text-sm font-medium ml-2">
-                                                            Annual:
-                                                        </Label>
+                                                                    }
+                                                                    onSelect={
+                                                                        setDate
+                                                                    }
+                                                                    initialFocus
+                                                                />
+                                                            </PopoverContent>
+                                                            <div className="flex items-center text-sm justify-end px-2 w-1/4 gap-2">
+                                                                <Label className="text-sm">
+                                                                    Annual:
+                                                                </Label>
 
-                                                        <Checkbox
-                                                            id="isAnnual"
-                                                            className="ml-1 mr-3"
-                                                        />
+                                                                <Checkbox id="isAnnual" />
+                                                            </div>
+                                                        </Popover>
                                                     </div>
                                                 </div>
                                             </div>
@@ -462,10 +499,10 @@ export default function Dates() {
                         </div>
                     </div>
 
-                    <div className="flex-1 overflow-auto p-8 flex flex-col h-full">
+                    <div className="flex-1 overflow-auto p-4 md:p-8 flex flex-col h-full">
                         <div
                             className={
-                                "rounded-xl sm:p-4 flex flex-col flex-grow"
+                                "rounded-xl flex flex-col flex-grow pb-8"
                             }
                         >
                             <div className={"grid grid-cols-7 p-2 border-b "}>
@@ -487,7 +524,9 @@ export default function Dates() {
                                 {monthData.map((day, i) => {
                                     const weekNumber = Math.floor(i / 7) + 1;
                                     const isHighlightedWeek =
-                                        weekNumber === 2 || weekNumber === 4;
+                                        weekNumber === 2 ||
+                                        weekNumber === 4 ||
+                                        weekNumber === 6;
 
                                     return (
                                         <div
@@ -516,11 +555,10 @@ export default function Dates() {
                                             }
                                         >
                                             {day && (
-                                                <div className="flex flex-col h-full">
+                                                <div className="flex flex-col h-16 sm:min-h-24">
                                                     <span className="px-1 font-light">
                                                         {day}
-                                                    </span>
-                                                    <div className="space-y-1 px-1 flex-grow overflow-y-auto">
+
                                                         {getDDaysForDay(
                                                             day
                                                         ).map((dday, idx) => (
@@ -531,13 +569,15 @@ export default function Dates() {
                                                                     className="w-full"
                                                                     title={`${dday.title} (${dday.days})`}
                                                                 >
-                                                                    <div className="flex sm:hidden h-5 w-5 rounded-full text-xs truncate border hover:cursor-pointer">
+                                                                    <div className="flex sm:hidden h-5 w-5 rounded-full text-xs border hover:cursor-pointer">
                                                                         &nbsp;
                                                                     </div>
-                                                                    <div className="hidden sm:flex w-full px-1 rounded text-xs truncate border hover:cursor-pointer">
-                                                                        {
-                                                                            dday.title
-                                                                        }
+                                                                    <div className="hidden sm:flex w-full px-1 rounded text-xs border hover:cursor-pointer">
+                                                                        <p className="max-w-[90%] truncate">
+                                                                            {
+                                                                                dday.title
+                                                                            }
+                                                                        </p>
                                                                     </div>
                                                                 </DrawerTrigger>
                                                                 <DrawerContent>
@@ -576,7 +616,7 @@ export default function Dates() {
                                                                 </DrawerContent>
                                                             </Drawer>
                                                         ))}
-                                                    </div>
+                                                    </span>
                                                 </div>
                                             )}
                                         </div>
