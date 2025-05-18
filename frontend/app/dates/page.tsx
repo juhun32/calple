@@ -10,7 +10,7 @@ import {
     Calendar as CalendarIcon,
     Calendar1,
 } from "lucide-react";
-import { Calendar } from "@/components/ui/calendar";
+// import { Calendar } from "@/components/ui/calendar";
 
 import {
     Drawer,
@@ -462,7 +462,8 @@ export default function Dates() {
                                                                 className="w-auto p-0"
                                                                 align="start"
                                                             >
-                                                                <Calendar
+                                                                {/* calendar ui is broken */}
+                                                                {/* <Calendar
                                                                     mode="single"
                                                                     selected={
                                                                         date
@@ -471,7 +472,7 @@ export default function Dates() {
                                                                         setDate
                                                                     }
                                                                     initialFocus
-                                                                />
+                                                                /> */}
                                                             </PopoverContent>
                                                             <div className="flex items-center text-sm justify-end px-2 w-1/4 gap-2">
                                                                 <Label className="text-sm">
