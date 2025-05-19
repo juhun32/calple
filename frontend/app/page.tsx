@@ -17,12 +17,25 @@ export default function Home() {
     useEffect(() => {
         const token = searchParams.get("auth_token");
         if (token) {
-            // Exchange token for a session
-            fetch("/api/auth/exchange?token=" + token).then(() =>
-                router.push("/")
-            );
+            fetch(
+                `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/exchange-token?token=${token}`,
+                {
+                    credentials: "include",
+                }
+            )
+                .then((res) => res.json())
+                .then((data) => {
+                    if (data.success) {
+                        router.replace("/");
+                    } else {
+                        console.error("Token exchange failed:", data.error);
+                    }
+                })
+                .catch((err) => {
+                    console.error("Error exchanging token:", err);
+                });
         }
-    }, [searchParams]);
+    }, [searchParams, router]);
 
     const { authState } = useAuth();
 
