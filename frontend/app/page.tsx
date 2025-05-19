@@ -22,7 +22,7 @@ export default function Home() {
                     <p>Everything a couple needs to make their life easier</p>
                 </div>
                 {!authState.isAuthenticated ? (
-                    <div className="h-full">
+                    <div className="h-full w-full flex flex-col gap-2 items-center border-x border-dashed pb-8">
                         <div className="flex gap-6 items-center justify-center border px-6 py-4 rounded-md">
                             <div>
                                 <h1 className="flex gap-1 text-xl font-bold">
