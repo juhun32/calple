@@ -11,12 +11,20 @@ os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # FOR DEVELOPMENT ONLY
 
 load_dotenv()
 
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+
+client_secret_content = os.environ.get('CLIENT_SECRET_JSON')
+if client_secret_content:
+    with open('client_secret.json', 'w') as f:
+        f.write(client_secret_content)
+
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:3000"], supports_credentials=True)
+# for development only
+# CORS(app, origins=["http://localhost:3000"], supports_credentials=True)
+CORS(app, origins=[FRONTEND_URL], supports_credentials=True)
+
 app.secret_key = os.getenv("SECRET_KEY")
 app.config["SESSION_COOKIE_NAME"] = "calple_session"
-
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
 OAUTH_CLIENT_SECRET = "client_secret.json"
 SCOPES = [
@@ -114,5 +122,9 @@ def logout():
     return redirect(f"{FRONTEND_URL}")
 
 
+# if __name__ == "__main__":
+    # app.run(host="127.0.0.1", port=5000, debug=True)
+
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)

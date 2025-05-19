@@ -8,6 +8,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/components/auth-provider";
 import { NavBar } from "@/components/navbar";
 
+const BACKEND_URL = process.env.BACKEND_URL;
+
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({
     variable: "--font-geist-mono",
@@ -25,7 +27,7 @@ async function getAuthStatus() {
     if (!sessionCookie) return { isAuthenticated: false, user: null };
 
     try {
-        const response = await fetch("http://localhost:5000/api/auth/status", {
+        const response = await fetch(`${BACKEND_URL}/api/auth/status`, {
             headers: { Cookie: `calple_session=${sessionCookie.value}` },
             cache: "no-store",
         });
