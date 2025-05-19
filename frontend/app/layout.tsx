@@ -8,7 +8,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/components/auth-provider";
 import { NavBar } from "@/components/navbar";
 
-const BACKEND_URL = process.env.BACKEND_URL;
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({
