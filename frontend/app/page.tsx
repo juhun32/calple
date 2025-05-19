@@ -1,4 +1,6 @@
 "use client";
+import { useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { login } from "@/lib/utils";
 
@@ -9,6 +11,19 @@ import { Separator } from "@/components/ui/separator";
 import { LayoutDashboard } from "lucide-react";
 
 export default function Home() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    useEffect(() => {
+        const token = searchParams.get("auth_token");
+        if (token) {
+            // Exchange token for a session
+            fetch("/api/auth/exchange?token=" + token).then(() =>
+                router.push("/")
+            );
+        }
+    }, [searchParams]);
+
     const { authState } = useAuth();
 
     return (

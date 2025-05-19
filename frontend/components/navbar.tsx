@@ -1,15 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-    LogOut,
-    KeyRound,
-    Paintbrush,
-    Sun,
-    Moon,
-    Heart,
-    Menu,
-} from "lucide-react";
+import { LogOut, Paintbrush, Sun, Moon, Heart, Menu } from "lucide-react";
 import { login, logout } from "@/lib/utils";
 import {
     DropdownMenu,
@@ -17,12 +9,8 @@ import {
     DropdownMenuGroup,
     DropdownMenuItem,
     DropdownMenuLabel,
-    DropdownMenuPortal,
     DropdownMenuSeparator,
-    DropdownMenuShortcut,
     DropdownMenuSub,
-    DropdownMenuSubContent,
-    DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "next-themes";

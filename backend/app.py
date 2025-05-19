@@ -5,6 +5,9 @@ from dotenv import load_dotenv
 from flask import Flask, redirect, url_for, session, request, jsonify
 from flask_cors import CORS
 
+import secrets
+import time
+
 import os
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # FOR DEVELOPMENT ONLY
 
@@ -18,7 +21,23 @@ if client_secret_content:
     with open('client_secret.json', 'w') as f:
         f.write(client_secret_content)
 
+
+class ReverseProxied:
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, environ, start_response):
+        environ['wsgi.url_scheme'] = 'https'
+        return self.app(environ, start_response)
+
+
 app = Flask(__name__)
+app.wsgi_app = ReverseProxied(app.wsgi_app)
+app.config["SESSION_COOKIE_SAMESITE"] = "None"
+app.config["SESSION_COOKIE_SECURE"] = True
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_DOMAIN"] = None
+
 # for development only
 # CORS(app, origins=["http://localhost:3000"], supports_credentials=True)
 CORS(app, origins=[FRONTEND_URL], supports_credentials=True)
@@ -43,7 +62,14 @@ def login():
     flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
         OAUTH_CLIENT_SECRET, scopes=SCOPES
     )
-    flow.redirect_uri = url_for("oauth2callback", _external=True)
+
+    if 'run.app' in request.host_url:
+        # When running on Cloud Run
+        flow.redirect_uri = f"https://{request.host}/google/oauth/callback"
+    else:
+        # When running locally
+        flow.redirect_uri = url_for("oauth2callback", _external=True)
+
     auth_url, state = flow.authorization_url(
         access_type="offline",
         include_granted_scopes="true",
@@ -63,7 +89,14 @@ def oauth2callback():
     flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
         OAUTH_CLIENT_SECRET, scopes=SCOPES, state=state
     )
-    flow.redirect_uri = url_for("oauth2callback", _external=True)
+
+    if 'run.app' in request.host_url:
+        # When running on Cloud Run
+        flow.redirect_uri = f"https://{request.host}/google/oauth/callback"
+    else:
+        # When running locally
+        flow.redirect_uri = url_for("oauth2callback", _external=True)
+
     # Exchange code for credentials
     authorization_response = request.url
     flow.fetch_token(
@@ -93,8 +126,47 @@ def oauth2callback():
 
     # Keep user ID in session for subsequent requests
     session["user_id"] = info["id"]
+
+    temp_token = secrets.token_hex(16)  # 32 character random hex string
+    expires = int(time.time()) + 300    # 5 minutes from now
+
+    # Store token in Firebase
+    token_ref = db.collection("auth_tokens").document(temp_token)
+    token_ref.set({
+        "user_id": info["id"],
+        "expires": expires
+    })
+
     # return redirect(url_for("auth_status"))
-    return redirect(f"{FRONTEND_URL}")
+    return redirect(f"{FRONTEND_URL}?auth_token={temp_token}")
+
+
+@app.route("/api/auth/exchange-token")
+def exchange_token():
+    token = request.args.get("token")
+    if not token:
+        return jsonify({"success": False, "error": "Missing token"}), 400
+
+    # Get token from Firebase
+    token_doc = db.collection("auth_tokens").document(token).get()
+    if not token_doc.exists:
+        return jsonify({"success": False, "error": "Invalid token"}), 401
+
+    token_data = token_doc.to_dict()
+
+    # Check if token is expired
+    if token_data["expires"] < int(time.time()):
+        # Clean up expired token
+        db.collection("auth_tokens").document(token).delete()
+        return jsonify({"success": False, "error": "Token expired"}), 401
+
+    # Set session
+    session["user_id"] = token_data["user_id"]
+
+    # Clean up used token
+    db.collection("auth_tokens").document(token).delete()
+
+    return jsonify({"success": True})
 
 
 @app.route("/api/auth/status")
