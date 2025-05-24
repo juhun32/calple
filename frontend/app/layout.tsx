@@ -6,7 +6,9 @@ import { cookies } from "next/headers";
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/components/auth-provider";
+
 import { NavBar } from "@/components/navbar";
+import { TokenHandler } from "@/components/token-handler";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -41,12 +43,10 @@ async function getAuthStatus() {
         });
 
         if (!response.ok) {
-            console.log("Auth status error:", response.status);
             return { isAuthenticated: false, user: null };
         }
 
         const data = await response.json();
-        console.log("Auth status response:", data);
         return {
             isAuthenticated: data.authenticated,
             user: data.user,
@@ -61,7 +61,7 @@ export default async function RootLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const authState = await getAuthStatus();
+    const initialAuthState = await getAuthStatus();
 
     return (
         <html lang="en" suppressHydrationWarning>
@@ -71,7 +71,8 @@ export default async function RootLayout({
                     defaultTheme="system"
                     enableSystem
                 >
-                    <AuthProvider initialState={authState}>
+                    <AuthProvider initialState={initialAuthState}>
+                        <TokenHandler />
                         <NavBar />
                         {children}
                         <div className="fixed bottom-0 left-0 w-full flex justify-center z-50 border-t border-dashed px-8">

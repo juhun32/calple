@@ -4,7 +4,7 @@ from firebase import FirebaseInit
 from dotenv import load_dotenv
 from flask import Flask, redirect, url_for, session, request, jsonify
 from flask_cors import CORS
-
+import datetime
 import os
 # only for local development
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
@@ -33,7 +33,7 @@ class ReverseProxied:
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
 
-ENV = os.getenv("ENV", "development")
+ENV = os.getenv("ENV", "production")
 
 if ENV != "development":
     app.wsgi_app = ReverseProxied(app.wsgi_app)
@@ -46,7 +46,7 @@ if ENV == "development":
 else:
     app.config["SESSION_COOKIE_SAMESITE"] = "None"
     app.config["SESSION_COOKIE_SECURE"] = True
-    app.config["SESSION_COOKIE_DOMAIN"] = "calple.date"
+    app.config["SESSION_COOKIE_DOMAIN"] = None
     FRONTEND_URL = os.getenv("FRONTEND_URL", "https://calple.date")
 
 app.config["SESSION_COOKIE_HTTPONLY"] = True
@@ -78,19 +78,24 @@ def login():
     if ENV == "development":
         flow.redirect_uri = url_for("oauth2callback", _external=True)
     else:
-        flow.redirect_uri = f"https://{request.host}/google/oauth/callback"
+        flow.redirect_uri = "https://python-775764204316.us-east4.run.app/google/oauth/callback"
 
     auth_url, state = flow.authorization_url(
         access_type="offline",
         include_granted_scopes="true",
     )
     session["state"] = state
+    print(f"Login - Set state: {state}")
+    print(f"Login - Session contains: {session}")
     return redirect(auth_url)
 
 
 @app.route("/google/oauth/callback")
 def oauth2callback():
+    print(f"Callback - Session contains: {session}")
+
     state = session.pop("state", None)
+    print(f"Callback - Got state: {state}")
     if state is None:
         return "Missing OAuth state", 400
 
@@ -101,7 +106,7 @@ def oauth2callback():
     if ENV == "development":
         flow.redirect_uri = url_for("oauth2callback", _external=True)
     else:
-        flow.redirect_uri = f"https://{request.host}/google/oauth/callback"
+        flow.redirect_uri = "https://python-775764204316.us-east4.run.app/google/oauth/callback"
 
     # exchange credentials
     authorization_response = request.url
@@ -134,12 +139,32 @@ def oauth2callback():
     # set session
     session["user_id"] = info["id"]
 
-    return redirect(FRONTEND_URL)
+    # generate a random token for the frontend to useq
+    import secrets
+    token = secrets.token_hex(24)
+    db.collection("auth_tokens").document(token).set({
+        "user_id": info["id"],
+        "created_at": db.SERVER_TIMESTAMP,
+        "expires_at": datetime.datetime.now() + datetime.timedelta(days=7)
+    })
+
+    return redirect(f"{FRONTEND_URL}?token={token}")
 
 
 @app.route("/api/auth/status")
 def auth_status():
+    auth_header = request.headers.get("Authorization")
     uid = session.get("user_id")
+
+    if auth_header and auth_header.startswith('Bearer '):
+        token = auth_header.split(' ')[1]
+        token_doc = db.collection("auth_tokens").document(token).get()
+
+        if token_doc.exists:
+            token_data = token_doc.to_dict()
+            if token_data.get('expires_at') > datetime.datetime.now():
+                uid = token_data.get('user_id')
+
     if not uid:
         return jsonify({"authenticated": False}), 200
 
@@ -157,9 +182,36 @@ def auth_status():
     })
 
 
+@app.route("/api/auth/refresh", methods=["POST"])
+def refresh_token():
+    auth_header = request.headers.get('Authorization')
+
+    if not auth_header or not auth_header.startswith('Bearer '):
+        return jsonify({"error": "No valid token provided"}), 401
+
+    token = auth_header.split(' ')[1]
+    token_doc = db.collection("auth_tokens").document(token).get()
+
+    if not token_doc.exists:
+        return jsonify({"error": "Invalid token"}), 401
+
+    # token_data = token_doc.to_dict()
+    db.collection("auth_tokens").document(token).update({
+        "expires_at": datetime.datetime.now() + datetime.timedelta(days=7)
+    })
+
+    return jsonify({"success": True})
+
+
 @app.route("/google/oauth/logout")
 def logout():
     session.clear()
+
+    auth_header = request.headers.get('Authorization')
+    if auth_header and auth_header.startswith('Bearer '):
+        token = auth_header.split(' ')[1]
+        db.collection("auth_tokens").document(token).delete()
+
     return redirect(f"{FRONTEND_URL}")
 
 
