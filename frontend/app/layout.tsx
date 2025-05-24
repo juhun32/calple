@@ -6,7 +6,7 @@ import { cookies } from "next/headers";
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/components/auth-provider";
-import { NavBar } from "@/components/Navbar";
+import { NavBar } from "@/components/navbar";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
