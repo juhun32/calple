@@ -1,99 +1,30 @@
 "use client";
-
-import { createContext, useContext, useEffect, useState } from "react";
-import { getAuthStatusWithToken } from "@/lib/auth";
-
-type User = {
-    [key: string]: any;
-};
-
-type AuthState = {
-    isAuthenticated: boolean;
-    user: User | null;
-};
+import { createContext, useContext, useState } from "react";
 
 type AuthContextType = {
-    authState: AuthState;
-    setAuthState: React.Dispatch<React.SetStateAction<AuthState>>;
-    logout: () => Promise<void>;
+    authState: { isAuthenticated: boolean; user: any };
+    setAuthState: React.Dispatch<any>;
 };
 
-export const AuthContext = createContext<AuthContextType>({
-    authState: { isAuthenticated: false, user: null },
-    setAuthState: () => {},
-    logout: async () => {},
-});
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({
     children,
     initialState,
 }: {
     children: React.ReactNode;
-    initialState: AuthState;
+    initialState: any;
 }) {
-    const [authState, setAuthState] = useState<AuthState>(initialState);
-
-    useEffect(() => {
-        const checkAuthWithToken = async () => {
-            const status = await getAuthStatusWithToken();
-            setAuthState(status);
-        };
-
-        checkAuthWithToken();
-    }, []);
-
-    // check refresh token every hour
-    useEffect(() => {
-        const interval = setInterval(async () => {
-            const token = localStorage.getItem("auth_token");
-
-            if (token && authState.isAuthenticated) {
-                try {
-                    await fetch(
-                        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/refresh`,
-                        {
-                            method: "POST",
-                            headers: {
-                                Authorization: `Bearer ${token}`,
-                            },
-                        }
-                    );
-                } catch (error) {
-                    console.error("Token refresh failed:", error);
-                }
-            }
-        }, 60 * 60 * 1000);
-
-        return () => clearInterval(interval);
-    }, [authState.isAuthenticated]);
-
-    const logout = async () => {
-        const token = localStorage.getItem("auth_token");
-        localStorage.removeItem("auth_token");
-
-        try {
-            await fetch(
-                `${process.env.NEXT_PUBLIC_BACKEND_URL}/google/oauth/logout`,
-                {
-                    headers: token
-                        ? {
-                              Authorization: `Bearer ${token}`,
-                          }
-                        : {},
-                }
-            );
-        } catch (error) {
-            console.error("Error during logout:", error);
-        }
-
-        setAuthState({ isAuthenticated: false, user: null });
-    };
-
+    const [authState, setAuthState] = useState(initialState);
     return (
-        <AuthContext.Provider value={{ authState, setAuthState, logout }}>
+        <AuthContext.Provider value={{ authState, setAuthState }}>
             {children}
         </AuthContext.Provider>
     );
 }
 
-export const useAuth = () => useContext(AuthContext);
+export function useAuth() {
+    const ctx = useContext(AuthContext);
+    if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+    return ctx;
+}

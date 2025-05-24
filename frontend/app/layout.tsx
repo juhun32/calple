@@ -41,10 +41,12 @@ async function getAuthStatus() {
         });
 
         if (!response.ok) {
+            console.log("Auth status error:", response.status);
             return { isAuthenticated: false, user: null };
         }
 
         const data = await response.json();
+        console.log("Auth status response:", data);
         return {
             isAuthenticated: data.authenticated,
             user: data.user,
@@ -59,7 +61,7 @@ export default async function RootLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const initialAuthState = await getAuthStatus();
+    const authState = await getAuthStatus();
 
     return (
         <html lang="en" suppressHydrationWarning>
@@ -69,7 +71,7 @@ export default async function RootLayout({
                     defaultTheme="system"
                     enableSystem
                 >
-                    <AuthProvider initialState={initialAuthState}>
+                    <AuthProvider initialState={authState}>
                         <NavBar />
                         {children}
                         <div className="fixed bottom-0 left-0 w-full flex justify-center z-50 border-t border-dashed px-8">
