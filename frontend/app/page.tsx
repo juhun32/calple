@@ -89,7 +89,7 @@ export default function Home() {
                                     <p className="text-rose-500">Calple</p>
                                 </h1>
                                 <p className="text-xs text-muted-foreground">
-                                    {authState.user.email}
+                                    {authState.user?.email}
                                 </p>
                             </div>
 

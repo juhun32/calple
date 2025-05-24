@@ -70,7 +70,6 @@ export default async function RootLayout({
                     enableSystem
                 >
                     <AuthProvider initialState={initialAuthState}>
-                        <TokenHandler />
                         <NavBar />
                         {children}
                         <div className="fixed bottom-0 left-0 w-full flex justify-center z-50 border-t border-dashed px-8">
