@@ -44,16 +44,24 @@ if ENV == "development":
     app.config["SESSION_COOKIE_DOMAIN"] = None
     FRONTEND_URL = "http://localhost:3000"
 else:
-    app.config["SESSION_COOKIE_SAMESITE"] = "None"
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
     app.config["SESSION_COOKIE_SECURE"] = True
-    app.config["SESSION_COOKIE_DOMAIN"] = "calple.date"
+    app.config["SESSION_COOKIE_DOMAIN"] = ".calple.date"
     FRONTEND_URL = os.getenv("FRONTEND_URL", "https://calple.date")
 
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_PATH"] = "/"
 app.config["SESSION_COOKIE_NAME"] = "calple_session"
 
-CORS(app, origins=[FRONTEND_URL], supports_credentials=True,
+if ENV == "development":
+    CORS_ORIGINS = ["http://localhost:3000"]
+else:
+    CORS_ORIGINS = [
+        "https://calple.date",
+        "https://www.calple.date",
+    ]
+
+CORS(app, origins=CORS_ORIGINS, supports_credentials=True,
      allow_headers=["Content-Type", "Authorization"],
      expose_headers=["Set-Cookie"])
 
@@ -78,7 +86,7 @@ def login():
     if ENV == "development":
         flow.redirect_uri = url_for("oauth2callback", _external=True)
     else:
-        flow.redirect_uri = f"https://{request.host}/google/oauth/callback"
+        flow.redirect_uri = f"https://api.calple.date/google/oauth/callback"
 
     auth_url, state = flow.authorization_url(
         access_type="offline",
@@ -101,7 +109,7 @@ def oauth2callback():
     if ENV == "development":
         flow.redirect_uri = url_for("oauth2callback", _external=True)
     else:
-        flow.redirect_uri = f"https://{request.host}/google/oauth/callback"
+        flow.redirect_uri = f"https://api.calple.date/google/oauth/callback"
 
     # exchange credentials
     authorization_response = request.url
