@@ -8,41 +8,15 @@ import { useAuth } from "@/components/auth-provider";
 
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { LayoutDashboard } from "lucide-react";
+import { BookHeart, Dices, LayoutDashboard } from "lucide-react";
 
 export default function Home() {
-    const router = useRouter();
-    const searchParams = useSearchParams();
-
-    useEffect(() => {
-        const token = searchParams.get("auth_token");
-        if (token) {
-            fetch(
-                `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/exchange-token?token=${token}`,
-                {
-                    credentials: "include",
-                }
-            )
-                .then((res) => res.json())
-                .then((data) => {
-                    if (data.success) {
-                        router.replace("/");
-                    } else {
-                        console.error("Token exchange failed:", data.error);
-                    }
-                })
-                .catch((err) => {
-                    console.error("Error exchanging token:", err);
-                });
-        }
-    }, [searchParams, router]);
-
     const { authState } = useAuth();
 
     return (
         <div className="w-screen h-screen grid grid-rows-[1fr_auto] flex justify-center">
             <div className="w-full h-full flex flex-col justify-center items-center">
-                <div className="container h-full w-screen flex flex-col gap-2 items-center justify-end border-x border-dashed pb-8">
+                <div className="container h-full w-screen flex flex-col gap-2 items-center justify-end pb-8">
                     <h1 className="flex gap-2 text-4xl font-bold">
                         For Your Healthier
                         <p className="text-rose-500">Dating</p> Life
@@ -50,7 +24,7 @@ export default function Home() {
                     <p>Everything a couple needs to make their life easier</p>
                 </div>
                 {!authState.isAuthenticated ? (
-                    <div className="h-full w-full flex flex-col gap-2 items-center border-x border-dashed pb-8">
+                    <div className="h-full w-full flex flex-col gap-2 items-center pb-8">
                         <div className="flex gap-6 items-center justify-center border px-6 py-4 rounded-md">
                             <div>
                                 <h1 className="flex gap-1 text-xl font-bold">
@@ -107,7 +81,7 @@ export default function Home() {
                         </div>
                     </div>
                 ) : (
-                    <div className="h-full w-full flex flex-col gap-2 items-center border-x border-dashed pb-8">
+                    <div className="h-full w-full flex flex-col gap-2 items-center pb-8">
                         <div className="flex w-fit gap-6 items-center justify-center border px-6 py-4 rounded-md">
                             <div>
                                 <h1 className="flex gap-1 text-xl font-bold">
@@ -123,17 +97,38 @@ export default function Home() {
                                 orientation="vertical"
                                 className="py-4"
                             />
-
-                            <Button
-                                variant="outline"
-                                className="rounded-full px-3"
-                                onClick={() => {
-                                    window.location.href = "/dates";
-                                }}
-                            >
-                                <LayoutDashboard />
-                                <span>Dashboard</span>
-                            </Button>
+                            <div className="flex gap-2">
+                                <Button
+                                    variant="outline"
+                                    className="rounded-full px-3"
+                                    onClick={() => {
+                                        window.location.href = "/dates";
+                                    }}
+                                >
+                                    <LayoutDashboard />
+                                    <span>Calendar</span>
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    className="rounded-full px-3"
+                                    onClick={() => {
+                                        window.location.href = "/tracker";
+                                    }}
+                                >
+                                    <BookHeart />
+                                    <span>Tracker</span>
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    className="rounded-full px-3"
+                                    onClick={() => {
+                                        window.location.href = "/roulette";
+                                    }}
+                                >
+                                    <Dices />
+                                    <span>Roulette</span>
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 )}
