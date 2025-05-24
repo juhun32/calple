@@ -37,13 +37,17 @@ app.config["SESSION_COOKIE_SAMESITE"] = "None"
 app.config["SESSION_COOKIE_SECURE"] = True
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_DOMAIN"] = None
+app.config["SESSION_COOKIE_PATH"] = "/"
+app.config["SESSION_COOKIE_NAME"] = "calple_session"
+
+app.secret_key = os.getenv("SECRET_KEY")
 
 # for development only
 # CORS(app, origins=["http://localhost:3000"], supports_credentials=True)
-CORS(app, origins=[FRONTEND_URL], supports_credentials=True)
+CORS(app, origins=[FRONTEND_URL], supports_credentials=True,
+     allow_headers=["Content-Type", "Authorization"],
+     expose_headers=["Set-Cookie"])
 
-app.secret_key = os.getenv("SECRET_KEY")
-app.config["SESSION_COOKIE_NAME"] = "calple_session"
 
 OAUTH_CLIENT_SECRET = "client_secret.json"
 SCOPES = [
