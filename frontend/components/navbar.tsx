@@ -1,7 +1,19 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { LogOut, Paintbrush, Sun, Moon, Heart, Menu } from "lucide-react";
+import {
+    LogOut,
+    Paintbrush,
+    Sun,
+    Moon,
+    Heart,
+    Menu,
+    User,
+    UserPlus,
+    Settings,
+    Github,
+    Siren,
+} from "lucide-react";
 import { login, logout } from "@/lib/utils";
 import {
     DropdownMenu,
@@ -23,7 +35,7 @@ export function NavBar() {
 
     return (
         <div className="fixed w-full border-b border-dashed flex justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="container grid grid-cols-[1fr_auto] w-full px-4 md:px-8 border-x border-dashed py-2">
+            <div className="container grid grid-cols-[1fr_auto] w-full px-4 md:px-8 py-2">
                 <div className="flex items-center gap-2">
                     <a href="/">[Calple]</a>
                 </div>
@@ -68,28 +80,30 @@ export function NavBar() {
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuGroup>
-                                    <DropdownMenuItem>Profile</DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                        <User className="h-4 w-4" />
+                                        Profile
+                                    </DropdownMenuItem>
                                     <DropdownMenuSub>
                                         <DropdownMenuItem>
+                                            <UserPlus className="h-4 w-4" />
                                             Invite users
                                         </DropdownMenuItem>
                                     </DropdownMenuSub>
                                     <DropdownMenuItem>
+                                        <Settings className="h-4 w-4" />
                                         Settings
                                     </DropdownMenuItem>
                                 </DropdownMenuGroup>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem>GitHub</DropdownMenuItem>
-                                <DropdownMenuItem>Support</DropdownMenuItem>
-                                <DropdownMenuSeparator />
                                 <DropdownMenuItem>
-                                    <a
-                                        className="flex items-center gap-2"
-                                        onClick={logout}
-                                    >
-                                        <LogOut className="h-6" />
-                                        <span>Logout</span>
-                                    </a>
+                                    <Siren className="h-4 w-4" />
+                                    Support
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={logout}>
+                                    <LogOut className="h-4 w-4" />
+                                    <span>Logout</span>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
