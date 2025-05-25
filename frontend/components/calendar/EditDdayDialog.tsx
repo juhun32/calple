@@ -1,17 +1,20 @@
-"use client";
-
 import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
+import { DDay, useDDays } from "@/hooks/useDDays";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
+import { Calendar } from "@/components/ui/calendar";
+import { CalendarIcon, Plus } from "lucide-react";
 import { format } from "date-fns";
 import {
     AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
     AlertDialogContent,
-    AlertDialogDescription,
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
+    AlertDialogDescription,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
@@ -19,87 +22,108 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@radix-ui/react-dropdown-menu";
-import { Plus, Calendar as CalendarIcon } from "lucide-react";
-import { useDDays } from "@/hooks/useDDays";
-import { useAuth } from "../auth-provider";
-import { Calendar } from "../ui/calendar";
+import { cn } from "@/lib/utils";
 
-interface AddDDayDialogProps {
-    isOpen?: boolean;
-    onOpenChange?: (open: boolean) => void;
-    initialDate?: Date | null;
+interface EditDdayDialogProps {
+    dday: DDay;
+    isOpen: boolean;
+    onOpenChange: (open: boolean) => void;
 }
 
-export function AddDDayDialog({
+export function EditDdayDialog({
+    dday,
     isOpen,
     onOpenChange,
-    initialDate,
-}: AddDDayDialogProps) {
-    const [date, setDate] = useState<Date>(initialDate || new Date());
-    const [title, setTitle] = useState("");
-    const [description, setDescription] = useState("");
-    const [isAnnual, setIsAnnual] = useState(false);
-    const [connectedEmail, setConnectedEmail] = useState("");
+}: EditDdayDialogProps) {
+    const { updateDDay, deleteDDay } = useDDays();
+
+    // Initialize form with the existing dday values
+    const [title, setTitle] = useState(dday.title);
+    const [description, setDescription] = useState(dday.description || "");
+    const [date, setDate] = useState<Date | undefined>(dday.date);
+    const [isAnnual, setIsAnnual] = useState(dday.isAnnual);
+    const [connectedEmail, setConnectedEmail] = useState(
+        dday.connectedUsers && dday.connectedUsers.length > 0
+            ? dday.connectedUsers[0]
+            : ""
+    );
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const { createDDay } = useDDays();
-    const { authState } = useAuth();
+    const [isDeleting, setIsDeleting] = useState(false);
 
+    // Update form values when dday changes
     useEffect(() => {
-        if (initialDate) {
-            setDate(initialDate);
-        }
-    }, [initialDate]);
+        setTitle(dday.title);
+        setDescription(dday.description || "");
+        setDate(dday.date);
+        setIsAnnual(dday.isAnnual);
+        setConnectedEmail(
+            dday.connectedUsers && dday.connectedUsers.length > 0
+                ? dday.connectedUsers[0]
+                : ""
+        );
+    }, [dday]);
 
-    const handleSubmitAdd = async () => {
-        if (!title || !date) {
+    const handleSubmit = async () => {
+        if (!title || !date || !dday.id) {
+            toast("Missing information");
             return;
         }
 
-        // for button loading state
         setIsSubmitting(true);
 
-        const connectedUsers = connectedEmail ? [connectedEmail] : [];
+        try {
+            const connectedUsers = connectedEmail ? [connectedEmail] : [];
 
-        const success = await createDDay({
-            title,
-            date,
-            description,
-            isAnnual,
-            connectedUsers,
-        });
+            const success = await updateDDay(dday.id, {
+                title,
+                date,
+                description,
+                isAnnual,
+                connectedUsers,
+            });
 
-        setIsSubmitting(false);
-
-        if (success) {
-            setTitle("");
-            setDescription("");
-            setIsAnnual(false);
-            setConnectedEmail("");
-        }
-        if (onOpenChange) {
-            onOpenChange(false);
+            if (success) {
+                toast("Your event has been updated successfully");
+                onOpenChange(false);
+            } else {
+                toast("Failed to update event. Please try again.");
+            }
+        } catch (error) {
+            console.error("Error updating event:", error);
+            toast("Something went wrong. Please try again.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
-    const isControlled = isOpen !== undefined && onOpenChange !== undefined;
+    const handleDelete = async () => {
+        if (!dday.id) return;
+
+        if (!confirm("Are you sure you want to delete this event?")) {
+            return;
+        }
+
+        setIsDeleting(true);
+
+        try {
+            const success = await deleteDDay(dday.id);
+
+            if (success) {
+                toast("Your event has been deleted successfully");
+                onOpenChange(false);
+            } else {
+                toast("Failed to delete event. Please try again.");
+            }
+        } catch (error) {
+            console.error("Error deleting event:", error);
+            toast("Something went wrong. Please try again.");
+        } finally {
+            setIsDeleting(false);
+        }
+    };
 
     return (
         <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
-            {!isControlled && (
-                <AlertDialogTrigger asChild>
-                    <Button
-                        variant="outline"
-                        className="sm:w-24 h-8 flex items-center gap-2 hover:cursor-pointer"
-                    >
-                        <Plus className="h-6" />
-                        <span className="hidden sm:flex">Create</span>
-                    </Button>
-                </AlertDialogTrigger>
-            )}
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>Add D-Day</AlertDialogTitle>
@@ -114,7 +138,7 @@ export function AddDDayDialog({
                                     id="title"
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
-                                    className="border border-gray-300 rounded-md py-1 px- text-sm w-full"
+                                    className="border rounded-md py-1 px- text-sm w-full"
                                     placeholder="Title"
                                 />
                             </div>
@@ -157,7 +181,7 @@ export function AddDDayDialog({
                                             </Button>
                                         </PopoverTrigger>
                                         <PopoverContent
-                                            className="w-auto p-0 z-50"
+                                            className="w-auto p-0"
                                             align="start"
                                         >
                                             <Calendar
@@ -166,7 +190,6 @@ export function AddDDayDialog({
                                                 onSelect={(date) =>
                                                     setDate(date || new Date())
                                                 }
-                                                className="pointer-events-auto"
                                             />
                                         </PopoverContent>
                                     </Popover>
@@ -188,13 +211,28 @@ export function AddDDayDialog({
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                        onClick={handleSubmitAdd}
+                    <Button
+                        variant="destructive"
+                        onClick={handleDelete}
+                        disabled={isDeleting}
+                        className="sm:mr-auto"
+                    >
+                        {isDeleting ? "Deleting..." : "Delete"}
+                    </Button>
+
+                    <Button
+                        variant="outline"
+                        onClick={() => onOpenChange(false)}
+                    >
+                        Cancel
+                    </Button>
+
+                    <Button
+                        onClick={handleSubmit}
                         disabled={isSubmitting || !title || !date}
                     >
-                        {isSubmitting ? "Adding..." : "Add"}
-                    </AlertDialogAction>
+                        {isSubmitting ? "Saving..." : "Save"}
+                    </Button>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>

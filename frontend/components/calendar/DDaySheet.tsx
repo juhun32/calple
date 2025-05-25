@@ -56,8 +56,8 @@ export function DDaySheet({ ddays }: DDaySheetProps) {
                             </TableHeader>
                             <TableBody>
                                 {ddays.map((day, i) => (
-                                    <TableRow key={i}>
-                                        <TableCell className="truncate max-w-3/4">
+                                    <TableRow key={day.id || i}>
+                                        <TableCell className="truncate max-w-[75%]">
                                             {day.title}
                                         </TableCell>
                                         <TableCell className="text-muted-foreground">

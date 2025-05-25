@@ -7,6 +7,7 @@ import { cookies } from "next/headers";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/components/auth-provider";
 import { NavBar } from "@/components/navbar";
+import { Toaster } from "@/components/ui/sonner";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -97,6 +98,7 @@ export default async function RootLayout({
                         </div>
                     </AuthProvider>
                 </ThemeProvider>
+                <Toaster />
             </body>
         </html>
     );
