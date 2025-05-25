@@ -143,10 +143,8 @@ export function ConnectionManager() {
                 setInviteEmail("");
             } else {
                 const errorData = await response.json();
-                toast(
-                    "Failed to send invitation",
-                    errorData.error || "Something went wrong"
-                );
+                console.error("Invitation error:", errorData);
+                toast(`Failed: ${errorData.error || "Unknown error"}`);
             }
         } catch (error) {
             toast("Failed to send invitation");
@@ -217,7 +215,7 @@ export function ConnectionManager() {
 
     return (
         <div>
-            <Dialog>
+            <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
                     <Button
                         variant="outline"
@@ -226,6 +224,7 @@ export function ConnectionManager() {
                             setActiveTab("connection");
                             setInviteEmail("");
                             setIsLoading(false);
+                            setOpen(true);
                         }}
                     >
                         Manage Connection
