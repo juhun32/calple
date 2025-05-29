@@ -37,10 +37,8 @@ import {
 
 type Invitation = {
     id: string;
-    from: {
-        email: string;
-        name: string | null;
-    };
+    from_email: string;
+    from_name: string | null;
     createdAt: string;
 };
 
@@ -215,18 +213,19 @@ export function ConnectionManager() {
 
     return (
         <div>
-            <Dialog open={open} onOpenChange={setOpen}>
+            <Dialog
+                open={open}
+                onOpenChange={(value) => {
+                    setOpen(value);
+                    if (value) {
+                        setActiveTab("connection");
+                        setInviteEmail("");
+                        setIsLoading(false);
+                    }
+                }}
+            >
                 <DialogTrigger asChild>
-                    <Button
-                        variant="outline"
-                        className="w-full sm:w-auto"
-                        onClick={() => {
-                            setActiveTab("connection");
-                            setInviteEmail("");
-                            setIsLoading(false);
-                            setOpen(true);
-                        }}
-                    >
+                    <Button variant="outline" className="w-full sm:w-auto">
                         Manage Connection
                     </Button>
                 </DialogTrigger>
@@ -357,15 +356,15 @@ export function ConnectionManager() {
                                                     Calendar Invitation
                                                 </CardTitle>
                                                 <CardDescription>
-                                                    {invitation.from.name ||
-                                                        invitation.from
-                                                            .email}{" "}
+                                                    {invitation.from_name ||
+                                                        invitation.from_email ||
+                                                        "Someone"}{" "}
                                                     wants to connect
                                                 </CardDescription>
                                             </CardHeader>
                                             <CardContent>
                                                 <p className="text-sm">
-                                                    {invitation.from.email}
+                                                    {invitation.from_email}
                                                 </p>
                                                 <p className="text-xs text-muted-foreground mt-1">
                                                     Sent on{" "}
