@@ -24,7 +24,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@radix-ui/react-dropdown-menu";
 import { Plus, Calendar as CalendarIcon } from "lucide-react";
-import { useDDays } from "@/hooks/useDDays";
+import { useDDays } from "@/lib/hooks/useDDays";
 import { useAuth } from "../auth-provider";
 import { Calendar } from "../ui/calendar";
 

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Calple } from "@/lib/assets/calple";
 import {
     LogOut,
     Paintbrush,
@@ -23,13 +23,11 @@ import {
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
-    DropdownMenuSub,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "next-themes";
 
 import { useAuth } from "@/components/auth-provider";
-import { ConnectionManager } from "./user/ConnectionManager";
 
 export function NavBar() {
     const { setTheme } = useTheme();
@@ -40,7 +38,9 @@ export function NavBar() {
             <div className="fixed w-full border-b border-dashed flex justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                 <div className="container grid grid-cols-[1fr_auto] w-full px-4 md:px-8 py-2">
                     <div className="flex items-center gap-2">
-                        <a href="/">[Calple]</a>
+                        <a href="/">
+                            <Calple />
+                        </a>
                     </div>
                     <div className="flex items-center gap-2">
                         <DropdownMenu>

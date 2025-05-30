@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { DDay, useDDays } from "@/hooks/useDDays";
+import { DDay, useDDays } from "@/lib/hooks/useDDays";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

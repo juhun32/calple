@@ -3,7 +3,7 @@ import { useState } from "react";
 import { CirclePlus } from "lucide-react";
 import { Button } from "../ui/button";
 import { DDayIndicator } from "./DDayIndicator";
-import { useDDays } from "@/hooks/useDDays";
+import { useDDays } from "@/lib/hooks/useDDays";
 import { AddDDayDialog } from "./AddDdayDialog";
 
 type CalendarGridProps = {

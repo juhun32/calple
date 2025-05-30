@@ -13,7 +13,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { useDDays, type DDay } from "@/hooks/useDDays";
+import { useDDays, type DDay } from "@/lib/hooks/useDDays";
 import { EditDdayDialog } from "./EditDdayDialog";
 
 type DDayIndicatorProps = {

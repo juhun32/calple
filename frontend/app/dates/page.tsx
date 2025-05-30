@@ -2,8 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
-import { useCalendar } from "@/hooks/useCalendar";
-import { useDDays } from "@/hooks/useDDays";
+import { useCalendar } from "@/lib/hooks/useCalendar";
+import { useDDays } from "@/lib/hooks/useDDays";
 import { CalendarHeader } from "@/components/calendar/CalendarHeader";
 import { CalendarGrid } from "@/components/calendar/CalendarGrid";
 import { DDaySheet } from "@/components/calendar/DDaySheet";

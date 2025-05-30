@@ -18,7 +18,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Calendar1 } from "lucide-react";
-import { type DDay } from "@/hooks/useDDays";
+import { type DDay } from "@/lib/hooks/useDDays";
 
 type DDaySheetProps = {
     ddays: DDay[];

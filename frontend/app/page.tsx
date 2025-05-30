@@ -17,17 +17,19 @@ export default function Home() {
         <div className="w-screen h-screen grid grid-rows-[1fr_auto] flex justify-center">
             <div className="w-full h-full flex flex-col justify-center items-center">
                 <div className="container h-full w-screen flex flex-col gap-2 items-center justify-end pb-8">
-                    <h1 className="flex gap-2 text-4xl font-bold">
+                    <h1 className="flex gap-2 text-xl sm:text-4xl font-bold">
                         For Your Healthier
                         <p className="text-rose-500">Dating</p> Life
                     </h1>
-                    <p>Everything a couple needs to make their life easier</p>
+                    <p className="text-xs sm:text-xl">
+                        Everything a couple needs to make their life easier
+                    </p>
                 </div>
                 {!authState.isAuthenticated ? (
                     <div className="h-full w-full flex flex-col gap-2 items-center pb-8">
-                        <div className="flex gap-6 items-center justify-center border px-6 py-4 rounded-md">
+                        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center justify-center border px-6 py-4 rounded-md">
                             <div>
-                                <h1 className="flex gap-1 text-xl font-bold">
+                                <h1 className="flex gap-1 text-sm sm:text-xl font-bold">
                                     Welcome to
                                     <p className="text-rose-500">Calple</p>
                                 </h1>
@@ -38,7 +40,7 @@ export default function Home() {
 
                             <Separator
                                 orientation="vertical"
-                                className="py-4"
+                                className="hidden sm:flex py-4"
                             />
 
                             <Button
