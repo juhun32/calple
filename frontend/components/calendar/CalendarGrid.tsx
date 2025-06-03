@@ -3,7 +3,6 @@ import { useState } from "react";
 import { CirclePlus } from "lucide-react";
 import { Button } from "../ui/button";
 import { DDayIndicator } from "./DDayIndicator";
-import { useDDays } from "@/lib/hooks/useDDays";
 import { AddDDayDialog } from "./AddDdayDialog";
 
 type CalendarGridProps = {
@@ -13,17 +12,17 @@ type CalendarGridProps = {
     isSelected: (day: number | null) => boolean;
     isToday: (day: number | null) => boolean;
     selectDate: (day: number) => void;
+    getDDaysForDay: (day: number | null, currentDate: Date) => any[];
 };
 
 export function CalendarGrid({
     currentDate,
     monthData,
-    requiredRows,
     isSelected,
     isToday,
     selectDate,
+    getDDaysForDay,
 }: CalendarGridProps) {
-    const { getDDaysForDay } = useDDays();
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [selectedDateForAdd, setSelectedDateForAdd] = useState<Date | null>(
         null
@@ -42,7 +41,7 @@ export function CalendarGrid({
 
     return (
         <>
-            <div className="rounded-xl flex flex-col flex-grow pb-8">
+            <div className="rounded-xl flex flex-col min-h-0 h-full border border-dashed sm:p-4">
                 <div className="grid grid-cols-7 p-2 border-b">
                     {["S", "M", "T", "W", "T", "F", "S"].map((day, i) => (
                         <div key={i} className="text-center font-medium">
@@ -51,9 +50,7 @@ export function CalendarGrid({
                     ))}
                 </div>
 
-                <div
-                    className={`grid grid-cols-7 flex-grow grid-rows-[repeat(${requiredRows},1fr)]`}
-                >
+                <div className="grid grid-cols-7 auto-rows-fr h-full">
                     {monthData.map((day, i) => {
                         const weekNumber = Math.floor(i / 7) + 1;
                         const isHighlightedWeek =
@@ -65,21 +62,20 @@ export function CalendarGrid({
                         return (
                             <div
                                 key={i}
-                                className={`p-2 flex flex-col
+                                className={`p-2 flex flex-col h-full
                                 ${
                                     isHighlightedWeek
                                         ? "border-y border-dashed"
                                         : ""
-                                }
-                                `}
+                                }`}
                                 onClick={() => day && selectDate(day)}
                             >
                                 {day && (
-                                    <div className="flex flex-col h-16 sm:min-h-20">
-                                        <span className="flex flex-col gap-1">
+                                    <div className="flex flex-col h-full">
+                                        <div className="flex flex-col gap-1">
                                             {isSelected(day) ? (
-                                                <div className="flex items-center justify-between">
-                                                    <div className="h-8 w-8 px-2 py-1 w-fit rounded-md flex justify-center sm:justify-start font-medium">
+                                                <div className="flex items-center justify-between h-6">
+                                                    <div className="px-2 py-1 w-6 rounded-md flex justify-center font-medium">
                                                         {day}
                                                     </div>
                                                     <Button
@@ -96,22 +92,53 @@ export function CalendarGrid({
                                                     </Button>
                                                 </div>
                                             ) : isToday(day) ? (
-                                                <div className="h-8 w-8 px-2 py-1 w-fit rounded-lg border border-dashed border-neutral-800 dark:border-white flex items-center justify-center sm:justify-start font-medium">
+                                                <div className="h-6 w-6 px-2 py-1 rounded-full border border-neutral-800 dark:border-white flex items-center justify-center sm:justify-start font-medium">
                                                     {day}
                                                 </div>
                                             ) : (
-                                                <div className="h-8 w-8 px-2 py-1 w-fit rounded-md flex justify-center sm:justify-start font-normal">
+                                                <div className="h-6 w-6 px-2 py-1 w-6 rounded-md flex items-center justify-center font-normal text-muted-foreground">
                                                     {day}
                                                 </div>
                                             )}
+                                        </div>
 
-                                            {dayDdays.map((dday, idx) => (
-                                                <DDayIndicator
-                                                    key={`dday-${day}-${idx}`}
-                                                    dday={dday}
-                                                />
-                                            ))}
-                                        </span>
+                                        {dayDdays.length > 0 &&
+                                            dayDdays.length < 3 && (
+                                                <div className="flex flex-col mt-1 gap-1 text-xs">
+                                                    {dayDdays.map(
+                                                        (dday, idx) => (
+                                                            <DDayIndicator
+                                                                key={`dday-${day}-${idx}`}
+                                                                dday={dday}
+                                                            />
+                                                        )
+                                                    )}
+                                                </div>
+                                            )}
+                                        {dayDdays.length >= 3 && (
+                                            <div className="flex flex-col mt-1 gap-1 text-xs">
+                                                {dayDdays
+                                                    .slice(0, 2)
+                                                    .map((dday, idx) => (
+                                                        <DDayIndicator
+                                                            key={`dday-${day}-${idx}`}
+                                                            dday={dday}
+                                                        />
+                                                    ))}
+                                                {dayDdays.length > 2 && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        className="w-6 h-6 rounded text-xs font-medium border"
+                                                    >
+                                                        <div className="flex items-center justify-center rounded text-xs font-medium">
+                                                            +
+                                                            {dayDdays.length -
+                                                                2}
+                                                        </div>
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>

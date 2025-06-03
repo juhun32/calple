@@ -11,7 +11,7 @@ export type DDay = {
     connectedUsers?: string[];
 };
 
-export function useDDays() {
+export function useDDays(currentDate: Date = new Date()) {
     const [ddays, setDdays] = useState<DDay[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -41,31 +41,70 @@ export function useDDays() {
         }
     };
 
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth() + 1;
+
     const fetchDDays = async () => {
         try {
             setLoading(true);
-            const response = await fetch(
-                `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/ddays`,
-                {
-                    credentials: "include",
-                }
-            );
+
+            const base =
+                process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+            const endpoint = "/api/ddays";
+            const queryParams = new URLSearchParams({
+                view:
+                    currentDate.getFullYear().toString() +
+                    month.toString().padStart(2, "0"),
+            });
+            const urlWithParams = `${base}${endpoint}?${queryParams.toString()}`;
+            const url = new URL(urlWithParams);
+
+            console.log("Request URL:", url);
+
+            const response = await fetch(url, {
+                credentials: "include",
+            }).catch((err) => {
+                console.error("Fetch network error:", err);
+                throw err;
+            });
+
+            console.log("Response status:", response.status);
 
             if (!response.ok) {
                 throw new Error(`Failed to fetch D-days: ${response.status}`);
             }
 
             const data = await response.json();
-            const formattedDdays = data.ddays.map((dday: any) => ({
-                id: dday.id,
-                title: dday.title,
-                description: dday.description || "",
-                date: new Date(dday.date),
-                days: calculateDDay(new Date(dday.date)),
-                isAnnual: dday.isAnnual,
-                createdBy: dday.createdBy,
-                connectedUsers: dday.connectedUsers || [],
-            }));
+            console.log("Raw response data:", data);
+            console.log("Fetched D-days:", data.ddays);
+
+            const formattedDdays = data.ddays.map((dday: any) => {
+                let dateObj;
+
+                if (
+                    typeof dday.date === "string" &&
+                    dday.date.match(/^\d{8}$/)
+                ) {
+                    const year = parseInt(dday.date.substring(0, 4));
+                    const month = parseInt(dday.date.substring(4, 6)) - 1; // 0-indexed month
+                    const day = parseInt(dday.date.substring(6, 8));
+                    dateObj = new Date(year, month, day);
+                } else {
+                    dateObj = new Date(dday.date);
+                }
+
+                return {
+                    id: dday.id,
+                    title: dday.title,
+                    description: dday.description || "",
+                    date: dateObj,
+                    days: calculateDDay(dateObj),
+                    isAnnual: dday.isAnnual,
+                    createdBy: dday.createdBy,
+                    connectedUsers: dday.connectedUsers || [],
+                };
+            });
+
             setDdays(formattedDdays);
             setError(null);
         } catch (err) {
@@ -78,7 +117,7 @@ export function useDDays() {
 
     useEffect(() => {
         fetchDDays();
-    }, []);
+    }, [year, month]);
 
     const getDDaysForDay = (day: number | null, currentDate: Date) => {
         if (!day) return [];
@@ -105,6 +144,11 @@ export function useDDays() {
         dday: Omit<DDay, "days" | "id">
     ): Promise<boolean> => {
         try {
+            const year = dday.date.getFullYear();
+            const month = String(dday.date.getMonth() + 1).padStart(2, "0");
+            const day = String(dday.date.getDate()).padStart(2, "0");
+            const dateString = `${year}${month}${day}`;
+
             const response = await fetch(
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/ddays`,
                 {
@@ -115,7 +159,7 @@ export function useDDays() {
                     credentials: "include",
                     body: JSON.stringify({
                         title: dday.title,
-                        date: dday.date.toISOString(),
+                        date: dateString,
                         description: dday.description || "",
                         isAnnual: dday.isAnnual,
                         connectedUsers: dday.connectedUsers || [],
@@ -147,6 +191,17 @@ export function useDDays() {
         updates: Partial<Omit<DDay, "days" | "id">>
     ): Promise<boolean> => {
         try {
+            let dateString = undefined;
+            if (updates.date) {
+                const year = updates.date.getFullYear();
+                const month = String(updates.date.getMonth() + 1).padStart(
+                    2,
+                    "0"
+                );
+                const day = String(updates.date.getDate()).padStart(2, "0");
+                dateString = `${year}${month}${day}`;
+            }
+
             const response = await fetch(
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/ddays/${id}`,
                 {
@@ -157,7 +212,7 @@ export function useDDays() {
                     credentials: "include",
                     body: JSON.stringify({
                         ...updates,
-                        date: updates.date?.toISOString(),
+                        date: dateString,
                     }),
                 }
             );
@@ -165,8 +220,6 @@ export function useDDays() {
             if (!response.ok) {
                 throw new Error(`Failed to update D-day: ${response.status}`);
             }
-
-            const data = await response.json();
 
             setDdays((prev) =>
                 prev.map((dday) => {

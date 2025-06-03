@@ -1,14 +1,17 @@
 "use client";
-import { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 
+// utils
 import { login } from "@/lib/utils";
 
+// components
 import { useAuth } from "@/components/auth-provider";
 
+// ui
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { BookHeart, Dices, LayoutDashboard } from "lucide-react";
+
+// icons
+import { LayoutDashboard } from "lucide-react";
 
 export default function Home() {
     const { authState } = useAuth();
@@ -17,11 +20,11 @@ export default function Home() {
         <div className="w-screen h-screen grid grid-rows-[1fr_auto] flex justify-center">
             <div className="w-full h-full flex flex-col justify-center items-center">
                 <div className="container h-full w-screen flex flex-col gap-2 items-center justify-end pb-8">
-                    <h1 className="flex gap-2 text-xl sm:text-4xl font-bold">
+                    <h1 className="flex gap-2 text-2xl sm:text-4xl font-bold">
                         For Your Healthier
                         <p className="text-rose-500">Dating</p> Life
                     </h1>
-                    <p className="text-xs sm:text-xl">
+                    <p className="text-sm sm:text-xl">
                         Everything a couple needs to make their life easier
                     </p>
                 </div>
@@ -86,7 +89,7 @@ export default function Home() {
                     <div className="h-full w-full flex flex-col gap-2 items-center pb-8">
                         <div className="flex w-fit gap-6 items-center justify-center border px-6 py-4 rounded-md">
                             <div>
-                                <h1 className="flex gap-1 text-xl font-bold">
+                                <h1 className="flex gap-1 sm:text-xl font-bold">
                                     Welcome to
                                     <p className="text-rose-500">Calple</p>
                                 </h1>
@@ -99,36 +102,20 @@ export default function Home() {
                                 orientation="vertical"
                                 className="py-4"
                             />
-                            <div className="flex gap-2">
+
+                            <div className="flex flex-gap-2 items-center">
+                                {/* <p className="text-xs text-muted-foreground">
+                                    Get started with Calple
+                                </p> */}
                                 <Button
                                     variant="outline"
                                     className="rounded-full px-3"
                                     onClick={() => {
-                                        window.location.href = "/dates";
+                                        window.location.href = "/start";
                                     }}
                                 >
-                                    <LayoutDashboard />
-                                    <span>Calendar</span>
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    className="rounded-full px-3"
-                                    onClick={() => {
-                                        window.location.href = "/tracker";
-                                    }}
-                                >
-                                    <BookHeart />
-                                    <span>Tracker</span>
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    className="rounded-full px-3"
-                                    onClick={() => {
-                                        window.location.href = "/roulette";
-                                    }}
-                                >
-                                    <Dices />
-                                    <span>Roulette</span>
+                                    <LayoutDashboard className="w-4 h-4" />
+                                    Get Started
                                 </Button>
                             </div>
                         </div>

@@ -41,12 +41,6 @@ export function CalendarHeader({
             >
                 <ChevronLeft className="h-5 w-5" />
             </Button>
-            <div className="flex items-center gap-1">
-                <CalendarIcon className="h-5" strokeWidth={1.5} />
-                <h2 className="flex gap-2 justify-center items-center text-md md:text-lg font-semibold">
-                    {formatMonth(currentDate)}
-                </h2>
-            </div>
             <Button
                 variant={"outline"}
                 className={"w-6 h-6 hover:cursor-pointer"}
@@ -54,6 +48,12 @@ export function CalendarHeader({
             >
                 <ChevronRight className="h-5 w-5" />
             </Button>
+            <div className="flex items-center gap-1">
+                <CalendarIcon className="h-5" strokeWidth={1.5} />
+                <h2 className="flex gap-2 justify-center items-center text-md md:text-lg font-semibold">
+                    {formatMonth(currentDate)}
+                </h2>
+            </div>
         </div>
     );
 }

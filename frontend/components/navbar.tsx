@@ -1,21 +1,14 @@
 "use client";
+import { useTheme } from "next-themes";
 
-import { Button } from "@/components/ui/button";
-import { Calple } from "@/lib/assets/calple";
-import {
-    LogOut,
-    Paintbrush,
-    Sun,
-    Moon,
-    Heart,
-    Menu,
-    User,
-    UserPlus,
-    Settings,
-    Github,
-    Siren,
-} from "lucide-react";
+// components
+import { useAuth } from "@/components/auth-provider";
+
+// utils
 import { login, logout } from "@/lib/utils";
+
+// ui
+import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -25,9 +18,26 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useTheme } from "next-themes";
 
-import { useAuth } from "@/components/auth-provider";
+// assets
+import { Calple } from "@/lib/assets/calple";
+
+// icons
+import {
+    LogOut,
+    Paintbrush,
+    Sun,
+    Moon,
+    Heart,
+    Menu,
+    User,
+    Settings,
+    Siren,
+    Dices,
+    BookHeart,
+    Calendar,
+    CalendarCheck,
+} from "lucide-react";
 
 export function NavBar() {
     const { setTheme } = useTheme();
@@ -38,10 +48,46 @@ export function NavBar() {
             <div className="fixed w-full border-b border-dashed flex justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                 <div className="container grid grid-cols-[1fr_auto] w-full px-4 md:px-8 py-2">
                     <div className="flex items-center gap-2">
-                        <a href="/">
+                        <a href="/" className="mr-8">
                             <Calple />
                         </a>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="rounded-full px-3"
+                                onClick={() => {
+                                    window.location.href = "/dates";
+                                }}
+                            >
+                                <CalendarCheck />
+                                <span className="text-xs">Calendar</span>
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="rounded-full px-3"
+                                onClick={() => {
+                                    window.location.href = "/tracker";
+                                }}
+                            >
+                                <BookHeart />
+                                <span className="text-xs">Tracker</span>
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="rounded-full px-3"
+                                onClick={() => {
+                                    window.location.href = "/roulette";
+                                }}
+                            >
+                                <Dices />
+                                <span className="text-xs">Roulette</span>
+                            </Button>
+                        </div>
                     </div>
+
                     <div className="flex items-center gap-2">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>

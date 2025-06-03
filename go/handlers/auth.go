@@ -23,7 +23,7 @@ func InitOAuth() {
 	clientSecret := os.Getenv("OAUTH2_CLIENT_SECRET")
 	env := os.Getenv("ENV")
 
-	fmt.Printf("Initializing OAuth with client ID: %s, ENV: %s\n", clientID, env)
+	fmt.Printf("Initializing OAuth with client ID")
 
 	var redirectURL string
 	if env == "development" {
@@ -120,7 +120,9 @@ func Callback(c *gin.Context) {
 	// set user_id in session
 	session.Set("user_id", userinfo.Id)
 	session.Save()
-	c.Redirect(http.StatusFound, os.Getenv("FRONTEND_URL"))
+
+	var frontendURL = os.Getenv("FRONTEND_URL")
+	c.Redirect(http.StatusFound, frontendURL+"/dates")
 }
 
 // auth status returns whether the user is authenticated

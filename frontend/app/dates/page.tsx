@@ -28,35 +28,34 @@ export default function Dates() {
         selectDate,
     } = useCalendar();
 
-    const { ddays } = useDDays();
+    const { ddays, getDDaysForDay } = useDDays(currentDate);
 
     return (
-        <div className="min-h-screen items-center justify-center">
-            <div className="h-screen border-b border-dashed flex justify-center">
-                <div className="flex flex-col h-full container border-x border-dashed pt-12">
-                    <div className="flex items-center justify-between px-4 md:px-8 pt-8">
-                        <CalendarHeader
-                            currentDate={currentDate}
-                            goToNextMonth={goToNextMonth}
-                            goToPrevMonth={goToPrevMonth}
-                            goToToday={goToToday}
-                        />
-                        <div className="flex items-center gap-2">
-                            <DDaySheet ddays={ddays} />
-                            <AddDDayDialog />
-                        </div>
+        <div className="h-screen flex items-center justify-center">
+            <div className="flex flex-col h-full container pt-12">
+                <div className="flex items-center justify-between px-4 md:px-8 pt-8">
+                    <CalendarHeader
+                        currentDate={currentDate}
+                        goToNextMonth={goToNextMonth}
+                        goToPrevMonth={goToPrevMonth}
+                        goToToday={goToToday}
+                    />
+                    <div className="flex items-center gap-2">
+                        <DDaySheet ddays={ddays} />
+                        <AddDDayDialog />
                     </div>
+                </div>
 
-                    <div className="flex-1 overflow-auto p-4 md:p-8 flex flex-col h-full">
-                        <CalendarGrid
-                            currentDate={currentDate}
-                            monthData={monthData}
-                            requiredRows={requiredRows}
-                            isSelected={isSelected}
-                            isToday={isToday}
-                            selectDate={selectDate}
-                        />
-                    </div>
+                <div className="flex-1 overflow-auto p-4 md:p-8 flex flex-col h-full mb-8">
+                    <CalendarGrid
+                        currentDate={currentDate}
+                        monthData={monthData}
+                        requiredRows={requiredRows}
+                        isSelected={isSelected}
+                        isToday={isToday}
+                        selectDate={selectDate}
+                        getDDaysForDay={getDDaysForDay}
+                    />
                 </div>
             </div>
         </div>

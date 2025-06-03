@@ -49,6 +49,10 @@ export function useCalendar() {
 
     const goToNextMonth = () => {
         const newDate = new Date(currentDate);
+        // reset to the first day of the month
+        // because if go to next month from the 31st of a month with only 30 days,
+        // it will go to the 1st of the next month
+        newDate.setDate(1);
         newDate.setMonth(newDate.getMonth() + 1);
         setCurrentDate(newDate);
     };

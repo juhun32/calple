@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -17,7 +19,7 @@ type DDay struct {
 	ID             string    `json:"id"`
 	Title          string    `json:"title"`
 	Description    string    `json:"description"`
-	Date           time.Time `json:"date"`
+	Date           string    `json:"date"`
 	IsAnnual       bool      `json:"isAnnual"`
 	CreatedBy      string    `json:"createdBy"`
 	ConnectedUsers []string  `json:"connectedUsers"`
@@ -27,45 +29,110 @@ type DDay struct {
 
 // fetch all events for the current user
 func GetDDays(c *gin.Context) {
-	// et user ID from session
 	session := sessions.Default(c)
 	uid := session.Get("user_id")
 	if uid == nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
-	// get firestore client from context
+
+	// Get firestore client from context
 	fsClient := c.MustGet("firestore").(*firestore.Client)
+
+	// Get user email from firestore
 	userDoc, err := fsClient.Collection("users").Doc(uid.(string)).Get(context.Background())
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve user"})
 		return
 	}
 	userEmail := userDoc.Data()["email"].(string)
 
-	seen := map[string]bool{}
+	// Get view date from query params
+	viewDate := c.Query("view")
+
+	// If no view date provided, return error
+	if viewDate == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing view date parameter"})
+		return
+	}
+
+	// Check if view date has valid format (YYYYMM)
+	if len(viewDate) != 6 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Use YYYYMM"})
+		return
+	}
+
+	// Get events created by the user
+	q1, err := fsClient.Collection("ddays").Where("createdBy", "==", userEmail).Documents(context.Background()).GetAll()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch events: " + err.Error()})
+		return
+	}
+
+	// Get events where user is connected
+	q2, err := fsClient.Collection("ddays").Where("connectedUsers", "array-contains", userEmail).Documents(context.Background()).GetAll()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch connected events: " + err.Error()})
+		return
+	}
+
+	// Combine results, removing duplicates
 	events := []DDay{}
-	queries := [][]*firestore.DocumentSnapshot{}
+	seen := make(map[string]bool)
 
-	// events user is connected or created
-	q1, _ := fsClient.Collection("ddays").Where("connectedUsers", "array-contains", userEmail).Documents(context.Background()).GetAll()
-	q2, _ := fsClient.Collection("ddays").Where("createdBy", "==", userEmail).Documents(context.Background()).GetAll()
-	queries = append(queries, q1, q2)
-
-	// events user is connected to via active connection
-	for _, docs := range queries {
+	// Process both query results
+	for _, docs := range [][]*firestore.DocumentSnapshot{q1, q2} {
 		for _, doc := range docs {
 			if seen[doc.Ref.ID] {
+				continue // Skip duplicates
+			}
+
+			data := doc.Data()
+			seen[doc.Ref.ID] = true
+
+			// Extract date from document
+			dateStr, ok := data["date"].(string)
+			if !ok {
+				fmt.Printf("Warning: Invalid date format for document %s\n", doc.Ref.ID)
 				continue
 			}
-			seen[doc.Ref.ID] = true
-			data := doc.Data()
+
+			// Check if event date length is valid
+			if len(dateStr) != 8 {
+				fmt.Printf("Warning: Invalid date string length for document %s: %s\n", doc.Ref.ID, dateStr)
+				continue
+			}
+
+			// Extract year and month from the event date
+			eventYearMonth := dateStr[0:6]
+
+			// Check if this event should be included based on various criteria
+			isAnnual := data["isAnnual"].(bool)
+
+			// For non-annual events, check if year and month match
+			if !isAnnual {
+				// Only include events from the requested month
+				if eventYearMonth != viewDate {
+					continue
+				}
+			} else {
+				// For annual events, only compare the month portion
+				viewMonth := viewDate[4:6]
+				eventMonth := dateStr[4:6]
+
+				// For annual events, only the month needs to match
+				if eventMonth != viewMonth {
+					continue
+				}
+			}
+
+			// Add matched event to results
 			events = append(events, DDay{
 				ID:             doc.Ref.ID,
 				Title:          data["title"].(string),
 				Description:    data["description"].(string),
-				Date:           data["date"].(time.Time),
-				IsAnnual:       data["isAnnual"].(bool),
+				Date:           dateStr,
+				IsAnnual:       isAnnual,
 				CreatedBy:      data["createdBy"].(string),
 				ConnectedUsers: util.ToStringSlice(data["connectedUsers"]),
 				CreatedAt:      data["createdAt"].(time.Time),
@@ -74,7 +141,10 @@ func GetDDays(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, gin.H{"ddays": events})
+	c.JSON(http.StatusOK, gin.H{
+		"ddays": events,
+		"date":  viewDate,
+	})
 }
 
 // create new event
@@ -85,86 +155,76 @@ func CreateDDay(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
+
+	// get firestore client from context
 	fsClient := c.MustGet("firestore").(*firestore.Client)
-	userDoc, _ := fsClient.Collection("users").Doc(uid.(string)).Get(context.Background())
+
+	// get user email from firestore
+	userDoc, err := fsClient.Collection("users").Doc(uid.(string)).Get(context.Background())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve user"})
+		return
+	}
 	userEmail := userDoc.Data()["email"].(string)
 
-	// validate request payload
-	var payload struct {
-		Title          string   `json:"title" binding:"required"`
-		Date           string   `json:"date" binding:"required"`
-		IsAnnual       bool     `json:"isAnnual"`
-		Description    string   `json:"description"`
-		ConnectedUsers []string `json:"connectedUsers"`
-	}
-	// bind JSON payload to struct
-	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	// parse date from string to time.Time
-	dateParsed, err := time.Parse(time.RFC3339, payload.Date)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format"})
+	// parse request body
+	var dday DDay
+	if err := c.ShouldBindJSON(&dday); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
 	}
 
-	// include partner if active connection exists
-	connections, _ := fsClient.Collection("connections").Where("status", "==", "active").Where("user1", "==", userEmail).Documents(context.Background()).GetAll()
-	if len(connections) == 0 {
-		connections, _ = fsClient.Collection("connections").Where("status", "==", "active").Where("user2", "==", userEmail).Documents(context.Background()).GetAll()
-	}
-	// if an active connection exists, add partner to connected users
-	// if partner is not already in connected users
-	// this assumes that the connection has a "user1" and "user2" field
-	if len(connections) > 0 {
-		connData := connections[0].Data()
-		partner := connData["user1"].(string)
-		if partner == userEmail {
-			partner = connData["user2"].(string)
-		}
-		exists := false
-		for _, u := range payload.ConnectedUsers {
-			if u == partner {
-				exists = true
-			}
-		}
-		if !exists {
-			payload.ConnectedUsers = append(payload.ConnectedUsers, partner)
-		}
+	// validate date format
+	if len(dday.Date) != 8 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Use YYYYMMDD"})
+		return
 	}
 
-	// create new event document in firestore
-	newDoc := fsClient.Collection("ddays").NewDoc()
+	// validate title
+	if dday.Title == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Title is required"})
+		return
+	}
+
+	// Validate date values
+	_, err1 := strconv.Atoi(dday.Date[0:4])
+	month, err2 := strconv.Atoi(dday.Date[4:6])
+	day, err3 := strconv.Atoi(dday.Date[6:8])
+
+	if err1 != nil || err2 != nil || err3 != nil || month < 1 || month > 12 || day < 1 || day > 31 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date values"})
+		return
+	}
+
+	// Set current time for timestamps
 	now := time.Now()
-	docData := map[string]interface{}{
-		"title":          payload.Title,
-		"description":    payload.Description,
-		"date":           dateParsed,
-		"isAnnual":       payload.IsAnnual,
+
+	// Create a new document in the ddays collection
+	newDDay := map[string]interface{}{
+		"title":          dday.Title,
+		"description":    dday.Description,
+		"date":           dday.Date,
+		"isAnnual":       dday.IsAnnual,
 		"createdBy":      userEmail,
-		"connectedUsers": payload.ConnectedUsers,
+		"connectedUsers": dday.ConnectedUsers,
 		"createdAt":      now,
 		"updatedAt":      now,
 	}
-	// set the document data in firestore
-	if _, err := newDoc.Set(context.Background(), docData); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+
+	// Add the document to Firestore
+	newDoc, _, err := fsClient.Collection("ddays").Add(context.Background(), newDDay)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create event: " + err.Error()})
 		return
 	}
-	// return the created event as response
-	response := DDay{
-		ID:             newDoc.ID,
-		Title:          payload.Title,
-		Description:    payload.Description,
-		Date:           dateParsed,
-		IsAnnual:       payload.IsAnnual,
-		CreatedBy:      userEmail,
-		ConnectedUsers: payload.ConnectedUsers,
-		CreatedAt:      now,
-		UpdatedAt:      now,
-	}
-	c.JSON(http.StatusCreated, gin.H{"dday": response})
+
+	// Return the created event
+	dday.ID = newDoc.ID
+	dday.CreatedBy = userEmail
+	dday.CreatedAt = now
+	dday.UpdatedAt = now
+
+	c.JSON(http.StatusCreated, gin.H{"dday": dday})
 }
 
 // update existing event
@@ -175,10 +235,48 @@ func UpdateDDay(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
+
+	// get firestore client from context
 	fsClient := c.MustGet("firestore").(*firestore.Client)
-	userDoc, _ := fsClient.Collection("users").Doc(uid.(string)).Get(context.Background())
+
+	// get user email from firestore
+	userDoc, err := fsClient.Collection("users").Doc(uid.(string)).Get(context.Background())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve user"})
+		return
+	}
 	userEmail := userDoc.Data()["email"].(string)
 
+	// parse request body
+	var dday DDay
+	if err := c.ShouldBindJSON(&dday); err != nil {
+
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	// validate date format
+	if len(dday.Date) != 8 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Use YYYYMMDD"})
+		return
+	}
+
+	// validate title
+	if dday.Title == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Title is required"})
+		return
+	}
+
+	// Validate date values
+	_, err1 := strconv.Atoi(dday.Date[0:4])
+	month, err2 := strconv.Atoi(dday.Date[4:6])
+	day, err3 := strconv.Atoi(dday.Date[6:8])
+	if err1 != nil || err2 != nil || err3 != nil || month < 1 || month > 12 || day < 1 || day > 31 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date values"})
+		return
+	}
+
+	// get event ID from URL
 	id := c.Param("id")
 	ddayRef := fsClient.Collection("ddays").Doc(id)
 	docSnap, err := ddayRef.Get(context.Background())
@@ -186,76 +284,31 @@ func UpdateDDay(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "D-Day not found"})
 		return
 	}
-
-	// check if user is creator of the event
-	// or if userEmail is in connectedUsers
-	// IMPORTANT: we are allowing connected users to update the event
-	data := docSnap.Data()
-	if data["createdBy"].(string) != userEmail {
-		connectedUsers := util.ToStringSlice(data["connectedUsers"])
-		if !util.Contains(connectedUsers, userEmail) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Permission denied"})
-			return
-		}
-	}
-
-	// validate request payload
-	var payload struct {
-		Title          *string   `json:"title"`
-		Date           *string   `json:"date"`
-		IsAnnual       *bool     `json:"isAnnual"`
-		Description    *string   `json:"description"`
-		ConnectedUsers *[]string `json:"connectedUsers"`
-	}
-	// bind JSON payload to struct
-	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if docSnap.Data()["createdBy"].(string) != userEmail {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only creator can update"})
 		return
 	}
-	// if date is provided, parse it from string to time.Time
-	updates := make([]firestore.Update, 0)
-	if payload.Title != nil {
-		updates = append(updates, firestore.Update{Path: "title", Value: *payload.Title})
-	}
-	if payload.Description != nil {
-		updates = append(updates, firestore.Update{Path: "description", Value: *payload.Description})
-	}
-	if payload.Date != nil {
-		dt, err := time.Parse(time.RFC3339, *payload.Date)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format"})
-			return
-		}
-		updates = append(updates, firestore.Update{Path: "date", Value: dt})
-	}
-	if payload.IsAnnual != nil {
-		updates = append(updates, firestore.Update{Path: "isAnnual", Value: *payload.IsAnnual})
-	}
-	if payload.ConnectedUsers != nil {
-		updates = append(updates, firestore.Update{Path: "connectedUsers", Value: *payload.ConnectedUsers})
-	}
-	updates = append(updates, firestore.Update{Path: "updatedAt", Value: time.Now()})
 
-	// update the document in firestore
-	if _, err := ddayRef.Update(context.Background(), updates); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	// Update the document in Firestore
+	updatedDDay := map[string]interface{}{
+		"title":          dday.Title,
+		"description":    dday.Description,
+		"date":           dday.Date,
+		"isAnnual":       dday.IsAnnual,
+		"connectedUsers": dday.ConnectedUsers,
+		"updatedAt":      time.Now(),
+	}
+	if _, err := ddayRef.Set(context.Background(), updatedDDay, firestore.MergeAll); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update event: " + err.Error()})
 		return
 	}
-	// fetch the updated document and retur
-	updatedSnap, _ := ddayRef.Get(context.Background())
-	updated := updatedSnap.Data()
-	resp := DDay{
-		ID:             id,
-		Title:          updated["title"].(string),
-		Description:    updated["description"].(string),
-		Date:           updated["date"].(time.Time),
-		IsAnnual:       updated["isAnnual"].(bool),
-		CreatedBy:      updated["createdBy"].(string),
-		ConnectedUsers: util.ToStringSlice(updated["connectedUsers"]),
-		CreatedAt:      updated["createdAt"].(time.Time),
-		UpdatedAt:      updated["updatedAt"].(time.Time),
-	}
-	c.JSON(http.StatusOK, gin.H{"dday": resp})
+
+	// Return the updated event
+	dday.ID = id
+	dday.CreatedBy = userEmail
+	dday.UpdatedAt = time.Now()
+	c.JSON(http.StatusOK, gin.H{"dday": dday})
+
 }
 
 // delete existing event

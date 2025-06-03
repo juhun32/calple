@@ -23,11 +23,10 @@ func main() {
 		fmt.Println("Error loading .env file:", err)
 	}
 	fmt.Println("ENV:", os.Getenv("ENV"))
-	fmt.Println("CLIENT_ID:", os.Getenv("OAUTH2_CLIENT_ID"))
 
 	// initialize OAuth configuration
 	handlers.InitOAuth()
-
+	// create context
 	ctx := context.Background()
 
 	// initialize firestore client
@@ -42,6 +41,13 @@ func main() {
 	// trusted proxies for prod environment
 	if os.Getenv("ENV") != "development" {
 		r.SetTrustedProxies([]string{"0.0.0.0/0"})
+	}
+
+	// set gin mode for prod
+	// in development mode, gin will log requests and errors
+	// in production avoid logging requests for performance and security
+	if os.Getenv("ENV") != "development" {
+		gin.SetMode(gin.ReleaseMode)
 	}
 
 	// session

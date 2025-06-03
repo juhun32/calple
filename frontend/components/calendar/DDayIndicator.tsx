@@ -37,14 +37,17 @@ export function DDayIndicator({ dday }: DDayIndicatorProps) {
             <AlertDialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
                 <AlertDialogTrigger asChild>
                     <div
-                        className="flex justify-center cursor-pointer my-1"
+                        className="flex justify-center cursor-pointer"
                         title={`${dday.title} (${dday.days})`}
                     >
                         <div className="flex justify-center sm:hidden w-full rounded-full text-xs border hover:cursor-pointer">
                             &nbsp;
                         </div>
-                        <div className="hidden sm:flex justify-center w-full sm:py-1 px-2 rounded text-xs font-normal border hover:cursor-pointer">
-                            <p className="truncate justify-start">
+                        <div className="hidden sm:flex justify-center w-full h-6 px-2 rounded text-xs font-normal border hover:cursor-pointer">
+                            <p
+                                className="truncate w-full h-full flex items-center "
+                                title={dday.title}
+                            >
                                 {dday.title}
                             </p>
                         </div>
