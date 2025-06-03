@@ -1,15 +1,5 @@
 import { useEffect, useState } from "react";
-
-export type DDay = {
-    id?: string;
-    title: string;
-    date: Date;
-    description?: string;
-    days: string;
-    isAnnual: boolean;
-    createdBy?: string;
-    connectedUsers?: string[];
-};
+import { type DDay } from "@/lib/types/calendar";
 
 export function useDDays(currentDate: Date = new Date()) {
     const [ddays, setDdays] = useState<DDay[]>([]);

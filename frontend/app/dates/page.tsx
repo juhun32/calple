@@ -1,9 +1,15 @@
 "use client";
 
 import { redirect } from "next/navigation";
-import { useAuth } from "@/components/auth-provider";
+
+// hooks
 import { useCalendar } from "@/lib/hooks/useCalendar";
 import { useDDays } from "@/lib/hooks/useDDays";
+
+// components
+import { useAuth } from "@/components/auth-provider";
+
+// components/calendar
 import { CalendarHeader } from "@/components/calendar/CalendarHeader";
 import { CalendarGrid } from "@/components/calendar/CalendarGrid";
 import { DDaySheet } from "@/components/calendar/DDaySheet";
@@ -28,7 +34,8 @@ export default function Dates() {
         selectDate,
     } = useCalendar();
 
-    const { ddays, getDDaysForDay } = useDDays(currentDate);
+    const { ddays, getDDaysForDay, updateDDay, deleteDDay, createDDay } =
+        useDDays(currentDate);
 
     return (
         <div className="h-screen flex items-center justify-center">
@@ -42,7 +49,7 @@ export default function Dates() {
                     />
                     <div className="flex items-center gap-2">
                         <DDaySheet ddays={ddays} />
-                        <AddDDayDialog />
+                        <AddDDayDialog createDDay={createDDay} />
                     </div>
                 </div>
 
@@ -55,6 +62,9 @@ export default function Dates() {
                         isToday={isToday}
                         selectDate={selectDate}
                         getDDaysForDay={getDDaysForDay}
+                        createDDay={createDDay}
+                        updateDDay={updateDDay}
+                        deleteDDay={deleteDDay}
                     />
                 </div>
             </div>

@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { useAuth } from "@/components/auth-provider";
 
+// components
 import {
     AlertDialog,
-    AlertDialogAction,
     AlertDialogCancel,
     AlertDialogContent,
     AlertDialogDescription,
@@ -13,14 +12,18 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { useDDays, type DDay } from "@/lib/hooks/useDDays";
+
+// internal components
 import { EditDdayDialog } from "./EditDdayDialog";
 
-type DDayIndicatorProps = {
-    dday: DDay;
-};
+// types
+import { type DDayIndicatorProps } from "@/lib/types/calendar";
 
-export function DDayIndicator({ dday }: DDayIndicatorProps) {
+export function DDayIndicator({
+    dday,
+    updateDDay,
+    deleteDDay,
+}: DDayIndicatorProps) {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
@@ -98,6 +101,8 @@ export function DDayIndicator({ dday }: DDayIndicatorProps) {
                 dday={dday}
                 isOpen={isEditDialogOpen}
                 onOpenChange={setIsEditDialogOpen}
+                updateDDay={updateDDay}
+                deleteDDay={deleteDDay}
             />
         </>
     );

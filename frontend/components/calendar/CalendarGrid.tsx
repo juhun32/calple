@@ -1,19 +1,18 @@
 "use client";
 import { useState } from "react";
-import { CirclePlus } from "lucide-react";
+
+// components
 import { Button } from "../ui/button";
+
+// icons
+import { CirclePlus } from "lucide-react";
+
+// internal components
 import { DDayIndicator } from "./DDayIndicator";
 import { AddDDayDialog } from "./AddDdayDialog";
 
-type CalendarGridProps = {
-    currentDate: Date;
-    monthData: (number | null)[];
-    requiredRows: number;
-    isSelected: (day: number | null) => boolean;
-    isToday: (day: number | null) => boolean;
-    selectDate: (day: number) => void;
-    getDDaysForDay: (day: number | null, currentDate: Date) => any[];
-};
+// types
+import { CalendarGridProps } from "@/lib/types/calendar";
 
 export function CalendarGrid({
     currentDate,
@@ -22,6 +21,9 @@ export function CalendarGrid({
     isToday,
     selectDate,
     getDDaysForDay,
+    createDDay,
+    updateDDay,
+    deleteDDay,
 }: CalendarGridProps) {
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [selectedDateForAdd, setSelectedDateForAdd] = useState<Date | null>(
@@ -92,7 +94,7 @@ export function CalendarGrid({
                                                     </Button>
                                                 </div>
                                             ) : isToday(day) ? (
-                                                <div className="h-6 w-6 px-2 py-1 rounded-full border border-neutral-800 dark:border-white flex items-center justify-center sm:justify-start font-medium">
+                                                <div className="h-6 w-6 px-2 py-1 rounded-full border border-neutral-800 dark:border-white flex items-center justify-center font-medium">
                                                     {day}
                                                 </div>
                                             ) : (
@@ -110,6 +112,12 @@ export function CalendarGrid({
                                                             <DDayIndicator
                                                                 key={`dday-${day}-${idx}`}
                                                                 dday={dday}
+                                                                updateDDay={
+                                                                    updateDDay
+                                                                }
+                                                                deleteDDay={
+                                                                    deleteDDay
+                                                                }
                                                             />
                                                         )
                                                     )}
@@ -123,6 +131,12 @@ export function CalendarGrid({
                                                         <DDayIndicator
                                                             key={`dday-${day}-${idx}`}
                                                             dday={dday}
+                                                            updateDDay={
+                                                                updateDDay
+                                                            }
+                                                            deleteDDay={
+                                                                deleteDDay
+                                                            }
                                                         />
                                                     ))}
                                                 {dayDdays.length > 2 && (
@@ -150,6 +164,7 @@ export function CalendarGrid({
                 isOpen={isAddDialogOpen}
                 onOpenChange={setIsAddDialogOpen}
                 initialDate={selectedDateForAdd}
+                createDDay={createDDay}
             />
         </>
     );

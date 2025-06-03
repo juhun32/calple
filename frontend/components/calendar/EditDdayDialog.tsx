@@ -1,13 +1,7 @@
 import { useEffect, useState } from "react";
-import { DDay, useDDays } from "@/lib/hooks/useDDays";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { toast } from "sonner";
-import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, Plus } from "lucide-react";
 import { format } from "date-fns";
+
+// components
 import {
     AlertDialog,
     AlertDialogContent,
@@ -15,28 +9,46 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogDescription,
-    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
+import { Calendar } from "@/components/ui/calendar";
+
+// icons
+import { CalendarIcon } from "lucide-react";
+
+// utils
 import { cn } from "@/lib/utils";
+
+// types
+import { type DDay } from "@/lib/types/calendar";
 
 interface EditDdayDialogProps {
     dday: DDay;
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
+    updateDDay: (
+        id: string,
+        updates: Partial<Omit<DDay, "days" | "id">>
+    ) => Promise<boolean>;
+    deleteDDay: (id: string) => Promise<boolean>;
 }
 
 export function EditDdayDialog({
     dday,
     isOpen,
     onOpenChange,
+    updateDDay,
+    deleteDDay,
 }: EditDdayDialogProps) {
-    const { updateDDay, deleteDDay } = useDDays();
-
     // Initialize form with the existing dday values
     const [title, setTitle] = useState(dday.title);
     const [description, setDescription] = useState(dday.description || "");

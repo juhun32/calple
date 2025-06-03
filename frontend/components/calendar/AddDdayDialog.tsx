@@ -1,8 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+
+// utils
+import { cn } from "@/lib/utils";
+
+// components
 import {
     AlertDialog,
     AlertDialogAction,
@@ -22,22 +26,20 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@radix-ui/react-dropdown-menu";
-import { Plus, Calendar as CalendarIcon } from "lucide-react";
-import { useDDays } from "@/lib/hooks/useDDays";
-import { useAuth } from "../auth-provider";
-import { Calendar } from "../ui/calendar";
+import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
 
-interface AddDDayDialogProps {
-    isOpen?: boolean;
-    onOpenChange?: (open: boolean) => void;
-    initialDate?: Date | null;
-}
+// icons
+import { Plus, Calendar as CalendarIcon } from "lucide-react";
+
+// types
+import { type AddDDayDialogProps } from "@/lib/types/calendar";
 
 export function AddDDayDialog({
     isOpen,
     onOpenChange,
     initialDate,
+    createDDay,
 }: AddDDayDialogProps) {
     const [date, setDate] = useState<Date>(initialDate || new Date());
     const [title, setTitle] = useState("");
@@ -45,8 +47,6 @@ export function AddDDayDialog({
     const [isAnnual, setIsAnnual] = useState(false);
     const [connectedEmail, setConnectedEmail] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const { createDDay } = useDDays();
-    const { authState } = useAuth();
 
     useEffect(() => {
         if (initialDate) {
