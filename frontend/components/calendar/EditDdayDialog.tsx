@@ -2,19 +2,8 @@ import { useEffect, useState } from "react";
 import { format } from "date-fns";
 
 // components
-import {
-    AlertDialog,
-    AlertDialogContent,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogDescription,
-} from "@/components/ui/alert-dialog";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
+import * as AlertDialog from "@/components/ui/alert-dialog";
+import * as Popover from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,18 +18,7 @@ import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // types
-import { type DDay } from "@/lib/types/calendar";
-
-interface EditDdayDialogProps {
-    dday: DDay;
-    isOpen: boolean;
-    onOpenChange: (open: boolean) => void;
-    updateDDay: (
-        id: string,
-        updates: Partial<Omit<DDay, "days" | "id">>
-    ) => Promise<boolean>;
-    deleteDDay: (id: string) => Promise<boolean>;
-}
+import { EditDdayDialogProps } from "@/lib/types/calendar";
 
 export function EditDdayDialog({
     dday,
@@ -49,7 +27,6 @@ export function EditDdayDialog({
     updateDDay,
     deleteDDay,
 }: EditDdayDialogProps) {
-    // Initialize form with the existing dday values
     const [title, setTitle] = useState(dday.title);
     const [description, setDescription] = useState(dday.description || "");
     const [date, setDate] = useState<Date | undefined>(dday.date);
@@ -62,7 +39,8 @@ export function EditDdayDialog({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
-    // Update form values when dday changes
+    // update state when dday prop changes
+    // this ensures if the dday prop is updated, the dialog reflects the latest data
     useEffect(() => {
         setTitle(dday.title);
         setDescription(dday.description || "");
@@ -135,11 +113,13 @@ export function EditDdayDialog({
     };
 
     return (
-        <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Add D-Day</AlertDialogTitle>
-                    <AlertDialogDescription asChild>
+        <AlertDialog.AlertDialog open={isOpen} onOpenChange={onOpenChange}>
+            <AlertDialog.AlertDialogContent>
+                <AlertDialog.AlertDialogHeader>
+                    <AlertDialog.AlertDialogTitle>
+                        Add D-Day
+                    </AlertDialog.AlertDialogTitle>
+                    <AlertDialog.AlertDialogDescription asChild>
                         <div className="flex flex-col gap-2">
                             <div className="grid grid-cols-[1fr_5fr] gap-2 items-center">
                                 <Label className="text-sm font-medium">
@@ -174,8 +154,8 @@ export function EditDdayDialog({
                                     Date:
                                 </Label>
                                 <div className="flex">
-                                    <Popover>
-                                        <PopoverTrigger asChild>
+                                    <Popover.Popover>
+                                        <Popover.PopoverTrigger asChild>
                                             <Button
                                                 variant="outline"
                                                 className={cn(
@@ -191,8 +171,8 @@ export function EditDdayDialog({
                                                     <span>Pick a date</span>
                                                 )}
                                             </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent
+                                        </Popover.PopoverTrigger>
+                                        <Popover.PopoverContent
                                             className="w-auto p-0"
                                             align="start"
                                         >
@@ -203,8 +183,8 @@ export function EditDdayDialog({
                                                     setDate(date || new Date())
                                                 }
                                             />
-                                        </PopoverContent>
-                                    </Popover>
+                                        </Popover.PopoverContent>
+                                    </Popover.Popover>
                                     <div className="flex items-center text-sm justify-end px-2 w-1/4 gap-2">
                                         <Label className="text-sm">
                                             Annual:
@@ -220,9 +200,9 @@ export function EditDdayDialog({
                                 </div>
                             </div>
                         </div>
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
+                    </AlertDialog.AlertDialogDescription>
+                </AlertDialog.AlertDialogHeader>
+                <AlertDialog.AlertDialogFooter>
                     <Button
                         variant="destructive"
                         onClick={handleDelete}
@@ -245,8 +225,8 @@ export function EditDdayDialog({
                     >
                         {isSubmitting ? "Saving..." : "Save"}
                     </Button>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
+                </AlertDialog.AlertDialogFooter>
+            </AlertDialog.AlertDialogContent>
+        </AlertDialog.AlertDialog>
     );
 }

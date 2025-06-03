@@ -40,3 +40,21 @@ export interface DDayIndicatorProps {
     ) => Promise<boolean>;
     deleteDDay: (id: string) => Promise<boolean>;
 }
+
+export interface CalendarHeaderProps {
+    currentDate: Date;
+    goToNextMonth: () => void;
+    goToPrevMonth: () => void;
+    goToToday: () => void;
+}
+
+export interface EditDdayDialogProps {
+    dday: DDay;
+    isOpen: boolean;
+    onOpenChange: (open: boolean) => void;
+    updateDDay: (
+        id: string,
+        updates: Partial<Omit<DDay, "days" | "id">>
+    ) => Promise<boolean>;
+    deleteDDay: (id: string) => Promise<boolean>;
+}

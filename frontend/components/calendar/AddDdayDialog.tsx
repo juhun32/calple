@@ -7,17 +7,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
 // components
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import * as AlertDialog from "@/components/ui/alert-dialog";
 import {
     Popover,
     PopoverContent,
@@ -88,22 +78,24 @@ export function AddDDayDialog({
     const isControlled = isOpen !== undefined && onOpenChange !== undefined;
 
     return (
-        <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
+        <AlertDialog.AlertDialog open={isOpen} onOpenChange={onOpenChange}>
             {!isControlled && (
-                <AlertDialogTrigger asChild>
+                <AlertDialog.AlertDialogTrigger asChild>
                     <Button
                         variant="outline"
-                        className="sm:w-24 h-8 flex items-center gap-2 hover:cursor-pointer"
+                        className="rounded-full flex items-center gap-2 hover:cursor-pointer sm:w-fit h-8 w-8"
                     >
                         <Plus className="h-6" />
                         <span className="hidden sm:flex">Create</span>
                     </Button>
-                </AlertDialogTrigger>
+                </AlertDialog.AlertDialogTrigger>
             )}
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Add D-Day</AlertDialogTitle>
-                    <AlertDialogDescription asChild>
+            <AlertDialog.AlertDialogContent>
+                <AlertDialog.AlertDialogHeader>
+                    <AlertDialog.AlertDialogTitle>
+                        Add D-Day
+                    </AlertDialog.AlertDialogTitle>
+                    <AlertDialog.AlertDialogDescription asChild>
                         <div className="flex flex-col gap-2">
                             <div className="grid grid-cols-[1fr_5fr] gap-2 items-center">
                                 <Label className="text-sm font-medium">
@@ -185,18 +177,20 @@ export function AddDDayDialog({
                                 </div>
                             </div>
                         </div>
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
+                    </AlertDialog.AlertDialogDescription>
+                </AlertDialog.AlertDialogHeader>
+                <AlertDialog.AlertDialogFooter>
+                    <AlertDialog.AlertDialogCancel>
+                        Cancel
+                    </AlertDialog.AlertDialogCancel>
+                    <AlertDialog.AlertDialogAction
                         onClick={handleSubmitAdd}
                         disabled={isSubmitting || !title || !date}
                     >
                         {isSubmitting ? "Adding..." : "Add"}
-                    </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
+                    </AlertDialog.AlertDialogAction>
+                </AlertDialog.AlertDialogFooter>
+            </AlertDialog.AlertDialogContent>
+        </AlertDialog.AlertDialog>
     );
 }

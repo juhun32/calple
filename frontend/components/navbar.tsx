@@ -5,19 +5,11 @@ import { useTheme } from "next-themes";
 import { useAuth } from "@/components/auth-provider";
 
 // utils
-import { login, logout } from "@/lib/utils";
+import { logout } from "@/lib/utils";
 
 // ui
 import { Button } from "@/components/ui/button";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuGroup,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import * as DropdownMenu from "@/components/ui/dropdown-menu";
 
 // assets
 import { Calple } from "@/lib/assets/calple";
@@ -35,7 +27,6 @@ import {
     Siren,
     Dices,
     BookHeart,
-    Calendar,
     CalendarCheck,
 } from "lucide-react";
 
@@ -45,99 +36,105 @@ export function NavBar() {
 
     return (
         <>
-            <div className="fixed w-full border-b border-dashed flex justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="fixed h-12 w-full border-b border-dashed flex justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                 <div className="container grid grid-cols-[1fr_auto] w-full px-4 md:px-8 py-2">
                     <div className="flex items-center gap-2">
-                        <a href="/" className="mr-8">
+                        <a href="/" className="mr-4 sm:mr-8">
                             <Calple />
                         </a>
-                        <div className="flex flex-col sm:flex-row gap-2">
+                        <div className="flex flex-row gap-1 sm:gap-2">
                             <Button
-                                variant="ghost"
+                                variant="outline"
                                 size="sm"
-                                className="rounded-full px-3"
+                                className="rounded-full px-3 w-8 h-8 sm:w-fit"
                                 onClick={() => {
                                     window.location.href = "/dates";
                                 }}
                             >
                                 <CalendarCheck />
-                                <span className="text-xs">Calendar</span>
+                                <span className="hidden md:flex text-xs">
+                                    Calendar
+                                </span>
                             </Button>
                             <Button
-                                variant="ghost"
+                                variant="outline"
                                 size="sm"
-                                className="rounded-full px-3"
+                                className="rounded-full px-3 w-8 h-8 sm:w-fit"
                                 onClick={() => {
                                     window.location.href = "/tracker";
                                 }}
                             >
                                 <BookHeart />
-                                <span className="text-xs">Tracker</span>
+                                <span className="hidden md:flex text-xs">
+                                    Tracker
+                                </span>
                             </Button>
                             <Button
-                                variant="ghost"
+                                variant="outline"
                                 size="sm"
-                                className="rounded-full px-3"
+                                className="rounded-full px-3 w-8 h-8 sm:w-fit"
                                 onClick={() => {
                                     window.location.href = "/roulette";
                                 }}
                             >
                                 <Dices />
-                                <span className="text-xs">Roulette</span>
+                                <span className="hidden md:flex text-xs">
+                                    Roulette
+                                </span>
                             </Button>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
+                        <DropdownMenu.DropdownMenu>
+                            <DropdownMenu.DropdownMenuTrigger asChild>
                                 <Button
-                                    className="h-8 w-8"
+                                    className="h-8 w-8 rounded-full"
                                     variant="outline"
                                     size="icon"
                                 >
                                     <Paintbrush />
                                 </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem
+                            </DropdownMenu.DropdownMenuTrigger>
+                            <DropdownMenu.DropdownMenuContent align="end">
+                                <DropdownMenu.DropdownMenuItem
                                     onClick={() => setTheme("pink")}
                                 >
                                     <Heart className="mr-2 h-4 w-4" />
                                     Pink
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
+                                </DropdownMenu.DropdownMenuItem>
+                                <DropdownMenu.DropdownMenuItem
                                     onClick={() => setTheme("light")}
                                 >
                                     <Sun className="mr-2 h-4 w-4" />
                                     Light
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
+                                </DropdownMenu.DropdownMenuItem>
+                                <DropdownMenu.DropdownMenuItem
                                     onClick={() => setTheme("dark")}
                                 >
                                     <Moon className="mr-2 h-4 w-4" />
                                     Dark
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                                </DropdownMenu.DropdownMenuItem>
+                            </DropdownMenu.DropdownMenuContent>
+                        </DropdownMenu.DropdownMenu>
 
                         {authState.isAuthenticated ? (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
+                            <DropdownMenu.DropdownMenu>
+                                <DropdownMenu.DropdownMenuTrigger asChild>
                                     <Button
                                         variant="outline"
-                                        className="h-8 w-8"
+                                        className="h-8 w-8 rounded-full"
                                     >
                                         <Menu className="h-6" />
                                     </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-56">
-                                    <DropdownMenuLabel>
+                                </DropdownMenu.DropdownMenuTrigger>
+                                <DropdownMenu.DropdownMenuContent className="w-56">
+                                    <DropdownMenu.DropdownMenuLabel>
                                         {authState.user?.name}
-                                    </DropdownMenuLabel>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuGroup>
-                                        <DropdownMenuItem
+                                    </DropdownMenu.DropdownMenuLabel>
+                                    <DropdownMenu.DropdownMenuSeparator />
+                                    <DropdownMenu.DropdownMenuGroup>
+                                        <DropdownMenu.DropdownMenuItem
                                             onClick={() =>
                                                 (window.location.href =
                                                     "/profile")
@@ -145,24 +142,26 @@ export function NavBar() {
                                         >
                                             <User className="h-4 w-4" />
                                             Profile
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem>
+                                        </DropdownMenu.DropdownMenuItem>
+                                        <DropdownMenu.DropdownMenuItem>
                                             <Settings className="h-4 w-4" />
                                             Settings
-                                        </DropdownMenuItem>
-                                    </DropdownMenuGroup>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem>
+                                        </DropdownMenu.DropdownMenuItem>
+                                    </DropdownMenu.DropdownMenuGroup>
+                                    <DropdownMenu.DropdownMenuSeparator />
+                                    <DropdownMenu.DropdownMenuItem>
                                         <Siren className="h-4 w-4" />
                                         Support
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem onClick={logout}>
+                                    </DropdownMenu.DropdownMenuItem>
+                                    <DropdownMenu.DropdownMenuSeparator />
+                                    <DropdownMenu.DropdownMenuItem
+                                        onClick={logout}
+                                    >
                                         <LogOut className="h-4 w-4" />
                                         <span>Logout</span>
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                                    </DropdownMenu.DropdownMenuItem>
+                                </DropdownMenu.DropdownMenuContent>
+                            </DropdownMenu.DropdownMenu>
                         ) : null}
                     </div>
                 </div>

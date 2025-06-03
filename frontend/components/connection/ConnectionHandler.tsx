@@ -35,20 +35,8 @@ import {
     AlertDialogTrigger,
 } from "../ui/alert-dialog";
 
-type Invitation = {
-    id: string;
-    from_email: string;
-    from_name: string | null;
-    createdAt: string;
-};
-
-type Connection = {
-    connectionId: string;
-    partner: {
-        email: string;
-        name: string;
-    } | null;
-};
+// types
+import { Connection, Invitation } from "@/lib/types/connection";
 
 export function ConnectionManager() {
     const [open, setOpen] = useState(false);
@@ -60,7 +48,6 @@ export function ConnectionManager() {
         []
     );
 
-    // Fetch current connection status
     const fetchConnection = async () => {
         try {
             const response = await fetch(
@@ -86,7 +73,6 @@ export function ConnectionManager() {
         }
     };
 
-    // Fetch pending invitations
     const fetchPendingInvitations = async () => {
         try {
             const response = await fetch(
@@ -105,7 +91,7 @@ export function ConnectionManager() {
         }
     };
 
-    // Load data when component mounts or dialog opens
+    // load connection and invitations when dialog opens
     useEffect(() => {
         if (open) {
             fetchConnection();
@@ -113,7 +99,6 @@ export function ConnectionManager() {
         }
     }, [open]);
 
-    // Send invitation
     const handleInvite = async () => {
         if (!inviteEmail.trim()) {
             toast("Invalid email");
@@ -151,7 +136,6 @@ export function ConnectionManager() {
         }
     };
 
-    // Accept invitation
     const handleAcceptInvitation = async (invitationId: string) => {
         setIsLoading(true);
         try {
@@ -182,7 +166,6 @@ export function ConnectionManager() {
         }
     };
 
-    // Reject invitation
     const handleCancelInvitation = async (invitationId: string) => {
         setIsLoading(true);
         try {

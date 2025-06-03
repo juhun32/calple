@@ -75,12 +75,12 @@ export default async function RootLayout({
                     <AuthProvider initialState={authState}>
                         <NavBar />
                         {children}
-                        <div className="fixed bottom-0 left-0 w-full flex justify-center z-50 border-t border-dashed px-8">
-                            <div className="container flex">
-                                <div className="flex flex-col px-6 py-2 container text-muted-foreground text-xs">
+                        <div className="fixed bottom-0 left-0 h-8 w-full flex justify-center z-50 border-t border-dashed px-8">
+                            <div className="container flex itms-center justify-between">
+                                <div className="flex flex-col px-6 py-2 container text-muted-foreground text-xs justify-center">
                                     J&E &copy; 2025
                                 </div>
-                                <div className="flex justify-end gap-2 px-6 py-2 container text-muted-foreground text-xs">
+                                <div className="flex items-center justify-end gap-2 px-6 py-2 container text-muted-foreground text-xs">
                                     <a
                                         href="/privacy"
                                         className="text-muted-foreground hover:text-stone-500 underline"
