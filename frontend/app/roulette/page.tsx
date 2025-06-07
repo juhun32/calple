@@ -1,6 +1,331 @@
-import { login, logout } from "@/lib/utils";
-import { useTheme } from "next-themes";
+"use client";
+
+import { useState, useEffect } from "react";
+
+import { Button } from "@/components/ui/button";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+// import { Textarea } from "@/components/ui/textarea";
+import {
+    ChevronLeft,
+    Heart,
+    Plus,
+    RefreshCw,
+    ThumbsDown,
+    ThumbsUp,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { motion, AnimatePresence } from "framer-motion";
+
+const dateIdeas = [
+    {
+        id: 1,
+        title: "Picnic in the Park",
+        description:
+            "Pack a basket with your favorite foods and enjoy a relaxing day outdoors.",
+        category: "Outdoor",
+        budget: "Low",
+        duration: "Half-day",
+    },
+    {
+        id: 2,
+        title: "Cooking Class",
+        description:
+            "Learn to make a new dish together with a professional chef.",
+        category: "Indoor",
+        budget: "Medium",
+        duration: "2-3 hours",
+    },
+    {
+        id: 3,
+        title: "Stargazing",
+        description:
+            "Drive to a spot away from city lights and watch the stars together.",
+        category: "Outdoor",
+        budget: "Free",
+        duration: "Evening",
+    },
+    {
+        id: 4,
+        title: "Museum Visit",
+        description: "Explore a local museum and learn something new together.",
+        category: "Indoor",
+        budget: "Low",
+        duration: "Half-day",
+    },
+    {
+        id: 5,
+        title: "Wine Tasting",
+        description:
+            "Visit a local winery or vineyard for a tasting experience.",
+        category: "Outdoor",
+        budget: "Medium",
+        duration: "Half-day",
+    },
+    {
+        id: 6,
+        title: "Board Game Night",
+        description:
+            "Stay in and play your favorite board games with snacks and drinks.",
+        category: "Indoor",
+        budget: "Low",
+        duration: "Evening",
+    },
+    {
+        id: 7,
+        title: "Hiking Adventure",
+        description: "Find a scenic trail and enjoy nature together.",
+        category: "Outdoor",
+        budget: "Free",
+        duration: "Full-day",
+    },
+];
 
 export default function Roulette() {
-    return <div className="p-8 text-2xl pt-20">Roulette Page</div>;
+    const [currentIdea, setCurrentIdea] = useState<any | null>(null);
+    const [spinning, setSpinning] = useState(false);
+    const [savedIdeas, setSavedIdeas] = useState<any[]>([]);
+
+    // Function to get a random date idea
+    const getRandomIdea = () => {
+        setSpinning(true);
+
+        // Simulate spinning wheel effect
+        setTimeout(() => {
+            const availableIdeas = dateIdeas.filter(
+                (idea) => !savedIdeas.some((saved) => saved.id === idea.id)
+            );
+
+            if (availableIdeas.length === 0) {
+                // If all ideas are saved, pick from all ideas
+                const randomIndex = Math.floor(
+                    Math.random() * dateIdeas.length
+                );
+                setCurrentIdea(dateIdeas[randomIndex]);
+            } else {
+                // Pick from available ideas
+                const randomIndex = Math.floor(
+                    Math.random() * availableIdeas.length
+                );
+                setCurrentIdea(availableIdeas[randomIndex]);
+            }
+
+            setSpinning(false);
+        }, 1500);
+    };
+
+    // Initialize with a random idea
+    useEffect(() => {
+        getRandomIdea();
+    }, []);
+
+    // Function to save current idea
+    const saveIdea = () => {
+        if (
+            currentIdea &&
+            !savedIdeas.some((idea) => idea.id === currentIdea.id)
+        ) {
+            setSavedIdeas([...savedIdeas, currentIdea]);
+        }
+        getRandomIdea();
+    };
+
+    // Function to skip current idea
+    const skipIdea = () => {
+        getRandomIdea();
+    };
+
+    return (
+        <div className="container px-4 py-6 space-y-6 pt-20">
+            <div className="flex items-center">
+                <Button variant="ghost" size="icon" className="mr-2">
+                    <ChevronLeft className="w-5 h-5" />
+                </Button>
+                <h1 className="text-2xl font-bold">Date Idea Roulette</h1>
+            </div>
+
+            <div className="flex flex-col items-center justify-center space-y-6">
+                <AnimatePresence mode="wait">
+                    {currentIdea && (
+                        <motion.div
+                            key={currentIdea.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.3 }}
+                            className="w-full"
+                        >
+                            <Card className="w-full overflow-hidden">
+                                <CardHeader className="bg-purple-100 dark:bg-purple-950/30">
+                                    <CardTitle>{currentIdea.title}</CardTitle>
+                                    <CardDescription>
+                                        <div className="flex flex-wrap gap-2 mt-2">
+                                            <Badge variant="secondary">
+                                                {currentIdea.category}
+                                            </Badge>
+                                            <Badge variant="outline">
+                                                {currentIdea.budget} Budget
+                                            </Badge>
+                                            <Badge variant="outline">
+                                                {currentIdea.duration}
+                                            </Badge>
+                                        </div>
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="p-6">
+                                    <p>{currentIdea.description}</p>
+                                </CardContent>
+                                <CardFooter className="flex justify-between p-4 border-t">
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={skipIdea}
+                                        disabled={spinning}
+                                    >
+                                        <ThumbsDown className="w-4 h-4" />
+                                    </Button>
+                                    <Button
+                                        variant="default"
+                                        className="px-8"
+                                        onClick={saveIdea}
+                                        disabled={spinning}
+                                    >
+                                        <Heart className="w-4 h-4 mr-2" />
+                                        Save This Idea
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={saveIdea}
+                                        disabled={spinning}
+                                    >
+                                        <ThumbsUp className="w-4 h-4" />
+                                    </Button>
+                                </CardFooter>
+                            </Card>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                <Button
+                    variant="outline"
+                    size="lg"
+                    className="gap-2"
+                    onClick={getRandomIdea}
+                    disabled={spinning}
+                >
+                    <RefreshCw
+                        className={`w-4 h-4 ${spinning ? "animate-spin" : ""}`}
+                    />
+                    Spin Again
+                </Button>
+
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                            <Plus className="w-4 h-4 mr-1" />
+                            Add Custom Idea
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Add Custom Date Idea</DialogTitle>
+                            <DialogDescription>
+                                Create your own date idea to add to the
+                                roulette.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="title">Title</Label>
+                                <Input
+                                    id="title"
+                                    placeholder="Enter a title for your date idea"
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="description">Description</Label>
+                                {/* <Textarea
+                                    id="description"
+                                    placeholder="Describe your date idea"
+                                /> */}
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="category">Category</Label>
+                                    <Input
+                                        id="category"
+                                        placeholder="Indoor, Outdoor, etc."
+                                    />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="budget">Budget</Label>
+                                    <Input
+                                        id="budget"
+                                        placeholder="Free, Low, Medium, High"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button type="submit">Add Idea</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            </div>
+
+            {savedIdeas.length > 0 && (
+                <div className="mt-8">
+                    <h2 className="mb-4 text-xl font-semibold">Saved Ideas</h2>
+                    <div className="grid gap-4 md:grid-cols-2">
+                        {savedIdeas.map((idea) => (
+                            <Card key={idea.id} className="overflow-hidden">
+                                <CardHeader className="py-3 bg-purple-50 dark:bg-purple-950/20">
+                                    <CardTitle className="text-lg">
+                                        {idea.title}
+                                    </CardTitle>
+                                    <div className="flex flex-wrap gap-1 mt-1">
+                                        <Badge
+                                            variant="secondary"
+                                            className="text-xs"
+                                        >
+                                            {idea.category}
+                                        </Badge>
+                                        <Badge
+                                            variant="outline"
+                                            className="text-xs"
+                                        >
+                                            {idea.budget}
+                                        </Badge>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="py-3">
+                                    <p className="text-sm">
+                                        {idea.description}
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
 }

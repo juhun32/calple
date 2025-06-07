@@ -68,7 +68,7 @@ func main() {
 
 	// CORS
 	corsConfig := cors.Config{
-		AllowOrigins:     []string{os.Getenv("FRONTEND_URL"), os.Getenv("FRONTEND_URL")},
+		AllowOrigins:     []string{os.Getenv("FRONTEND_URL"), "https://www.calple.date", "https://calple.date"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
 		AllowHeaders:     []string{"Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Set-Cookie"},

@@ -18,6 +18,7 @@ import (
 type DDay struct {
 	ID             string    `json:"id"`
 	Title          string    `json:"title"`
+	Group          string    `json:"group"`
 	Description    string    `json:"description"`
 	Date           string    `json:"date"`
 	IsAnnual       bool      `json:"isAnnual"`
@@ -107,7 +108,12 @@ func GetDDays(c *gin.Context) {
 			eventYearMonth := dateStr[0:6]
 
 			// Check if this event should be included based on various criteria
-			isAnnual := data["isAnnual"].(bool)
+			isAnnual, okIsAnnual := data["isAnnual"].(bool)
+			if !okIsAnnual {
+				fmt.Printf("Warning: Invalid or missing isAnnual field for document %s\n", doc.Ref.ID)
+				// Decide on a default or skip
+				isAnnual = false // Or continue, depending on your logic
+			}
 
 			// For non-annual events, check if year and month match
 			if !isAnnual {
@@ -126,17 +132,54 @@ func GetDDays(c *gin.Context) {
 				}
 			}
 
+			title, _ := data["title"].(string)
+
+			group := "" // Default to empty string
+			if grpVal, ok := data["group"]; ok {
+				if grpStr, okStr := grpVal.(string); okStr {
+					group = grpStr
+				} else {
+					// Optional: Log if group exists but is not a string
+					// fmt.Printf("Warning: Group field for document %s is not a string: %v\n", doc.Ref.ID, grpVal)
+				}
+			}
+
+			description := "" // Default to empty string
+			if descVal, ok := data["description"]; ok {
+				if descStr, okStr := descVal.(string); okStr {
+					description = descStr
+				}
+			}
+
+			createdBy, _ := data["createdBy"].(string) // Assumes createdBy is always present
+
+			// Safely get time fields
+			var createdAt, updatedAt time.Time
+			if ct, ok := data["createdAt"].(time.Time); ok {
+				createdAt = ct
+			} else {
+				// Handle missing or invalid createdAt (e.g., log, set to zero value, or skip doc)
+				fmt.Printf("Warning: Missing or invalid createdAt for document %s\n", doc.Ref.ID)
+			}
+			if ut, ok := data["updatedAt"].(time.Time); ok {
+				updatedAt = ut
+			} else {
+				// Handle missing or invalid updatedAt
+				fmt.Printf("Warning: Missing or invalid updatedAt for document %s\n", doc.Ref.ID)
+			}
+
 			// Add matched event to results
 			events = append(events, DDay{
 				ID:             doc.Ref.ID,
-				Title:          data["title"].(string),
-				Description:    data["description"].(string),
+				Title:          title,
+				Group:          group,
+				Description:    description,
 				Date:           dateStr,
 				IsAnnual:       isAnnual,
-				CreatedBy:      data["createdBy"].(string),
+				CreatedBy:      createdBy,
 				ConnectedUsers: util.ToStringSlice(data["connectedUsers"]),
-				CreatedAt:      data["createdAt"].(time.Time),
-				UpdatedAt:      data["updatedAt"].(time.Time),
+				CreatedAt:      createdAt,
+				UpdatedAt:      updatedAt,
 			})
 		}
 	}
@@ -202,6 +245,7 @@ func CreateDDay(c *gin.Context) {
 	// Create a new document in the ddays collection
 	newDDay := map[string]interface{}{
 		"title":          dday.Title,
+		"group":          dday.Group,
 		"description":    dday.Description,
 		"date":           dday.Date,
 		"isAnnual":       dday.IsAnnual,
@@ -292,6 +336,7 @@ func UpdateDDay(c *gin.Context) {
 	// Update the document in Firestore
 	updatedDDay := map[string]interface{}{
 		"title":          dday.Title,
+		"group":          dday.Group,
 		"description":    dday.Description,
 		"date":           dday.Date,
 		"isAnnual":       dday.IsAnnual,

@@ -86,6 +86,7 @@ export function useDDays(currentDate: Date = new Date()) {
                 return {
                     id: dday.id,
                     title: dday.title,
+                    group: dday.group || "",
                     description: dday.description || "",
                     date: dateObj,
                     days: calculateDDay(dateObj),
@@ -149,6 +150,7 @@ export function useDDays(currentDate: Date = new Date()) {
                     credentials: "include",
                     body: JSON.stringify({
                         title: dday.title,
+                        group: dday.group || "",
                         date: dateString,
                         description: dday.description || "",
                         isAnnual: dday.isAnnual,

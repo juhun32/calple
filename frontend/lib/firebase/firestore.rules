@@ -1,0 +1,36 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+		
+    // NOTE: all writes are handled server side
+
+    // block all reads and writes to any document if no other rules match
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // USERS COLLECTION
+    // client can only read
+    match /users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false;
+    }
+
+    // DDAYS COLLECTION
+    match /ddays/{ddayId} {
+      allow read: if request.auth != null &&
+                    (resource.data.createdBy == request.auth.token.email ||
+                     request.auth.token.email in resource.data.connectedUsers);
+      allow write: if false;
+    }
+
+    // CONNECTIONS COLLECTION
+    match /connections/{connectionId} {
+      allow read: if request.auth != null &&
+                    (resource.data.user1 == request.auth.token.email ||
+                     resource.data.user2 == request.auth.token.email);
+      allow write: if false;
+    }
+  }
+}

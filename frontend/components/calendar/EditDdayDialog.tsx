@@ -10,12 +10,14 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Calendar } from "@/components/ui/calendar";
+import * as Select from "@/components/ui/select";
 
 // icons
 import { CalendarIcon } from "lucide-react";
 
 // utils
 import { cn } from "@/lib/utils";
+import { selectGroups } from "@/lib/constants/calendar";
 
 // types
 import { EditDdayDialogProps } from "@/lib/types/calendar";
@@ -28,6 +30,7 @@ export function EditDdayDialog({
     deleteDDay,
 }: EditDdayDialogProps) {
     const [title, setTitle] = useState(dday.title);
+    const [group, setGroup] = useState(dday.group || "");
     const [description, setDescription] = useState(dday.description || "");
     const [date, setDate] = useState<Date | undefined>(dday.date);
     const [isAnnual, setIsAnnual] = useState(dday.isAnnual);
@@ -66,6 +69,7 @@ export function EditDdayDialog({
 
             const success = await updateDDay(dday.id, {
                 title,
+                group,
                 date,
                 description,
                 isAnnual,
@@ -117,11 +121,11 @@ export function EditDdayDialog({
             <AlertDialog.AlertDialogContent>
                 <AlertDialog.AlertDialogHeader>
                     <AlertDialog.AlertDialogTitle>
-                        Add D-Day
+                        Edit Event
                     </AlertDialog.AlertDialogTitle>
                     <AlertDialog.AlertDialogDescription asChild>
                         <div className="flex flex-col gap-2">
-                            <div className="grid grid-cols-[1fr_5fr] gap-2 items-center">
+                            <div className="grid grid-cols-[1fr_4fr] gap-2 items-center">
                                 <Label className="text-sm font-medium">
                                     Title:
                                 </Label>
@@ -133,8 +137,30 @@ export function EditDdayDialog({
                                     className="border rounded-md py-1 px- text-sm w-full"
                                     placeholder="Title"
                                 />
-                            </div>
-                            <div className="grid grid-cols-[1fr_5fr] gap-2 items-center">
+                                <Label className="text-sm font-medium">
+                                    Group:
+                                </Label>
+                                <Select.Select
+                                    value={group}
+                                    onValueChange={setGroup}
+                                >
+                                    <Select.SelectTrigger className="w-full text-sm">
+                                        <Select.SelectValue placeholder="Select Group" />
+                                    </Select.SelectTrigger>
+                                    <Select.SelectContent className="w-full">
+                                        <Select.SelectGroup>
+                                            {selectGroups.map((selectGroup) => (
+                                                <Select.SelectItem
+                                                    key={selectGroup.value}
+                                                    value={selectGroup.value}
+                                                    className="cursor-pointer text-xs"
+                                                >
+                                                    {selectGroup.label}
+                                                </Select.SelectItem>
+                                            ))}
+                                        </Select.SelectGroup>
+                                    </Select.SelectContent>
+                                </Select.Select>
                                 <Label className="text-sm font-medium">
                                     Description:
                                 </Label>
@@ -145,11 +171,9 @@ export function EditDdayDialog({
                                     onChange={(e) =>
                                         setDescription(e.target.value)
                                     }
-                                    className="border py-1 px-2 text-sm w-full"
+                                    className="border w-full"
                                     placeholder="Optional"
                                 />
-                            </div>
-                            <div className="grid grid-cols-[1fr_5fr] gap-2 items-center">
                                 <Label className="text-sm font-medium">
                                     Date:
                                 </Label>
@@ -164,7 +188,7 @@ export function EditDdayDialog({
                                                         "text-muted-foreground"
                                                 )}
                                             >
-                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                <CalendarIcon className="h-4 w-4" />
                                                 {date ? (
                                                     format(date, "PPP")
                                                 ) : (
@@ -173,7 +197,7 @@ export function EditDdayDialog({
                                             </Button>
                                         </Popover.PopoverTrigger>
                                         <Popover.PopoverContent
-                                            className="w-auto p-0"
+                                            className="w-auto p-0 z-50"
                                             align="start"
                                         >
                                             <Calendar
@@ -182,6 +206,7 @@ export function EditDdayDialog({
                                                 onSelect={(date) =>
                                                     setDate(date || new Date())
                                                 }
+                                                className="pointer-events-auto"
                                             />
                                         </Popover.PopoverContent>
                                     </Popover.Popover>

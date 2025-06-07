@@ -1,11 +1,12 @@
 export type DDay = {
     id?: string;
     title: string;
+    group: string;
     date: Date;
-    description?: string;
+    description: string;
     days: string;
     isAnnual: boolean;
-    createdBy?: string;
+    createdBy: string;
     connectedUsers?: string[];
 };
 

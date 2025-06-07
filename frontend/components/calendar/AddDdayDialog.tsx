@@ -5,6 +5,7 @@ import { format } from "date-fns";
 
 // utils
 import { cn } from "@/lib/utils";
+import { selectGroups } from "@/lib/constants/calendar";
 
 // components
 import * as AlertDialog from "@/components/ui/alert-dialog";
@@ -18,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
+import * as Select from "@/components/ui/select";
 
 // icons
 import { Plus, Calendar as CalendarIcon } from "lucide-react";
@@ -32,6 +34,7 @@ export function AddDDayDialog({
     createDDay,
 }: AddDDayDialogProps) {
     const [date, setDate] = useState<Date>(initialDate || new Date());
+    const [group, setGroup] = useState("");
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [isAnnual, setIsAnnual] = useState(false);
@@ -57,15 +60,18 @@ export function AddDDayDialog({
         const success = await createDDay({
             title,
             date,
-            description,
+            group: group || "",
+            description: description || "",
             isAnnual,
             connectedUsers,
+            createdBy: "",
         });
 
         setIsSubmitting(false);
 
         if (success) {
             setTitle("");
+            setGroup("");
             setDescription("");
             setIsAnnual(false);
             setConnectedEmail("");
@@ -93,11 +99,11 @@ export function AddDDayDialog({
             <AlertDialog.AlertDialogContent>
                 <AlertDialog.AlertDialogHeader>
                     <AlertDialog.AlertDialogTitle>
-                        Add D-Day
+                        Add Event
                     </AlertDialog.AlertDialogTitle>
                     <AlertDialog.AlertDialogDescription asChild>
                         <div className="flex flex-col gap-2">
-                            <div className="grid grid-cols-[1fr_5fr] gap-2 items-center">
+                            <div className="grid grid-cols-[1fr_4fr] gap-2 items-center">
                                 <Label className="text-sm font-medium">
                                     Title:
                                 </Label>
@@ -106,11 +112,33 @@ export function AddDDayDialog({
                                     id="title"
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
-                                    className="border border-gray-300 rounded-md py-1 px- text-sm w-full"
+                                    className="border rounded-md py-1 px- text-sm w-full"
                                     placeholder="Title"
                                 />
-                            </div>
-                            <div className="grid grid-cols-[1fr_5fr] gap-2 items-center">
+                                <Label className="text-sm font-medium">
+                                    Group:
+                                </Label>
+                                <Select.Select
+                                    value={group}
+                                    onValueChange={setGroup}
+                                >
+                                    <Select.SelectTrigger className="w-full text-sm">
+                                        <Select.SelectValue placeholder="Select Group" />
+                                    </Select.SelectTrigger>
+                                    <Select.SelectContent className="w-full">
+                                        <Select.SelectGroup>
+                                            {selectGroups.map((selectGroup) => (
+                                                <Select.SelectItem
+                                                    key={selectGroup.value}
+                                                    value={selectGroup.value}
+                                                    className="cursor-pointer text-xs"
+                                                >
+                                                    {selectGroup.label}
+                                                </Select.SelectItem>
+                                            ))}
+                                        </Select.SelectGroup>
+                                    </Select.SelectContent>
+                                </Select.Select>
                                 <Label className="text-sm font-medium">
                                     Description:
                                 </Label>
@@ -121,11 +149,9 @@ export function AddDDayDialog({
                                     onChange={(e) =>
                                         setDescription(e.target.value)
                                     }
-                                    className="border py-1 px-2 text-sm w-full"
+                                    className="border w-full"
                                     placeholder="Optional"
                                 />
-                            </div>
-                            <div className="grid grid-cols-[1fr_5fr] gap-2 items-center">
                                 <Label className="text-sm font-medium">
                                     Date:
                                 </Label>
@@ -140,7 +166,7 @@ export function AddDDayDialog({
                                                         "text-muted-foreground"
                                                 )}
                                             >
-                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                <CalendarIcon className="h-4 w-4" />
                                                 {date ? (
                                                     format(date, "PPP")
                                                 ) : (
