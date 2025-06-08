@@ -131,7 +131,7 @@ export function EditDdayDialog({
                                         "text-sm font-medium",
                                         !title
                                             ? "text-muted-foreground"
-                                            : "text-black"
+                                            : "text-foreground"
                                     )}
                                 >
                                     Title:
@@ -142,10 +142,10 @@ export function EditDdayDialog({
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                     className={cn(
-                                        "border rounded-md text-sm w-full focus:text-black",
+                                        "border rounded-md text-sm w-full focus:text-foreground",
                                         !title
                                             ? "text-muted-foreground"
-                                            : "text-black"
+                                            : "text-foreground"
                                     )}
                                     placeholder="Title"
                                 />
@@ -154,7 +154,7 @@ export function EditDdayDialog({
                                         "text-sm font-medium",
                                         !group
                                             ? "text-muted-foreground"
-                                            : "text-black"
+                                            : "text-foreground"
                                     )}
                                 >
                                     Group:
@@ -177,7 +177,7 @@ export function EditDdayDialog({
                                                     <CircleSmall
                                                         className={`${selectGroup.color}`}
                                                     />
-                                                    <p className="text-black">
+                                                    <p className="text-foreground">
                                                         {selectGroup.label}
                                                     </p>
                                                 </Select.SelectItem>
@@ -190,7 +190,7 @@ export function EditDdayDialog({
                                         "text-sm font-medium",
                                         !description
                                             ? "text-muted-foreground"
-                                            : "text-black"
+                                            : "text-foreground"
                                     )}
                                 >
                                     Description:
@@ -203,10 +203,10 @@ export function EditDdayDialog({
                                         setDescription(e.target.value)
                                     }
                                     className={cn(
-                                        "border rounded-md text-sm w-full focus:text-black",
+                                        "border rounded-md text-sm w-full focus:text-foreground",
                                         !description
                                             ? "text-muted-foreground"
-                                            : "text-black"
+                                            : "text-foreground"
                                     )}
                                     placeholder="Optional"
                                 />
@@ -215,7 +215,7 @@ export function EditDdayDialog({
                                         "text-sm font-medium",
                                         !date
                                             ? "text-muted-foreground"
-                                            : "text-black"
+                                            : "text-foreground"
                                     )}
                                 >
                                     Date:
@@ -226,7 +226,7 @@ export function EditDdayDialog({
                                             <Button
                                                 variant="outline"
                                                 className={cn(
-                                                    "justify-start text-left font-normal w-3/4 text-black",
+                                                    "justify-start text-left font-normal w-3/4 text-foreground",
                                                     !date &&
                                                         "text-muted-foreground"
                                                 )}
@@ -261,7 +261,7 @@ export function EditDdayDialog({
                                             className={cn(
                                                 !isAnnual
                                                     ? "text-muted-foreground"
-                                                    : "text-black"
+                                                    : "text-foreground"
                                             )}
                                         >
                                             Annual:

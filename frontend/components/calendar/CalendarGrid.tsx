@@ -34,7 +34,6 @@ export function CalendarGrid({
 
     const [isShowAllEventsDialogOpen, setIsShowAllEventsDialogOpen] =
         useState(false);
-    const [showAllEventsDay, setShowAllEventsDay] = useState<DDay[]>([]);
 
     const handleAddClick = (e: React.MouseEvent, day: number) => {
         // prevent the click event from bubbling up to the parent div
@@ -45,12 +44,6 @@ export function CalendarGrid({
 
         setSelectedDateForAdd(dateForDialog);
         setIsAddDialogOpen(true);
-    };
-
-    const handleShowAllEvents = (e: React.MouseEvent, dday: DDay[]) => {
-        e.stopPropagation();
-        setShowAllEventsDay(dday);
-        setIsShowAllEventsDialogOpen(true);
     };
 
     return (
@@ -94,7 +87,8 @@ export function CalendarGrid({
                                                     </div>
                                                     <Button
                                                         variant="ghost"
-                                                        className="hidden sm:flex h-8 w-8"
+                                                        className="hidden sm:flex h-6 w-6"
+                                                        size={"sm"}
                                                         onClick={(e) =>
                                                             handleAddClick(
                                                                 e,
@@ -116,34 +110,17 @@ export function CalendarGrid({
                                             )}
                                         </div>
 
-                                        {dayDdays.length > 0 &&
-                                            dayDdays.length < 3 && (
-                                                <div className="flex flex-col mt-1 gap-1 text-xs">
-                                                    {dayDdays.map(
-                                                        (dday, idx) => (
-                                                            <DDayIndicator
-                                                                key={`dday-${day}-${idx}`}
-                                                                dday={dday}
-                                                                updateDDay={
-                                                                    updateDDay
-                                                                }
-                                                                deleteDDay={
-                                                                    deleteDDay
-                                                                }
-                                                            />
-                                                        )
-                                                    )}
-                                                </div>
-                                            )}
-                                        {dayDdays.length >= 3 && (
-                                            <div className="flex flex-col mt-1 gap-1 text-xs">
-                                                {dayDdays
-                                                    .slice(0, 2)
-                                                    .map((dday, idx) => (
+                                        <div className="flex flex-col mt-1 gap-1 text-xs">
+                                            {dayDdays
+                                                .slice(0, 2)
+                                                .map((dday, idx) => (
+                                                    <div
+                                                        key={`dday-slice-${day}-${idx}-${
+                                                            dday.id || idx
+                                                        }`}
+                                                        className="border rounded-full h-5 flex items-center"
+                                                    >
                                                         <DDayIndicator
-                                                            key={`dday-slice-${day}-${idx}-${
-                                                                dday.id || idx
-                                                            }`}
                                                             dday={dday}
                                                             updateDDay={
                                                                 updateDDay
@@ -152,26 +129,18 @@ export function CalendarGrid({
                                                                 deleteDDay
                                                             }
                                                         />
-                                                    ))}
-                                                {/* This button now correctly passes the specific dayDdays */}
-                                                <Button
-                                                    variant="ghost"
-                                                    className="w-fit h-5 rounded-full text-xs font-medium border py-0 flex items-center justify-center"
-                                                    onClick={(
-                                                        e // Pass current dayDdays
-                                                    ) =>
-                                                        handleShowAllEvents(
-                                                            e,
-                                                            dayDdays
-                                                        )
-                                                    }
-                                                >
-                                                    <p className="h-5 flex items-center justify-center text-xs font-medium">
-                                                        +{dayDdays.length - 2}
-                                                    </p>
-                                                </Button>
+                                                    </div>
+                                                ))}
+                                            <div>
+                                                {dayDdays.length >= 3 && (
+                                                    <ShowAllEvents
+                                                        ddays={dayDdays}
+                                                        updateDDay={updateDDay}
+                                                        deleteDDay={deleteDDay}
+                                                    />
+                                                )}
                                             </div>
-                                        )}
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -184,11 +153,6 @@ export function CalendarGrid({
                 onOpenChange={setIsAddDialogOpen}
                 initialDate={selectedDateForAdd}
                 createDDay={createDDay}
-            />
-            <ShowAllEvents
-                ddays={showAllEventsDay}
-                isOpen={isShowAllEventsDialogOpen}
-                onOpenChange={setIsShowAllEventsDialogOpen}
             />
         </>
     );

@@ -7,68 +7,62 @@ import * as AlertDialog from "@/components/ui/alert-dialog";
 import { type DDay } from "@/lib/types/calendar";
 
 // constants
-import { selectGroups } from "@/lib/constants/calendar";
-import { CircleSmall } from "lucide-react";
+import { CircleSmall, EllipsisVertical } from "lucide-react";
+import { getColorFromGroup } from "@/lib/utils";
+import { Button } from "../ui/button";
+import { DDayIndicator } from "./DDayIndicator";
 
 type ShowAllEventsProps = {
     ddays: DDay[];
-    isOpen: boolean;
-    onOpenChange: (open: boolean) => void;
+    updateDDay: (
+        id: string,
+        updates: Partial<Omit<any, "id" | "days">>
+    ) => Promise<boolean>;
+    deleteDDay: (id: string) => Promise<boolean>;
 };
 
 export function ShowAllEvents({
     ddays = [],
-    isOpen,
-    onOpenChange,
+    updateDDay,
+    deleteDDay,
 }: ShowAllEventsProps) {
-    const getGroupColor = (groupValue: string | undefined) => {
-        if (!groupValue) return "";
-        const groupInfo = selectGroups.find(
-            (group) => group.value === groupValue
-        );
-        return groupInfo ? groupInfo.color : "";
-    };
-
     return (
-        <AlertDialog.AlertDialog open={isOpen} onOpenChange={onOpenChange}>
+        <AlertDialog.AlertDialog>
+            <AlertDialog.AlertDialogTrigger asChild>
+                <div className="h-5 w-full flex items-center justify-center gap-1 px-1 rounded-full text-xs font-normal border hover:cursor-pointer">
+                    <EllipsisVertical className="h-3 w-3" />
+                </div>
+            </AlertDialog.AlertDialogTrigger>
             <AlertDialog.AlertDialogContent>
                 <AlertDialog.AlertDialogHeader>
-                    <AlertDialog.AlertDialogTitle>
-                        All Events for {}
-                        {/* not implemented yet */}
+                    <AlertDialog.AlertDialogTitle className="flex gap-2 items-baseline">
+                        <p className="text-sm text-muted-foreground">
+                            All Events for
+                        </p>{" "}
+                        {ddays[0]?.date.toLocaleDateString("default", {
+                            month: "long",
+                            day: "numeric",
+                        })}
                     </AlertDialog.AlertDialogTitle>
                 </AlertDialog.AlertDialogHeader>
                 <AlertDialog.AlertDialogDescription asChild>
-                    <div className="flex flex-col gap-2">
-                        {ddays.length > 0 ? (
-                            ddays.map((individualDday, idx) => (
-                                <div
-                                    key={`dday-dialog-${
-                                        individualDday.id || idx
-                                    }`}
-                                    className="flex justify-between items-center p-2 border-b"
-                                >
-                                    <div className="flex items-center gap-2">
-                                        <CircleSmall
-                                            className={`h-4 w-4 ${getGroupColor(
-                                                individualDday.group
-                                            )}`}
-                                            strokeWidth={1.5}
-                                        />
-                                        <span className="text-sm font-medium">
-                                            {individualDday.title}
-                                        </span>
-                                    </div>
-                                    <span className="text-xs text-gray-500">
-                                        {individualDday.days}
-                                    </span>
-                                </div>
-                            ))
-                        ) : (
-                            <p className="text-sm text-muted-foreground text-center py-4">
-                                No events to display for this day.
-                            </p>
-                        )}
+                    <div>
+                        {ddays.length > 0
+                            ? ddays.map((individualDday, idx) => (
+                                  <div
+                                      key={`dday-dialog-${
+                                          individualDday.id || idx
+                                      }`}
+                                      className="flex gap-2 items-center p-2 border-b text-foreground"
+                                  >
+                                      <DDayIndicator
+                                          dday={individualDday}
+                                          updateDDay={updateDDay}
+                                          deleteDDay={deleteDDay}
+                                      />
+                                  </div>
+                              ))
+                            : null}
                     </div>
                 </AlertDialog.AlertDialogDescription>
 

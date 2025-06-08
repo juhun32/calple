@@ -4,22 +4,34 @@ import { Button } from "@/components/ui/button";
 import * as Table from "@/components/ui/table";
 
 // icons
-import { Calendar1 } from "lucide-react";
+import { Calendar1, CircleSmall } from "lucide-react";
 
 // types
 import { type DDay } from "@/lib/types/calendar";
 
+// utils
+import { getColorFromGroup } from "@/lib/utils";
+
+// constants
+import { selectGroups } from "@/lib/constants/calendar";
+import { DDayIndicator } from "./DDayIndicator";
+
 type DDaySheetProps = {
     ddays: DDay[];
+    updateDDay: (
+        id: string,
+        updates: Partial<Omit<any, "id" | "days">>
+    ) => Promise<boolean>;
+    deleteDDay: (id: string) => Promise<boolean>;
 };
 
-export function DDaySheet({ ddays }: DDaySheetProps) {
+export function DDaySheet({ ddays, updateDDay, deleteDDay }: DDaySheetProps) {
     const sortedDdays = [...ddays].sort(
         (a, b) => a.date.getTime() - b.date.getTime()
     );
 
     return (
-        <div>
+        <>
             <div className="flex lg:hidden">
                 <Sheet.Sheet>
                     <Sheet.SheetTrigger asChild>
@@ -58,7 +70,11 @@ export function DDaySheet({ ddays }: DDaySheetProps) {
                                         {sortedDdays.map((day, i) => (
                                             <Table.TableRow key={day.id || i}>
                                                 <Table.TableCell className="truncate max-w-[75%]">
-                                                    {day.title}
+                                                    <DDayIndicator
+                                                        dday={day}
+                                                        updateDDay={updateDDay}
+                                                        deleteDDay={deleteDDay}
+                                                    />
                                                 </Table.TableCell>
                                                 <Table.TableCell className="text-muted-foreground">
                                                     {day.date.toLocaleDateString()}
@@ -111,8 +127,12 @@ export function DDaySheet({ ddays }: DDaySheetProps) {
                     <Table.TableBody>
                         {sortedDdays.map((day, i) => (
                             <Table.TableRow key={day.id || i}>
-                                <Table.TableCell className="truncate max-w-[75%]">
-                                    {day.title}
+                                <Table.TableCell className="flex items-center gap-1 truncate max-w-[75%]">
+                                    <DDayIndicator
+                                        dday={day}
+                                        updateDDay={updateDDay}
+                                        deleteDDay={deleteDDay}
+                                    />
                                 </Table.TableCell>
                                 <Table.TableCell className="text-muted-foreground">
                                     {day.date.toLocaleDateString()}
@@ -123,6 +143,19 @@ export function DDaySheet({ ddays }: DDaySheetProps) {
                     </Table.TableBody>
                 </Table.Table>
             </div>
-        </div>
+            <div className="hidden lg:flex flex-col">
+                {selectGroups.map((group, idx) => (
+                    <div key={idx} className="flex items-center gap-1 mb-1">
+                        <CircleSmall
+                            className={`h-4 w-4 ${group.color}`}
+                            strokeWidth={1.5}
+                        />
+                        <span className="text-xs font-medium">
+                            {group.label}
+                        </span>
+                    </div>
+                ))}
+            </div>
+        </>
     );
 }

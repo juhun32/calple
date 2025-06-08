@@ -76,7 +76,11 @@ export default function Dates() {
                         />
                         <div className="flex items-center gap-2">
                             <div className="flex lg:hidden">
-                                <DDaySheet ddays={ddays} />
+                                <DDaySheet
+                                    ddays={ddays}
+                                    updateDDay={updateDDay}
+                                    deleteDDay={deleteDDay}
+                                />
                             </div>
                             <AddDDayDialog createDDay={createDDay} />
                         </div>
@@ -97,8 +101,12 @@ export default function Dates() {
                         />
                     </div>
                 </div>
-                <div className="hidden lg:flex flex-col h-full pr-4 md:pr-8 pt-20 pb-8">
-                    <DDaySheet ddays={ddays} />
+                <div className="hidden lg:flex flex-col h-full pr-4 md:pr-8 pt-20 pb-16">
+                    <DDaySheet
+                        ddays={ddays}
+                        updateDDay={updateDDay}
+                        deleteDDay={deleteDDay}
+                    />
                 </div>
             </div>
         </div>

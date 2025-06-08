@@ -6,13 +6,11 @@ import { Button } from "@/components/ui/button";
 
 // internal components
 import { EditDdayDialog } from "./EditDdayDialog";
+import { getColorFromGroup } from "@/lib/utils";
 
 // types
 import { type DDayIndicatorProps } from "@/lib/types/calendar";
 import { CircleSmall } from "lucide-react";
-
-// constants
-import { selectGroups } from "@/lib/constants/calendar";
 
 export function DDayIndicator({
     dday,
@@ -30,9 +28,6 @@ export function DDayIndicator({
         }, 200);
     };
 
-    const groupClass = selectGroups.find((group) => group.value === dday.group);
-    const groupColor = groupClass ? groupClass.color : "";
-
     return (
         <>
             <AlertDialog.AlertDialog
@@ -41,21 +36,21 @@ export function DDayIndicator({
             >
                 <AlertDialog.AlertDialogTrigger asChild>
                     <div
-                        className="flex justify-center cursor-pointer"
+                        className="flex items-center sm:gap-1 w-full h-full px-1 font-normal hover:cursor-pointer"
                         title={`${dday.title} (${dday.days})`}
                     >
-                        <div className="h-5 flex justify-center items-center gap-1 w-full px-1 rounded-full text-xs font-normal border hover:cursor-pointer">
-                            <CircleSmall
-                                className={`${groupColor} h-4 w-4`}
-                                strokeWidth={1.5}
-                            />
-                            <p
-                                className="truncate w-full h-4 flex items-center "
-                                title={dday.title}
-                            >
-                                {dday.title}
-                            </p>
-                        </div>
+                        <CircleSmall
+                            className={`h-4 w-4 ${getColorFromGroup(
+                                dday.group
+                            )}`}
+                            strokeWidth={1.5}
+                        />
+                        <p
+                            className="truncate w-full flex items-center"
+                            title={dday.title}
+                        >
+                            {dday.title}
+                        </p>
                     </div>
                 </AlertDialog.AlertDialogTrigger>
 
