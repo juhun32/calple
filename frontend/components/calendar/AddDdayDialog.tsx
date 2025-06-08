@@ -9,11 +9,7 @@ import { selectGroups } from "@/lib/constants/calendar";
 
 // components
 import * as AlertDialog from "@/components/ui/alert-dialog";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
+import * as Popover from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -22,7 +18,7 @@ import { Calendar } from "@/components/ui/calendar";
 import * as Select from "@/components/ui/select";
 
 // icons
-import { Plus, Calendar as CalendarIcon } from "lucide-react";
+import { Plus, Calendar as CalendarIcon, CircleSmall } from "lucide-react";
 
 // types
 import { type AddDDayDialogProps } from "@/lib/types/calendar";
@@ -60,7 +56,7 @@ export function AddDDayDialog({
         const success = await createDDay({
             title,
             date,
-            group: group || "",
+            group: group || "others",
             description: description || "",
             isAnnual,
             connectedUsers,
@@ -104,7 +100,14 @@ export function AddDDayDialog({
                     <AlertDialog.AlertDialogDescription asChild>
                         <div className="flex flex-col gap-2">
                             <div className="grid grid-cols-[1fr_4fr] gap-2 items-center">
-                                <Label className="text-sm font-medium">
+                                <Label
+                                    className={cn(
+                                        "text-sm font-medium",
+                                        !title
+                                            ? "text-muted-foreground"
+                                            : "text-black"
+                                    )}
+                                >
                                     Title:
                                 </Label>
                                 <Input
@@ -112,10 +115,22 @@ export function AddDDayDialog({
                                     id="title"
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
-                                    className="border rounded-md py-1 px- text-sm w-full"
+                                    className={cn(
+                                        "border rounded-md text-sm w-full focus:text-black",
+                                        !title
+                                            ? "text-muted-foreground"
+                                            : "text-black"
+                                    )}
                                     placeholder="Title"
                                 />
-                                <Label className="text-sm font-medium">
+                                <Label
+                                    className={cn(
+                                        "text-sm font-medium",
+                                        !group
+                                            ? "text-muted-foreground"
+                                            : "text-black"
+                                    )}
+                                >
                                     Group:
                                 </Label>
                                 <Select.Select
@@ -133,13 +148,25 @@ export function AddDDayDialog({
                                                     value={selectGroup.value}
                                                     className="cursor-pointer text-xs"
                                                 >
-                                                    {selectGroup.label}
+                                                    <CircleSmall
+                                                        className={`${selectGroup.color}`}
+                                                    />
+                                                    <p className="text-black">
+                                                        {selectGroup.label}
+                                                    </p>
                                                 </Select.SelectItem>
                                             ))}
                                         </Select.SelectGroup>
                                     </Select.SelectContent>
                                 </Select.Select>
-                                <Label className="text-sm font-medium">
+                                <Label
+                                    className={cn(
+                                        "text-sm font-medium",
+                                        !description
+                                            ? "text-muted-foreground"
+                                            : "text-black"
+                                    )}
+                                >
                                     Description:
                                 </Label>
                                 <Input
@@ -149,32 +176,47 @@ export function AddDDayDialog({
                                     onChange={(e) =>
                                         setDescription(e.target.value)
                                     }
-                                    className="border w-full"
+                                    className={cn(
+                                        "border rounded-md text-sm w-full focus:text-black",
+                                        !description
+                                            ? "text-muted-foreground"
+                                            : "text-black"
+                                    )}
                                     placeholder="Optional"
                                 />
-                                <Label className="text-sm font-medium">
+                                <Label
+                                    className={cn(
+                                        "text-sm font-medium",
+                                        !date
+                                            ? "text-muted-foreground"
+                                            : "text-black"
+                                    )}
+                                >
                                     Date:
                                 </Label>
                                 <div className="flex">
-                                    <Popover>
-                                        <PopoverTrigger asChild>
+                                    <Popover.Popover>
+                                        <Popover.PopoverTrigger asChild>
                                             <Button
                                                 variant="outline"
                                                 className={cn(
-                                                    "justify-start text-left font-normal w-3/4",
+                                                    "justify-start text-left font-normal w-3/4 text-black",
                                                     !date &&
                                                         "text-muted-foreground"
                                                 )}
                                             >
-                                                <CalendarIcon className="h-4 w-4" />
+                                                <CalendarIcon
+                                                    className="h-4 w-4"
+                                                    strokeWidth={1.3}
+                                                />
                                                 {date ? (
                                                     format(date, "PPP")
                                                 ) : (
                                                     <span>Pick a date</span>
                                                 )}
                                             </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent
+                                        </Popover.PopoverTrigger>
+                                        <Popover.PopoverContent
                                             className="w-auto p-0 z-50"
                                             align="start"
                                         >
@@ -186,10 +228,16 @@ export function AddDDayDialog({
                                                 }
                                                 className="pointer-events-auto"
                                             />
-                                        </PopoverContent>
-                                    </Popover>
+                                        </Popover.PopoverContent>
+                                    </Popover.Popover>
                                     <div className="flex items-center text-sm justify-end px-2 w-1/4 gap-2">
-                                        <Label className="text-sm">
+                                        <Label
+                                            className={cn(
+                                                !isAnnual
+                                                    ? "text-muted-foreground"
+                                                    : "text-black"
+                                            )}
+                                        >
                                             Annual:
                                         </Label>
                                         <Checkbox

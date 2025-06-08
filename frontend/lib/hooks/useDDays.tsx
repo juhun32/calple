@@ -23,7 +23,7 @@ export function useDDays(currentDate: Date = new Date()) {
         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
         if (target.getTime() === today.getTime()) {
-            return "D-Day";
+            return "Today";
         } else if (target < today) {
             return `D+${diffDays}`;
         } else {

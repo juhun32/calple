@@ -5,14 +5,15 @@ import { useState } from "react";
 import { Button } from "../ui/button";
 
 // icons
-import { CirclePlus } from "lucide-react";
+import { CirclePlus, CircleSmall } from "lucide-react";
 
 // internal components
 import { DDayIndicator } from "./DDayIndicator";
 import { AddDDayDialog } from "./AddDdayDialog";
+import { ShowAllEvents } from "./ShowAllEvents";
 
 // types
-import { CalendarGridProps } from "@/lib/types/calendar";
+import { CalendarGridProps, DDay } from "@/lib/types/calendar";
 
 export function CalendarGrid({
     currentDate,
@@ -26,9 +27,14 @@ export function CalendarGrid({
     deleteDDay,
 }: CalendarGridProps) {
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
     const [selectedDateForAdd, setSelectedDateForAdd] = useState<Date | null>(
         null
     );
+
+    const [isShowAllEventsDialogOpen, setIsShowAllEventsDialogOpen] =
+        useState(false);
+    const [showAllEventsDay, setShowAllEventsDay] = useState<DDay[]>([]);
 
     const handleAddClick = (e: React.MouseEvent, day: number) => {
         // prevent the click event from bubbling up to the parent div
@@ -39,6 +45,12 @@ export function CalendarGrid({
 
         setSelectedDateForAdd(dateForDialog);
         setIsAddDialogOpen(true);
+    };
+
+    const handleShowAllEvents = (e: React.MouseEvent, dday: DDay[]) => {
+        e.stopPropagation();
+        setShowAllEventsDay(dday);
+        setIsShowAllEventsDialogOpen(true);
     };
 
     return (
@@ -94,7 +106,7 @@ export function CalendarGrid({
                                                     </Button>
                                                 </div>
                                             ) : isToday(day) ? (
-                                                <div className="h-6 w-6 px-2 py-1 rounded-full border border-neutral-800 dark:border-white flex items-center justify-center font-medium">
+                                                <div className="h-6 w-6 px-2 py-1 rounded-full border-2 border-dashed border-neutral-800 dark:border-white flex items-center justify-center font-medium">
                                                     {day}
                                                 </div>
                                             ) : (
@@ -129,7 +141,9 @@ export function CalendarGrid({
                                                     .slice(0, 2)
                                                     .map((dday, idx) => (
                                                         <DDayIndicator
-                                                            key={`dday-${day}-${idx}`}
+                                                            key={`dday-slice-${day}-${idx}-${
+                                                                dday.id || idx
+                                                            }`}
                                                             dday={dday}
                                                             updateDDay={
                                                                 updateDDay
@@ -139,18 +153,23 @@ export function CalendarGrid({
                                                             }
                                                         />
                                                     ))}
-                                                {dayDdays.length > 2 && (
-                                                    <Button
-                                                        variant="ghost"
-                                                        className="w-6 h-6 rounded text-xs font-medium border"
-                                                    >
-                                                        <div className="flex items-center justify-center rounded text-xs font-medium">
-                                                            +
-                                                            {dayDdays.length -
-                                                                2}
-                                                        </div>
-                                                    </Button>
-                                                )}
+                                                {/* This button now correctly passes the specific dayDdays */}
+                                                <Button
+                                                    variant="ghost"
+                                                    className="w-fit h-5 rounded-full text-xs font-medium border py-0 flex items-center justify-center"
+                                                    onClick={(
+                                                        e // Pass current dayDdays
+                                                    ) =>
+                                                        handleShowAllEvents(
+                                                            e,
+                                                            dayDdays
+                                                        )
+                                                    }
+                                                >
+                                                    <p className="h-5 flex items-center justify-center text-xs font-medium">
+                                                        +{dayDdays.length - 2}
+                                                    </p>
+                                                </Button>
                                             </div>
                                         )}
                                     </div>
@@ -165,6 +184,11 @@ export function CalendarGrid({
                 onOpenChange={setIsAddDialogOpen}
                 initialDate={selectedDateForAdd}
                 createDDay={createDDay}
+            />
+            <ShowAllEvents
+                ddays={showAllEventsDay}
+                isOpen={isShowAllEventsDialogOpen}
+                onOpenChange={setIsShowAllEventsDialogOpen}
             />
         </>
     );

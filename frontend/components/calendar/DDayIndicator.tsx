@@ -1,16 +1,7 @@
 import { useState } from "react";
 
 // components
-import {
-    AlertDialog,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import * as AlertDialog from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 
 // internal components
@@ -18,6 +9,10 @@ import { EditDdayDialog } from "./EditDdayDialog";
 
 // types
 import { type DDayIndicatorProps } from "@/lib/types/calendar";
+import { CircleSmall } from "lucide-react";
+
+// constants
+import { selectGroups } from "@/lib/constants/calendar";
 
 export function DDayIndicator({
     dday,
@@ -35,31 +30,38 @@ export function DDayIndicator({
         }, 200);
     };
 
+    const groupClass = selectGroups.find((group) => group.value === dday.group);
+    const groupColor = groupClass ? groupClass.color : "";
+
     return (
         <>
-            <AlertDialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-                <AlertDialogTrigger asChild>
+            <AlertDialog.AlertDialog
+                open={isDetailsOpen}
+                onOpenChange={setIsDetailsOpen}
+            >
+                <AlertDialog.AlertDialogTrigger asChild>
                     <div
                         className="flex justify-center cursor-pointer"
                         title={`${dday.title} (${dday.days})`}
                     >
-                        <div className="flex justify-center sm:hidden w-full rounded-full text-xs border hover:cursor-pointer">
-                            &nbsp;
-                        </div>
-                        <div className="hidden sm:flex justify-center w-full h-6 px-2 rounded text-xs font-normal border hover:cursor-pointer">
+                        <div className="h-5 flex justify-center items-center gap-1 w-full px-1 rounded-full text-xs font-normal border hover:cursor-pointer">
+                            <CircleSmall
+                                className={`${groupColor} h-4 w-4`}
+                                strokeWidth={1.5}
+                            />
                             <p
-                                className="truncate w-full h-full flex items-center "
+                                className="truncate w-full h-4 flex items-center "
                                 title={dday.title}
                             >
                                 {dday.title}
                             </p>
                         </div>
                     </div>
-                </AlertDialogTrigger>
+                </AlertDialog.AlertDialogTrigger>
 
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>
+                <AlertDialog.AlertDialogContent>
+                    <AlertDialog.AlertDialogHeader>
+                        <AlertDialog.AlertDialogTitle>
                             <div className="flex justify-between items-baseline gap-2">
                                 <div className="flex items-baseline gap-2">
                                     {dday.title}
@@ -69,20 +71,16 @@ export function DDayIndicator({
                                 </div>
                                 {dday.days}
                             </div>
-                        </AlertDialogTitle>
+                        </AlertDialog.AlertDialogTitle>
 
                         {dday.description ? (
-                            <AlertDialogDescription className="text-sm text-muted-foreground pt-2">
+                            <AlertDialog.AlertDialogDescription className="text-sm text-muted-foreground pt-2">
                                 {dday.description}
-                            </AlertDialogDescription>
-                        ) : (
-                            <AlertDialogDescription className="text-sm text-muted-foreground pt-2">
-                                No description
-                            </AlertDialogDescription>
-                        )}
-                    </AlertDialogHeader>
+                            </AlertDialog.AlertDialogDescription>
+                        ) : null}
+                    </AlertDialog.AlertDialogHeader>
 
-                    <AlertDialogFooter className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-0">
+                    <AlertDialog.AlertDialogFooter className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-0">
                         <Button
                             variant="outline"
                             className="flex-1 sm:mr-2"
@@ -90,12 +88,12 @@ export function DDayIndicator({
                         >
                             Edit
                         </Button>
-                        <AlertDialogCancel className="flex-1">
+                        <AlertDialog.AlertDialogCancel className="flex-1">
                             Close
-                        </AlertDialogCancel>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+                        </AlertDialog.AlertDialogCancel>
+                    </AlertDialog.AlertDialogFooter>
+                </AlertDialog.AlertDialogContent>
+            </AlertDialog.AlertDialog>
 
             <EditDdayDialog
                 dday={dday}

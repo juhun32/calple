@@ -1,5 +1,5 @@
 export type DDay = {
-    id?: string;
+    id: string;
     title: string;
     group: string;
     date: Date;
