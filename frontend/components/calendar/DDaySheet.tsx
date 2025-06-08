@@ -143,9 +143,9 @@ export function DDaySheet({ ddays, updateDDay, deleteDDay }: DDaySheetProps) {
                     </Table.TableBody>
                 </Table.Table>
             </div>
-            <div className="hidden lg:flex flex-col">
+            <div className="hidden lg:flex flex-col gap-1">
                 {selectGroups.map((group, idx) => (
-                    <div key={idx} className="flex items-center gap-1 mb-1">
+                    <div key={idx} className="flex items-center gap-1">
                         <CircleSmall
                             className={`h-4 w-4 ${group.color}`}
                             strokeWidth={1.5}

@@ -1,4 +1,5 @@
 module.exports = {
+    darkMode: "class",
     content: [
         "./app/**/*.{js,ts,jsx,tsx}",
         "./pages/**/*.{js,ts,jsx,tsx}",
@@ -7,5 +8,12 @@ module.exports = {
     theme: {
         extend: {},
     },
-    plugins: [],
+    plugins: [
+        plugin(function ({ addVariant }) {
+            // This adds the 'pink:' variant.
+            // It will apply the utility when an ancestor has the '.pink' class.
+            // e.g., pink:bg-background becomes .pink .bg-background { ... }
+            addVariant("pink", ".pink &");
+        }),
+    ],
 };
