@@ -103,7 +103,15 @@ func Callback(c *gin.Context) {
 
 	// firestore upsert user data after auth
 	fsClient := c.MustGet("firestore").(*firestore.Client)
-	_, err = fsClient.Collection("users").Doc(userinfo.Id).Set(context.Background(), map[string]interface{}{
+	userDocRef := fsClient.Collection("users").Doc(userinfo.Id)
+	// check if user already exists
+	doc, err := userDocRef.Get(context.Background())
+	isReturningUser := false
+	if err == nil && doc.Exists() {
+		isReturningUser = true
+	}
+
+	userData := map[string]interface{}{
 		"email": userinfo.Email,
 		"name":  userinfo.Name,
 		"tokens": map[string]interface{}{
@@ -111,7 +119,15 @@ func Callback(c *gin.Context) {
 			"refresh_token": token.RefreshToken,
 			"expiry":        token.Expiry,
 		},
-	}, firestore.MergeAll)
+		"returning_user": isReturningUser,
+		"last_login_at":  time.Now(),
+	}
+
+	if !isReturningUser {
+		userData["created_at"] = time.Now()
+	}
+
+	_, err = userDocRef.Set(context.Background(), userData, firestore.MergeAll)
 	if err != nil {
 		c.String(http.StatusInternalServerError, fmt.Sprintf("Firestore upsert error: %v", err))
 		return

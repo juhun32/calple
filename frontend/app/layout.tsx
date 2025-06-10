@@ -75,7 +75,7 @@ export default async function RootLayout({
                     <AuthProvider initialState={authState}>
                         <NavBar />
                         {children}
-                        <div className="fixed bottom-0 left-0 h-8 w-full flex justify-center z-50 border-t border-dashed px-8">
+                        <div className="fixed bottom-0 left-0 h-8 w-full flex justify-center z-50 border-t border-dashed px-8 backdrop-blur">
                             <div className="container flex itms-center justify-between">
                                 <div className="flex flex-col px-6 py-2 container text-muted-foreground text-xs justify-center">
                                     J&E &copy; 2025

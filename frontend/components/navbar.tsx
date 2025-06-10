@@ -56,7 +56,7 @@ export function NavBar() {
                                     Calendar
                                 </span>
                             </Button>
-                            <Button
+                            {/* <Button
                                 variant="outline"
                                 size="sm"
                                 className="rounded-full px-3 w-8 h-8 sm:w-fit"
@@ -68,7 +68,7 @@ export function NavBar() {
                                 <span className="hidden md:flex text-xs">
                                     Tracker
                                 </span>
-                            </Button>
+                            </Button> */}
                             <Button
                                 variant="outline"
                                 size="sm"
