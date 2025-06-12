@@ -1,306 +1,195 @@
 "use client";
 
-import { useState, useEffect } from "react";
-
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import * as Card from "@/components/ui/card";
-import * as Dialog from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Heart, Plus, RefreshCw, ThumbsDown, ThumbsUp } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { motion, AnimatePresence } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { RotateCcw, Play, RotateCw } from "lucide-react";
 
 const dateIdeas = [
-    {
-        id: 1,
-        title: "Picnic in the Park",
-        description:
-            "Pack a basket with your favorite foods and enjoy a relaxing day outdoors.",
-        category: "Outdoor",
-        budget: "Low",
-        duration: "Half-day",
-    },
-    {
-        id: 2,
-        title: "Cooking Class",
-        description:
-            "Learn to make a new dish together with a professional chef.",
-        category: "Indoor",
-        budget: "Medium",
-        duration: "2-3 hours",
-    },
-    {
-        id: 3,
-        title: "Stargazing",
-        description:
-            "Drive to a spot away from city lights and watch the stars together.",
-        category: "Outdoor",
-        budget: "Free",
-        duration: "Evening",
-    },
-    {
-        id: 4,
-        title: "Museum Visit",
-        description: "Explore a local museum and learn something new together.",
-        category: "Indoor",
-        budget: "Low",
-        duration: "Half-day",
-    },
-    {
-        id: 5,
-        title: "Wine Tasting",
-        description:
-            "Visit a local winery or vineyard for a tasting experience.",
-        category: "Outdoor",
-        budget: "Medium",
-        duration: "Half-day",
-    },
-    {
-        id: 6,
-        title: "Board Game Night",
-        description:
-            "Stay in and play your favorite board games with snacks and drinks.",
-        category: "Indoor",
-        budget: "Low",
-        duration: "Evening",
-    },
-    {
-        id: 7,
-        title: "Hiking Adventure",
-        description: "Find a scenic trail and enjoy nature together.",
-        category: "Outdoor",
-        budget: "Free",
-        duration: "Full-day",
-    },
+    "Make dinner together",
+    "Movie night at home",
+    "Go for a walk",
+    "Play board games",
+    "Have a picnic",
+    "Visit a museum",
+    "Go stargazing",
+    "Try a new restaurant",
 ];
 
-export default function RouletteCards() {
-    const [currentIdea, setCurrentIdea] = useState<any | null>(null);
-    const [spinning, setSpinning] = useState(false);
-    const [savedIdeas, setSavedIdeas] = useState<any[]>([]);
+interface RouletteCarouselProps {
+    items: string[];
+    onResult: (item: string) => void;
+}
 
-    const getRandomIdea = () => {
-        setSpinning(true);
+function RouletteCarousel({ items, onResult }: RouletteCarouselProps) {
+    const [isSpinning, setIsSpinning] = useState(false);
+    const carouselRef = useRef<HTMLDivElement>(null);
 
-        // delay for spinning effect
-        setTimeout(() => {
-            const availableIdeas = dateIdeas.filter(
-                (idea) => !savedIdeas.some((saved) => saved.id === idea.id)
-            );
+    const itemWidth = 180;
+    const visibleItems = 3;
+    const containerWidth = itemWidth * visibleItems;
 
-            if (availableIdeas.length === 0) {
-                // If all ideas are saved, pick from all ideas
-                const randomIndex = Math.floor(
-                    Math.random() * dateIdeas.length
-                );
-                setCurrentIdea(dateIdeas[randomIndex]);
-            } else {
-                // Pick from available ideas
-                const randomIndex = Math.floor(
-                    Math.random() * availableIdeas.length
-                );
-                setCurrentIdea(availableIdeas[randomIndex]);
-            }
+    const N_SETS_IN_EXTENDED_ITEMS = 5;
+    const extendedItems = Array(N_SETS_IN_EXTENDED_ITEMS).fill(items).flat();
+    const carouselCycleLength = items.length * itemWidth;
 
-            setSpinning(false);
-        }, 1000);
-    };
+    const RESET_BLOCK_INDEX = 2;
+    const NUM_VISUAL_SPINS = 2;
 
-    // Initialize with a random idea
-    useEffect(() => {
-        getRandomIdea();
-    }, []);
+    const [offset, setOffset] = useState(() => {
+        const initialItemIndexInResetBlock =
+            items.length * RESET_BLOCK_INDEX + 0;
+        return (
+            initialItemIndexInResetBlock * itemWidth -
+            (containerWidth / 2 - itemWidth / 2)
+        );
+    });
+    const [selectedItem, setSelectedItem] = useState<string | null>(null);
 
-    // Function to save current idea
-    const saveIdea = () => {
-        if (
-            currentIdea &&
-            !savedIdeas.some((idea) => idea.id === currentIdea.id)
-        ) {
-            setSavedIdeas([...savedIdeas, currentIdea]);
+    const spin = () => {
+        if (isSpinning) return;
+
+        setIsSpinning(true);
+        setSelectedItem(null);
+
+        const randomIndex = Math.floor(Math.random() * items.length);
+        const actualSelectedItem = items[randomIndex];
+
+        const resetItemActualIndex =
+            items.length * RESET_BLOCK_INDEX + randomIndex;
+        const resetLandingOffset =
+            resetItemActualIndex * itemWidth -
+            (containerWidth / 2 - itemWidth / 2);
+        const animationTargetOffset =
+            resetLandingOffset + NUM_VISUAL_SPINS * carouselCycleLength;
+
+        // Get the actual moving element to control its transition style
+        const carouselItemsEl = carouselRef.current?.querySelector(
+            ".flex.transition-transform"
+        ) as HTMLElement | null;
+
+        if (carouselItemsEl) {
+            carouselItemsEl.style.transition = "none";
         }
-        getRandomIdea();
-    };
+        setOffset(resetLandingOffset);
 
-    // Function to skip current idea
-    const skipIdea = () => {
-        getRandomIdea();
+        requestAnimationFrame(() => {
+            if (carouselItemsEl) {
+                carouselItemsEl.style.transition = `transform 3000ms ease-out`;
+            }
+            setOffset(animationTargetOffset);
+        });
+
+        setTimeout(() => {
+            setIsSpinning(false);
+            setSelectedItem(actualSelectedItem);
+            onResult(actualSelectedItem);
+            // IMPORTANT: match the timeout duration with the transition duration
+        }, 3000);
     };
 
     return (
-        <div className="flex flex-col items-center py-8 pr-4 h-full">
-            <AnimatePresence mode="wait">
-                {currentIdea && (
-                    <motion.div
-                        key={currentIdea.id}
-                        initial={{ opacity: 0, y: 0 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.1 }}
-                        className="w-full"
-                    >
-                        <Card.Card className="w-full overflow-hidden py-4">
-                            <Card.CardHeader className="px-8">
-                                <Card.CardTitle>
-                                    <p className="text-lg font-bold">
-                                        {currentIdea.title}
-                                    </p>
-                                </Card.CardTitle>
-                                <Card.CardDescription>
-                                    <div className="flex flex-wrap gap-2">
-                                        <Badge variant="outline">
-                                            {currentIdea.category}
-                                        </Badge>
-                                        <Badge variant="outline">
-                                            {currentIdea.budget} Budget
-                                        </Badge>
-                                        <Badge variant="outline">
-                                            {currentIdea.duration}
-                                        </Badge>
-                                    </div>
-                                </Card.CardDescription>
-                            </Card.CardHeader>
-                            <Card.CardContent className="px-8">
-                                <p className="text-sm">
-                                    {currentIdea.description}
-                                </p>
-                            </Card.CardContent>
-                            <Card.CardFooter className="flex justify-between px-8 border-t">
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    onClick={skipIdea}
-                                    disabled={spinning}
-                                >
-                                    <ThumbsDown className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                    variant="default"
-                                    onClick={saveIdea}
-                                    disabled={spinning}
-                                >
-                                    <Heart className="w-4 h-4" />
-                                    Save This Idea
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    onClick={saveIdea}
-                                    disabled={spinning}
-                                >
-                                    <ThumbsUp className="w-4 h-4" />
-                                </Button>
-                            </Card.CardFooter>
-                        </Card.Card>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+        <Card className="w-full">
+            <CardContent className="flex flex-col items-center gap-4">
+                <div style={{ width: `${containerWidth}px` }}>
+                    <div ref={carouselRef} className="overflow-hidden">
+                        <div className="relative flex items-center">
+                            <div className="absolute left-1/2 top-0 bottom-0 w-[180px] -translate-x-1/2 z-0 border-x border-dashed"></div>
 
-            <Button
-                variant="outline"
-                size="sm"
-                className="gap-2"
-                onClick={getRandomIdea}
-                disabled={spinning}
-            >
-                <RefreshCw
-                    className={`w-4 h-4 ${spinning ? "animate-spin" : ""}`}
-                />
-                Spin Again
-            </Button>
-
-            <Dialog.Dialog>
-                <Dialog.DialogTrigger asChild>
-                    <Button variant="ghost" size="sm">
-                        <Plus className="w-4 h-4 mr-1" />
-                        Add Custom Idea
-                    </Button>
-                </Dialog.DialogTrigger>
-                <Dialog.DialogContent>
-                    <Dialog.DialogHeader>
-                        <Dialog.DialogTitle>
-                            Add Custom Date Idea
-                        </Dialog.DialogTitle>
-                        <Dialog.DialogDescription>
-                            Create your own date idea to add to the roulette.
-                        </Dialog.DialogDescription>
-                    </Dialog.DialogHeader>
-                    <div className="grid gap-4 py-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="title">Title</Label>
-                            <Input
-                                id="title"
-                                placeholder="Enter a title for your date idea"
-                            />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="description">Description</Label>
-                            {/* <Textarea
-                                    id="description"
-                                    placeholder="Describe your date idea"
-                                /> */}
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="category">Category</Label>
-                                <Input
-                                    id="category"
-                                    placeholder="Indoor, Outdoor, etc."
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="budget">Budget</Label>
-                                <Input
-                                    id="budget"
-                                    placeholder="Free, Low, Medium, High"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                    <Dialog.DialogFooter>
-                        <Button type="submit">Add Idea</Button>
-                    </Dialog.DialogFooter>
-                </Dialog.DialogContent>
-            </Dialog.Dialog>
-            {savedIdeas.length > 0 && (
-                <div className="mt-8">
-                    <h2 className="mb-4 text-xl font-semibold">Saved Ideas</h2>
-                    <div className="grid gap-4 md:grid-cols-2">
-                        {savedIdeas.map((idea) => (
-                            <Card.Card
-                                key={idea.id}
-                                className="overflow-hidden"
+                            <div
+                                className="flex transition-transform"
+                                style={{
+                                    transform: `translateX(-${offset}px)`,
+                                    width: `${
+                                        extendedItems.length * itemWidth
+                                    }px`,
+                                }}
                             >
-                                <Card.CardHeader className="py-3">
-                                    <Card.CardTitle className="text-lg bg-card">
-                                        {idea.title}
-                                    </Card.CardTitle>
-                                    <div className="flex flex-wrap gap-1 mt-1">
-                                        <Badge
-                                            variant="secondary"
-                                            className="text-xs"
-                                        >
-                                            {idea.category}
-                                        </Badge>
-                                        <Badge
-                                            variant="outline"
-                                            className="text-xs"
-                                        >
-                                            {idea.budget}
-                                        </Badge>
+                                {extendedItems.map((item, index) => (
+                                    <div
+                                        key={`item-${index}`}
+                                        className="flex-shrink-0 flex items-center justify-center px-4 py-2"
+                                        style={{
+                                            width: `${itemWidth}px`,
+                                        }}
+                                    >
+                                        <span className=" font-semibold text-center text-sm leading-tight">
+                                            {item}
+                                        </span>
                                     </div>
-                                </Card.CardHeader>
-                                <Card.CardContent className="py-3">
-                                    <p className="text-sm">
-                                        {idea.description}
-                                    </p>
-                                </Card.CardContent>
-                            </Card.Card>
-                        ))}
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
-            )}
+
+                <div className="flex flex-col items-center gap-4">
+                    {selectedItem && (
+                        <div className="px-4 py-2 rounded-full border">
+                            {selectedItem}
+                        </div>
+                    )}
+
+                    <Button onClick={spin} disabled={isSpinning}>
+                        {isSpinning ? (
+                            <>
+                                <RotateCw className="w-4 h-4 animate-spin" />
+                                Spinning...
+                            </>
+                        ) : (
+                            <>
+                                <Play className="w-4 h-4" />
+                                Spin!
+                            </>
+                        )}
+                    </Button>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+export default function Component() {
+    const [currentRoulette, setCurrentRoulette] = useState<"date">("date");
+    const [dateResult, setDateResult] = useState<string | null>(null);
+
+    const handleDateResult = (result: string) => {
+        setDateResult(result);
+    };
+
+    const resetRoulettes = () => {
+        setCurrentRoulette("date");
+        setDateResult(null);
+    };
+
+    return (
+        <div className="py-8 px-4">
+            <div className="flex flex-col items-center gap-4">
+                {currentRoulette === "date" && (
+                    <RouletteCarousel
+                        items={dateIdeas}
+                        onResult={handleDateResult}
+                    />
+                )}
+
+                {dateResult && (
+                    <Card className="w-full">
+                        <CardContent>
+                            {dateResult && (
+                                <div className="p-4 rounded-lg">
+                                    <p className="font-medium">
+                                        Date Idea: {dateResult}
+                                    </p>
+                                </div>
+                            )}
+                            <Button onClick={resetRoulettes} variant="outline">
+                                <RotateCcw className="w-4 h-4" />
+                                Start Over
+                            </Button>
+                        </CardContent>
+                    </Card>
+                )}
+            </div>
         </div>
     );
 }
