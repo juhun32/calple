@@ -134,11 +134,11 @@ export function AddDDayDialog({
                                     Group:
                                 </Label>
                                 <Select.Select
-                                    value={group}
+                                    value={group ? group : "others"}
                                     onValueChange={setGroup}
                                 >
                                     <Select.SelectTrigger className="w-full text-sm">
-                                        <Select.SelectValue placeholder="Select Group" />
+                                        <Select.SelectValue placeholder="Others" />
                                     </Select.SelectTrigger>
                                     <Select.SelectContent className="w-full">
                                         <Select.SelectGroup>
@@ -182,7 +182,7 @@ export function AddDDayDialog({
                                             ? "text-muted-foreground"
                                             : "text-foreground"
                                     )}
-                                    placeholder="Optional"
+                                    placeholder="(Optional)"
                                 />
                                 <Label
                                     className={cn(

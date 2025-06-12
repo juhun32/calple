@@ -65,8 +65,10 @@ export default async function RootLayout({
     const authState = await getAuthStatus();
 
     return (
-        <html lang="en" suppressHydrationWarning>
-            <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        <html lang="en" suppressHydrationWarning className="h-full">
+            <body
+                className={`${geistSans.variable} ${geistMono.variable} h-full font-sans flex flex-col`}
+            >
                 <ThemeProvider
                     attribute="class"
                     defaultTheme="system"
@@ -74,7 +76,7 @@ export default async function RootLayout({
                 >
                     <AuthProvider initialState={authState}>
                         <NavBar />
-                        {children}
+                        <div className="h-full">{children}</div>
                         <div className="fixed bottom-0 left-0 h-8 w-full flex justify-center z-50 border-t border-dashed px-8 backdrop-blur">
                             <div className="container flex itms-center justify-between">
                                 <div className="flex flex-col px-6 py-2 container text-muted-foreground text-xs justify-center">

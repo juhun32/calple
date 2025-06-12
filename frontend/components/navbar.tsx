@@ -20,14 +20,13 @@ import {
     Paintbrush,
     Sun,
     Moon,
-    Heart,
     Menu,
     User,
     Settings,
     Siren,
     Dices,
-    BookHeart,
     CalendarCheck,
+    Flower,
 } from "lucide-react";
 
 export function NavBar() {
@@ -100,8 +99,8 @@ export function NavBar() {
                                 <DropdownMenu.DropdownMenuItem
                                     onClick={() => setTheme("pink")}
                                 >
-                                    <Heart className="mr-2 h-4 w-4" />
-                                    Pink
+                                    <Flower className="mr-2 h-4 w-4" />
+                                    Rose
                                 </DropdownMenu.DropdownMenuItem>
                                 <DropdownMenu.DropdownMenuItem
                                     onClick={() => setTheme("light")}

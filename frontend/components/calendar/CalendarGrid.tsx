@@ -82,12 +82,12 @@ export function CalendarGrid({
                                         <div className="flex flex-col gap-1">
                                             {isSelected(day) ? (
                                                 <div className="flex items-center justify-between h-6">
-                                                    <div className="px-2 py-1 w-6 rounded-md flex justify-center font-medium">
+                                                    <div className="w-6 flex justify-center border-b border-foreground">
                                                         {day}
                                                     </div>
                                                     <Button
                                                         variant="ghost"
-                                                        className="hidden sm:flex h-6 w-6"
+                                                        className="hidden sm:flex h-6 w-6 rounded-full"
                                                         size={"sm"}
                                                         onClick={(e) =>
                                                             handleAddClick(
@@ -100,11 +100,11 @@ export function CalendarGrid({
                                                     </Button>
                                                 </div>
                                             ) : isToday(day) ? (
-                                                <div className="h-6 w-6 px-2 py-1 rounded-full border-2 border-dashed border-neutral-800 dark:border-white flex items-center justify-center font-medium">
+                                                <div className="h-6 w-6 border-b border-foreground border-dashed flex items-center justify-center">
                                                     {day}
                                                 </div>
                                             ) : (
-                                                <div className="h-6 w-6 px-2 py-1 w-6 rounded-md flex items-center justify-center font-normal text-muted-foreground">
+                                                <div className="h-6 w-6 flex items-center justify-center text-muted-foreground">
                                                     {day}
                                                 </div>
                                             )}

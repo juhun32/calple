@@ -7,14 +7,7 @@ import * as Card from "@/components/ui/card";
 import * as Dialog from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-    ChevronLeft,
-    Heart,
-    Plus,
-    RefreshCw,
-    ThumbsDown,
-    ThumbsUp,
-} from "lucide-react";
+import { Heart, Plus, RefreshCw, ThumbsDown, ThumbsUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -136,7 +129,7 @@ export default function RouletteCards() {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center">
+        <div className="flex flex-col items-center py-8 pr-4 h-full">
             <AnimatePresence mode="wait">
                 {currentIdea && (
                     <motion.div
