@@ -103,6 +103,13 @@ func main() {
 		api.GET("/connection/pending", handlers.GetPendingInvitations)
 		api.POST("/connection/:id/accept", handlers.AcceptInvitation)
 		api.POST("/connection/:id/reject", handlers.RejectInvitation)
+
+		// idea routes
+		api.GET("/ideas/all", handlers.GetAllPosts)
+		api.GET("/ideas", handlers.GetPost)
+		api.POST("/ideas", handlers.AddPost)
+		api.PUT("/ideas/:id", handlers.UpdatePost)
+		api.DELETE("/ideas/:id", handlers.DeletePost)
 	}
 
 	// run server

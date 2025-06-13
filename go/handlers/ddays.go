@@ -37,10 +37,10 @@ func GetDDays(c *gin.Context) {
 		return
 	}
 
-	// Get firestore client from context
+	// firestore client from context
 	fsClient := c.MustGet("firestore").(*firestore.Client)
 
-	// Get user email from firestore
+	// user email from firestore
 	userDoc, err := fsClient.Collection("users").Doc(uid.(string)).Get(context.Background())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve user"})
@@ -48,85 +48,85 @@ func GetDDays(c *gin.Context) {
 	}
 	userEmail := userDoc.Data()["email"].(string)
 
-	// Get view date from query params
+	// parse view date from query params
 	viewDate := c.Query("view")
 
-	// If no view date provided, return error
 	if viewDate == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing view date parameter"})
 		return
 	}
 
-	// Check if view date has valid format (YYYYMM)
+	// validate view date format
+	// expected format: YYYYMM (6 characters)
+	// example: "202510" for October 2025
 	if len(viewDate) != 6 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Use YYYYMM"})
 		return
 	}
 
-	// Get events created by the user
+	// get events created by the user
 	q1, err := fsClient.Collection("ddays").Where("createdBy", "==", userEmail).Documents(context.Background()).GetAll()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch events: " + err.Error()})
 		return
 	}
 
-	// Get events where user is connected
+	// get events where user is connected
 	q2, err := fsClient.Collection("ddays").Where("connectedUsers", "array-contains", userEmail).Documents(context.Background()).GetAll()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch connected events: " + err.Error()})
 		return
 	}
 
-	// Combine results, removing duplicates
+	// combine results and remove duplicates
 	events := []DDay{}
 	seen := make(map[string]bool)
 
-	// Process both query results
+	// iterate through both query results
+	// and collect unique events based on document ID
 	for _, docs := range [][]*firestore.DocumentSnapshot{q1, q2} {
 		for _, doc := range docs {
 			if seen[doc.Ref.ID] {
-				continue // Skip duplicates
+				// skip if already seen
+				continue
 			}
 
 			data := doc.Data()
 			seen[doc.Ref.ID] = true
 
-			// Extract date from document
+			// make sure date field exists and is a string
 			dateStr, ok := data["date"].(string)
 			if !ok {
 				fmt.Printf("Warning: Invalid date format for document %s\n", doc.Ref.ID)
 				continue
 			}
 
-			// Check if event date length is valid
+			// check if date string is in the expected format
+			// expected format: YYYYMMDD (8 characters) (different from viewDate @getDDays)
 			if len(dateStr) != 8 {
 				fmt.Printf("Warning: Invalid date string length for document %s: %s\n", doc.Ref.ID, dateStr)
 				continue
 			}
 
-			// Extract year and month from the event date
+			// extract year and month from the event date
 			eventYearMonth := dateStr[0:6]
 
-			// Check if this event should be included based on various criteria
+			// check if event is annual
 			isAnnual, okIsAnnual := data["isAnnual"].(bool)
 			if !okIsAnnual {
 				fmt.Printf("Warning: Invalid or missing isAnnual field for document %s\n", doc.Ref.ID)
-				// Decide on a default or skip
-				isAnnual = false // Or continue, depending on your logic
+				isAnnual = false
 			}
 
-			// For non-annual events, check if year and month match
 			if !isAnnual {
-				// Only include events from the requested month
 				if eventYearMonth != viewDate {
 					continue
 				}
 			} else {
-				// For annual events, only compare the month portion
+				// annual events; only compare the month portion
 				viewMonth := viewDate[4:6]
 				eventMonth := dateStr[4:6]
 
-				// For annual events, only the month needs to match
 				if eventMonth != viewMonth {
 					continue
 				}
@@ -134,41 +134,36 @@ func GetDDays(c *gin.Context) {
 
 			title, _ := data["title"].(string)
 
-			group := "" // Default to empty string
+			group := ""
 			if grpVal, ok := data["group"]; ok {
 				if grpStr, okStr := grpVal.(string); okStr {
 					group = grpStr
-				} else {
-					// Optional: Log if group exists but is not a string
-					// fmt.Printf("Warning: Group field for document %s is not a string: %v\n", doc.Ref.ID, grpVal)
 				}
 			}
 
-			description := "" // Default to empty string
+			description := ""
 			if descVal, ok := data["description"]; ok {
 				if descStr, okStr := descVal.(string); okStr {
 					description = descStr
 				}
 			}
 
-			createdBy, _ := data["createdBy"].(string) // Assumes createdBy is always present
+			createdBy, _ := data["createdBy"].(string)
 
-			// Safely get time fields
 			var createdAt, updatedAt time.Time
 			if ct, ok := data["createdAt"].(time.Time); ok {
 				createdAt = ct
 			} else {
-				// Handle missing or invalid createdAt (e.g., log, set to zero value, or skip doc)
+				// error handling ex) log, set to zero value, or skip doc
 				fmt.Printf("Warning: Missing or invalid createdAt for document %s\n", doc.Ref.ID)
 			}
 			if ut, ok := data["updatedAt"].(time.Time); ok {
 				updatedAt = ut
 			} else {
-				// Handle missing or invalid updatedAt
+				// missing or invalid updatedAt handling
 				fmt.Printf("Warning: Missing or invalid updatedAt for document %s\n", doc.Ref.ID)
 			}
 
-			// Add matched event to results
 			events = append(events, DDay{
 				ID:             doc.Ref.ID,
 				Title:          title,

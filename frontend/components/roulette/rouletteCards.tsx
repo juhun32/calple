@@ -16,6 +16,17 @@ const dateIdeas = [
     "Try a new restaurant",
 ];
 
+const dinnerIdeas = [
+    "Cook a new recipe",
+    "Order from a local restaurant",
+    "Have a themed dinner night",
+    "Make homemade pizza",
+    "Try a new cuisine",
+    "Have a dessert night",
+    "Cook breakfast for dinner",
+    "Make sushi together",
+];
+
 interface RouletteCarouselProps {
     items: string[];
     onResult: (item: string) => void;
@@ -25,9 +36,7 @@ function RouletteCarousel({ items, onResult }: RouletteCarouselProps) {
     const [isSpinning, setIsSpinning] = useState(false);
     const carouselRef = useRef<HTMLDivElement>(null);
 
-    const itemWidth = 180;
-    const visibleItems = 3;
-    const containerWidth = itemWidth * visibleItems;
+    const itemWidth = 250;
 
     const N_SETS_IN_EXTENDED_ITEMS = 5;
     const extendedItems = Array(N_SETS_IN_EXTENDED_ITEMS).fill(items).flat();
@@ -39,10 +48,7 @@ function RouletteCarousel({ items, onResult }: RouletteCarouselProps) {
     const [offset, setOffset] = useState(() => {
         const initialItemIndexInResetBlock =
             items.length * RESET_BLOCK_INDEX + 0;
-        return (
-            initialItemIndexInResetBlock * itemWidth -
-            (containerWidth / 2 - itemWidth / 2)
-        );
+        return initialItemIndexInResetBlock * itemWidth;
     });
     const [selectedItem, setSelectedItem] = useState<string | null>(null);
 
@@ -57,9 +63,7 @@ function RouletteCarousel({ items, onResult }: RouletteCarouselProps) {
 
         const resetItemActualIndex =
             items.length * RESET_BLOCK_INDEX + randomIndex;
-        const resetLandingOffset =
-            resetItemActualIndex * itemWidth -
-            (containerWidth / 2 - itemWidth / 2);
+        const resetLandingOffset = resetItemActualIndex * itemWidth;
         const animationTargetOffset =
             resetLandingOffset + NUM_VISUAL_SPINS * carouselCycleLength;
 
@@ -75,7 +79,7 @@ function RouletteCarousel({ items, onResult }: RouletteCarouselProps) {
 
         requestAnimationFrame(() => {
             if (carouselItemsEl) {
-                carouselItemsEl.style.transition = `transform 3000ms ease-out`;
+                carouselItemsEl.style.transition = `transform 2500ms ease-out`;
             }
             setOffset(animationTargetOffset);
         });
@@ -85,17 +89,15 @@ function RouletteCarousel({ items, onResult }: RouletteCarouselProps) {
             setSelectedItem(actualSelectedItem);
             onResult(actualSelectedItem);
             // IMPORTANT: match the timeout duration with the transition duration
-        }, 3000);
+        }, 2500);
     };
 
     return (
-        <Card className="w-full">
+        <Card className="w-full h-full">
             <CardContent className="flex flex-col items-center gap-4">
-                <div style={{ width: `${containerWidth}px` }}>
+                <div style={{ width: `${itemWidth}px` }}>
                     <div ref={carouselRef} className="overflow-hidden">
                         <div className="relative flex items-center">
-                            <div className="absolute left-1/2 top-0 bottom-0 w-[180px] -translate-x-1/2 z-0 border-x border-dashed"></div>
-
                             <div
                                 className="flex transition-transform"
                                 style={{
@@ -150,46 +152,29 @@ function RouletteCarousel({ items, onResult }: RouletteCarouselProps) {
 }
 
 export default function Component() {
-    const [currentRoulette, setCurrentRoulette] = useState<"date">("date");
     const [dateResult, setDateResult] = useState<string | null>(null);
+    const [dinnerResult, setDinnerResult] = useState<string | null>(null);
 
     const handleDateResult = (result: string) => {
         setDateResult(result);
     };
 
-    const resetRoulettes = () => {
-        setCurrentRoulette("date");
-        setDateResult(null);
+    const handleDinnerResult = (result: string) => {
+        setDinnerResult(result);
     };
 
     return (
-        <div className="py-8 px-4">
-            <div className="flex flex-col items-center gap-4">
-                {currentRoulette === "date" && (
-                    <RouletteCarousel
-                        items={dateIdeas}
-                        onResult={handleDateResult}
-                    />
-                )}
+        <div className="grid grid-cols-2 items-center gap-4">
+            <RouletteCarousel items={dateIdeas} onResult={handleDateResult} />
 
-                {dateResult && (
-                    <Card className="w-full">
-                        <CardContent>
-                            {dateResult && (
-                                <div className="p-4 rounded-lg">
-                                    <p className="font-medium">
-                                        Date Idea: {dateResult}
-                                    </p>
-                                </div>
-                            )}
-                            <Button onClick={resetRoulettes} variant="outline">
-                                <RotateCcw className="w-4 h-4" />
-                                Start Over
-                            </Button>
-                        </CardContent>
-                    </Card>
-                )}
-            </div>
+            <RouletteCarousel
+                items={dinnerIdeas}
+                onResult={handleDinnerResult}
+            />
+
+            <RouletteCarousel items={dateIdeas} onResult={handleDateResult} />
+
+            <RouletteCarousel items={dateIdeas} onResult={handleDateResult} />
         </div>
     );
 }
