@@ -85,7 +85,7 @@ export function AddDDayDialog({
                 <AlertDialog.AlertDialogTrigger asChild>
                     <Button
                         variant="outline"
-                        className="rounded-full flex items-center gap-2 hover:cursor-pointer sm:w-fit h-8 w-8 bg-card"
+                        className="rounded-full flex items-center gap-2 hover:cursor-pointer sm:w-fit h-8 w-8"
                     >
                         <Plus className="h-6" />
                         <span className="hidden sm:flex">Create</span>

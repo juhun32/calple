@@ -36,7 +36,7 @@ function RouletteCarousel({ items, onResult }: RouletteCarouselProps) {
     const [isSpinning, setIsSpinning] = useState(false);
     const carouselRef = useRef<HTMLDivElement>(null);
 
-    const itemWidth = 250;
+    const itemWidth = 300;
 
     const N_SETS_IN_EXTENDED_ITEMS = 5;
     const extendedItems = Array(N_SETS_IN_EXTENDED_ITEMS).fill(items).flat();
@@ -115,7 +115,7 @@ function RouletteCarousel({ items, onResult }: RouletteCarouselProps) {
                                             width: `${itemWidth}px`,
                                         }}
                                     >
-                                        <span className=" font-semibold text-center text-sm leading-tight">
+                                        <span className="w-full border px-4 py-2 rounded-full font-semibold text-center text-sm leading-tight">
                                             {item}
                                         </span>
                                     </div>
@@ -126,11 +126,11 @@ function RouletteCarousel({ items, onResult }: RouletteCarouselProps) {
                 </div>
 
                 <div className="flex flex-col items-center gap-4">
-                    {selectedItem && (
+                    {/* {selectedItem && (
                         <div className="px-4 py-2 rounded-full border">
                             {selectedItem}
                         </div>
-                    )}
+                    )} */}
 
                     <Button onClick={spin} disabled={isSpinning}>
                         {isSpinning ? (
@@ -172,9 +172,9 @@ export default function Component() {
                 onResult={handleDinnerResult}
             />
 
-            <RouletteCarousel items={dateIdeas} onResult={handleDateResult} />
+            {/* <RouletteCarousel items={dateIdeas} onResult={handleDateResult} /> */}
 
-            <RouletteCarousel items={dateIdeas} onResult={handleDateResult} />
+            {/* <RouletteCarousel items={dateIdeas} onResult={handleDateResult} /> */}
         </div>
     );
 }

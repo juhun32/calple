@@ -40,7 +40,7 @@ export function CalendarHeader({
     return (
         <div className="flex items-center gap-2">
             <Button
-                className="rounded-full w-14 h-6 flex items-center gap-2 hover:cursor-pointer bg-card"
+                className="rounded-full w-14 h-6 flex items-center gap-2 hover:cursor-pointer"
                 variant={"outline"}
                 onClick={goToToday}
             >
@@ -48,14 +48,14 @@ export function CalendarHeader({
             </Button>
             <Button
                 variant={"outline"}
-                className={"rounded-full w-6 h-6 hover:cursor-pointer bg-card"}
+                className={"rounded-full w-6 h-6 hover:cursor-pointer"}
                 onClick={goToPrevMonth}
             >
                 <ChevronLeft className="h-5 w-5" />
             </Button>
             <Button
                 variant={"outline"}
-                className={"rounded-full w-6 h-6 hover:cursor-pointer bg-card"}
+                className={"rounded-full w-6 h-6 hover:cursor-pointer"}
                 onClick={goToNextMonth}
             >
                 <ChevronRight className="h-5 w-5" />
