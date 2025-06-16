@@ -4,28 +4,11 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RotateCcw, Play, RotateCw } from "lucide-react";
+import { Idea } from "@/lib/types/ideas";
 
-const dateIdeas = [
-    "Make dinner together",
-    "Movie night at home",
-    "Go for a walk",
-    "Play board games",
-    "Have a picnic",
-    "Visit a museum",
-    "Go stargazing",
-    "Try a new restaurant",
-];
-
-const dinnerIdeas = [
-    "Cook a new recipe",
-    "Order from a local restaurant",
-    "Have a themed dinner night",
-    "Make homemade pizza",
-    "Try a new cuisine",
-    "Have a dessert night",
-    "Cook breakfast for dinner",
-    "Make sushi together",
-];
+interface RouletteCardsProps {
+    posts: Idea[];
+}
 
 interface RouletteCarouselProps {
     items: string[];
@@ -151,7 +134,7 @@ function RouletteCarousel({ items, onResult }: RouletteCarouselProps) {
     );
 }
 
-export default function Component() {
+export default function RouletteCards({ posts }: RouletteCardsProps) {
     const [dateResult, setDateResult] = useState<string | null>(null);
     const [dinnerResult, setDinnerResult] = useState<string | null>(null);
 
@@ -163,18 +146,13 @@ export default function Component() {
         setDinnerResult(result);
     };
 
+    // Map posts to titles
+    const titles = posts.map((post) => post.title);
+
     return (
         <div className="grid grid-cols-2 items-center gap-4">
-            <RouletteCarousel items={dateIdeas} onResult={handleDateResult} />
-
-            <RouletteCarousel
-                items={dinnerIdeas}
-                onResult={handleDinnerResult}
-            />
-
-            {/* <RouletteCarousel items={dateIdeas} onResult={handleDateResult} /> */}
-
-            {/* <RouletteCarousel items={dateIdeas} onResult={handleDateResult} /> */}
+            <RouletteCarousel items={titles} onResult={handleDateResult} />
+            <RouletteCarousel items={titles} onResult={handleDinnerResult} />
         </div>
     );
 }

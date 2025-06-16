@@ -1,19 +1,8 @@
 "use client";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import {
-    Bookmark,
-    CalendarIcon,
-    Frame,
-    List,
-    PictureInPicture,
-    Plus,
-    X,
-} from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import * as Resizable from "@/components/ui/resizable";
+import { Bookmark, Frame, List, Plus, X } from "lucide-react";
 import * as AlertDialog from "@/components/ui/alert-dialog";
 
 import RouletteCards from "@/components/roulette/RouletteCards";
@@ -21,15 +10,16 @@ import RouletteSocial from "@/components/roulette/RouletteSocial";
 
 // hooks
 import { usePosts } from "@/lib/hooks/useIdeas";
-
-// types
 import { NewIdeaData } from "@/lib/types/ideas";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
-import { set } from "date-fns";
 
 export default function Roulette() {
-    const { addPost, editPost, deletePost, posts } = usePosts();
+    const { deletePost, posts } = usePosts();
+    const [viewList, setViewList] = useState(false);
+
+    const { addPost } = usePosts();
 
     // state for add post form
     const [title, setTitle] = useState("");
@@ -40,8 +30,6 @@ export default function Roulette() {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
-
-    const [viewList, setViewList] = useState(false);
 
     useEffect(() => {
         if (!isAdding) {
@@ -113,147 +101,121 @@ export default function Roulette() {
     };
 
     return (
-        <div className="container h-full px-8 pt-20 pb-16 mx-auto flex flex-col gap-4">
-            <div>
-                <p className="text-bold text-lg">
-                    Welcome to Community Roulette!
-                </p>
-                <p className="text-sm text-muted-foreground">
-                    This is a fun way to discover new ideas for your next date.
-                    Roulette contains a variety of date ideas from community
-                    users, you can also contribute your own ideas to the
-                    community.
-                </p>
-            </div>
-            <Resizable.ResizablePanelGroup
-                direction="horizontal"
-                className="rounded-lg border w-full"
-            >
-                <Resizable.ResizablePanel defaultSize={50}>
-                    <div className="flex flex-col h-full items-center justify-between p-8 gap-4">
-                        <RouletteCards />
+        <div className="container h-full px-8 pt-20 pb-16 mx-auto grid grid-cols-2 gap-8">
+            <div className="flex flex-col h-full items-center justify-between gap-4">
+                <div>
+                    <RouletteCards posts={posts} />
 
-                        <div className="flex w-full h-12 items-center justify-between">
-                            <Button
-                                variant="outline"
-                                onClick={() => setIsAdding(true)}
-                            >
-                                <Plus className="w-4 h-4" />
-                                Add to Roulette
-                            </Button>
+                    <div className="flex w-full h-12 items-center justify-between">
+                        <Button variant="outline">
+                            <Plus className="w-4 h-4" />
+                            Add to Roulette
+                        </Button>
 
-                            <AlertDialog.AlertDialog
-                                open={viewList}
-                                onOpenChange={setViewList}
-                            >
-                                <AlertDialog.AlertDialogTrigger asChild>
+                        <AlertDialog.AlertDialog
+                            open={viewList}
+                            onOpenChange={setViewList}
+                        >
+                            <AlertDialog.AlertDialogTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setViewList(true)}
+                                >
+                                    <List className="w-4 h-4" />
+                                    My Roulette List
+                                </Button>
+                            </AlertDialog.AlertDialogTrigger>
+
+                            <AlertDialog.AlertDialogContent className="max-w-xl">
+                                <AlertDialog.AlertDialogHeader>
+                                    <AlertDialog.AlertDialogTitle>
+                                        Share your date idea
+                                    </AlertDialog.AlertDialogTitle>
+                                </AlertDialog.AlertDialogHeader>
+                                <div>
+                                    {posts.length > 0 ? (
+                                        <div className="flex flex-col gap-4">
+                                            {posts.map((post) => (
+                                                <div
+                                                    key={post.id}
+                                                    className="p-4 border rounded-md"
+                                                >
+                                                    <div className="flex items-center justify-between">
+                                                        <div>
+                                                            <h3 className="text-lg font-semibold">
+                                                                {post.title}
+                                                            </h3>
+                                                            <p className="text-sm text-muted-foreground">
+                                                                {
+                                                                    post.description
+                                                                }
+                                                            </p>
+                                                        </div>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            onClick={() =>
+                                                                deletePost(
+                                                                    post.id
+                                                                )
+                                                            }
+                                                        >
+                                                            <X className="w-4 h-4" />
+                                                        </Button>
+                                                    </div>
+                                                    {post.image_url && (
+                                                        <img
+                                                            src={post.image_url}
+                                                            alt={post.title}
+                                                            className="mt-2 rounded-md border"
+                                                        />
+                                                    )}
+                                                    {post.tags &&
+                                                        post.tags.length >
+                                                            0 && (
+                                                            <div className="mt-2 flex flex-wrap gap-2">
+                                                                {post.tags.map(
+                                                                    (tag) => (
+                                                                        <span
+                                                                            key={
+                                                                                tag
+                                                                            }
+                                                                            className="px-2 py-1 bg-accent text-xs rounded-full"
+                                                                        >
+                                                                            {
+                                                                                tag
+                                                                            }
+                                                                        </span>
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center text-muted-foreground">
+                                            No ideas shared yet.
+                                        </div>
+                                    )}
+                                </div>
+                                <AlertDialog.AlertDialogFooter>
                                     <Button
                                         variant="outline"
-                                        onClick={() => setViewList(true)}
+                                        onClick={() => setViewList(false)}
                                     >
-                                        <List className="w-4 h-4" />
-                                        My Roulette List
+                                        <X className="w-4 h-4" />
+                                        Close
                                     </Button>
-                                </AlertDialog.AlertDialogTrigger>
-
-                                <AlertDialog.AlertDialogContent className="max-w-xl">
-                                    <AlertDialog.AlertDialogHeader>
-                                        <AlertDialog.AlertDialogTitle>
-                                            Share your date idea
-                                        </AlertDialog.AlertDialogTitle>
-                                    </AlertDialog.AlertDialogHeader>
-                                    <div>
-                                        {posts.length > 0 ? (
-                                            <div className="flex flex-col gap-4">
-                                                {posts.map((post) => (
-                                                    <div
-                                                        key={post.id}
-                                                        className="p-4 border rounded-md"
-                                                    >
-                                                        <div className="flex items-center justify-between">
-                                                            <div>
-                                                                <h3 className="text-lg font-semibold">
-                                                                    {post.title}
-                                                                </h3>
-                                                                <p className="text-sm text-muted-foreground">
-                                                                    {
-                                                                        post.description
-                                                                    }
-                                                                </p>
-                                                            </div>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                onClick={() =>
-                                                                    deletePost(
-                                                                        post.id
-                                                                    )
-                                                                }
-                                                            >
-                                                                <X className="w-4 h-4" />
-                                                            </Button>
-                                                        </div>
-                                                        {post.image_url && (
-                                                            <img
-                                                                src={
-                                                                    post.image_url
-                                                                }
-                                                                alt={post.title}
-                                                                className="mt-2 rounded-md border"
-                                                            />
-                                                        )}
-                                                        {post.tags &&
-                                                            post.tags.length >
-                                                                0 && (
-                                                                <div className="mt-2 flex flex-wrap gap-2">
-                                                                    {post.tags.map(
-                                                                        (
-                                                                            tag
-                                                                        ) => (
-                                                                            <span
-                                                                                key={
-                                                                                    tag
-                                                                                }
-                                                                                className="px-2 py-1 bg-accent text-xs rounded-full"
-                                                                            >
-                                                                                {
-                                                                                    tag
-                                                                                }
-                                                                            </span>
-                                                                        )
-                                                                    )}
-                                                                </div>
-                                                            )}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <div className="text-center text-muted-foreground">
-                                                No ideas shared yet.
-                                            </div>
-                                        )}
-                                    </div>
-                                    <AlertDialog.AlertDialogFooter>
-                                        <Button
-                                            variant="outline"
-                                            onClick={() => setViewList(false)}
-                                        >
-                                            <X className="w-4 h-4" />
-                                            Close
-                                        </Button>
-                                    </AlertDialog.AlertDialogFooter>
-                                </AlertDialog.AlertDialogContent>
-                            </AlertDialog.AlertDialog>
-                        </div>
+                                </AlertDialog.AlertDialogFooter>
+                            </AlertDialog.AlertDialogContent>
+                        </AlertDialog.AlertDialog>
                     </div>
-                </Resizable.ResizablePanel>
+                </div>
+            </div>
 
-                <Resizable.ResizableHandle withHandle />
-
-                <Resizable.ResizablePanel
-                    defaultSize={50}
-                    className="flex flex-col items-center justify-center"
-                >
+            <div className="flex flex-col h-full items-center justify-between overflow-y-scroll no-scrollbar border-b">
+                <div className="sticky w-full top-0 left-0 right-0 z-10 flex items-center justify-between bg-background pb-2 border-b">
                     <AlertDialog.AlertDialog
                         open={isAdding}
                         onOpenChange={setIsAdding}
@@ -364,11 +326,11 @@ export default function Roulette() {
                         <Bookmark className="w-4 h-4" />
                         Saved Ideas
                     </Button>
-                    <div className="flex items-center justify-center w-full h-full min-w-xs max-w-xl">
-                        <RouletteSocial />
-                    </div>
-                </Resizable.ResizablePanel>
-            </Resizable.ResizablePanelGroup>
+                </div>
+                <div className="mt-8 flex flex-col items-center justify-center w-full px-8">
+                    <RouletteSocial />
+                </div>
+            </div>
         </div>
     );
 }

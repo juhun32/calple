@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import * as Card from "@/components/ui/card";
-import { Bookmark, Heart, MessageCircle, Plus, ThumbsUp } from "lucide-react";
+import { Bookmark, Heart, MessageCircle, ThumbsUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -31,10 +31,13 @@ export default function RouletteSocial() {
     }
 
     return (
-        <div className="w-full flex flex-col overflow-y-auto h-full p-8 gap-4">
-            <div className="flex flex-col gap-4">
+        <div className="w-full h-full flex flex-col gap-4">
+            <div className="flex flex-col gap-4 max-h-screen">
                 {allPosts.map((post) => (
-                    <Card.Card key={post.id} className="w-full">
+                    <Card.Card
+                        key={post.id}
+                        className="w-full bg-background border-none shadow-none pb-8"
+                    >
                         <Card.CardHeader>
                             <div className="flex items-center gap-3">
                                 <Avatar className="w-10 h-10 rounded-full">
