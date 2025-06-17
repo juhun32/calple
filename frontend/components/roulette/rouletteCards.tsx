@@ -4,10 +4,10 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RotateCcw, Play, RotateCw } from "lucide-react";
-import { Idea } from "@/lib/types/ideas";
+import { RouletteProps } from "@/lib/types/roulette";
 
 interface RouletteCardsProps {
-    posts: Idea[];
+    posts: RouletteProps[];
 }
 
 interface RouletteCarouselProps {
@@ -16,6 +16,7 @@ interface RouletteCarouselProps {
 }
 
 function RouletteCarousel({ items, onResult }: RouletteCarouselProps) {
+    // roulette carousel component
     const [isSpinning, setIsSpinning] = useState(false);
     const carouselRef = useRef<HTMLDivElement>(null);
 
@@ -73,6 +74,26 @@ function RouletteCarousel({ items, onResult }: RouletteCarouselProps) {
             onResult(actualSelectedItem);
             // IMPORTANT: match the timeout duration with the transition duration
         }, 2500);
+    };
+
+    // add roulette carousel component
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
+
+    const handleAddRoulette = () => {
+        if (!title || !description) {
+            alert("Please fill in both title and description.");
+            return;
+        }
+
+        const newRoulette: RouletteProps = {
+            title: title,
+            description: description,
+        };
+
+        // Reset the input fields
+        setTitle("");
+        setDescription("");
     };
 
     return (

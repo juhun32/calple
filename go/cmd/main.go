@@ -90,14 +90,15 @@ func main() {
 	r.GET("/api/auth/status", handlers.AuthStatus)
 	r.GET("/google/oauth/logout", handlers.Logout)
 
-	// dday event routes
 	api := r.Group("/api")
 	{
+		// dday event routes
 		api.GET("/ddays", handlers.GetDDays)
 		api.POST("/ddays", handlers.CreateDDay)
 		api.PUT("/ddays/:id", handlers.UpdateDDay)
 		api.DELETE("/ddays/:id", handlers.DeleteDDay)
 
+		// connection routes
 		api.GET("/connection", handlers.GetConnection)
 		api.POST("/connection/invite", handlers.InviteConnection)
 		api.GET("/connection/pending", handlers.GetPendingInvitations)
@@ -110,6 +111,12 @@ func main() {
 		api.POST("/ideas", handlers.AddPost)
 		api.PUT("/ideas/:id", handlers.UpdatePost)
 		api.DELETE("/ideas/:id", handlers.DeletePost)
+
+		// roulette routes
+		api.GET("/roulette", handlers.GetIdeaRoulette)
+		api.POST("/roulette", handlers.AddIdeaRoulette)
+		api.PUT("/roulette/:id", handlers.EditIdeaRoulette)
+		api.DELETE("/roulette/:id", handlers.DeleteIdeaRoulette)
 	}
 
 	// run server
