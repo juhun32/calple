@@ -38,8 +38,9 @@ export function ShowAllEvents({
                     <AlertDialog.AlertDialogTitle className="flex gap-2 items-baseline">
                         <p className="text-sm text-muted-foreground">
                             All Events for
-                        </p>{" "}
-                        {ddays[0]?.date.toLocaleDateString("default", {
+                        </p>
+
+                        {ddays[0]?.date?.toLocaleDateString("default", {
                             month: "long",
                             day: "numeric",
                         })}
