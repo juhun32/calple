@@ -20,7 +20,7 @@ type DDay struct {
 	Title          string    `json:"title"`
 	Group          string    `json:"group"`
 	Description    string    `json:"description"`
-	Date           string    `json:"date"`
+	Date           string    `json:"date,omitempty"`
 	IsAnnual       bool      `json:"isAnnual"`
 	CreatedBy      string    `json:"createdBy"`
 	ConnectedUsers []string  `json:"connectedUsers"`
@@ -94,41 +94,41 @@ func GetDDays(c *gin.Context) {
 			data := doc.Data()
 			seen[doc.Ref.ID] = true
 
-			// make sure date field exists and is a string
-			dateStr, ok := data["date"].(string)
-			if !ok {
-				fmt.Printf("Warning: Invalid date format for document %s\n", doc.Ref.ID)
-				continue
-			}
-
-			// check if date string is in the expected format
-			// expected format: YYYYMMDD (8 characters) (different from viewDate @getDDays)
-			if len(dateStr) != 8 {
-				fmt.Printf("Warning: Invalid date string length for document %s: %s\n", doc.Ref.ID, dateStr)
-				continue
-			}
-
-			// extract year and month from the event date
-			eventYearMonth := dateStr[0:6]
-
-			// check if event is annual
-			isAnnual, okIsAnnual := data["isAnnual"].(bool)
-			if !okIsAnnual {
-				fmt.Printf("Warning: Invalid or missing isAnnual field for document %s\n", doc.Ref.ID)
+			// scope check cause isAnnual will be defined inside if block
+			var isAnnual bool
+			if val, ok := data["isAnnual"].(bool); ok {
+				isAnnual = val
+			} else {
+				// Default to false if missing or wrong type
 				isAnnual = false
 			}
 
-			if !isAnnual {
-				if eventYearMonth != viewDate {
+			// make sure date field exists and is a string
+			dateStr, dateExists := data["date"].(string)
+
+			// apply filtering only if date field exists. it may not exist for drag & drop events
+			if dateExists && dateStr != "" {
+				// check if date string is in the expected format
+				// expected format: YYYYMMDD (8 characters) (different from viewDate @getDDays)
+				if len(dateStr) != 8 {
+					fmt.Printf("Warning: Invalid date string length for document %s: %s\n", doc.Ref.ID, dateStr)
 					continue
 				}
-			} else {
-				// annual events; only compare the month portion
-				viewMonth := viewDate[4:6]
-				eventMonth := dateStr[4:6]
 
-				if eventMonth != viewMonth {
-					continue
+				// extract year and month from the event date
+				eventYearMonth := dateStr[0:6]
+
+				// check if event is annual
+				if !isAnnual {
+					if eventYearMonth != viewDate {
+						continue
+					}
+				} else {
+					viewMonth := viewDate[4:6]
+					eventMonth := dateStr[4:6]
+					if eventMonth != viewMonth {
+						continue
+					}
 				}
 			}
 
@@ -212,10 +212,20 @@ func CreateDDay(c *gin.Context) {
 		return
 	}
 
-	// validate date format
-	if len(dday.Date) != 8 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Use YYYYMMDD"})
-		return
+	if dday.Date != "" {
+		// validate date format
+		// expected format: YYYYMMDD
+		if len(dday.Date) != 8 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Use YYYYMMDD"})
+			return
+		}
+		_, err1 := strconv.Atoi(dday.Date[0:4])
+		month, err2 := strconv.Atoi(dday.Date[4:6])
+		day, err3 := strconv.Atoi(dday.Date[6:8])
+		if err1 != nil || err2 != nil || err3 != nil || month < 1 || month > 12 || day < 1 || day > 31 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date values"})
+			return
+		}
 	}
 
 	// validate title
@@ -224,20 +234,10 @@ func CreateDDay(c *gin.Context) {
 		return
 	}
 
-	// Validate date values
-	_, err1 := strconv.Atoi(dday.Date[0:4])
-	month, err2 := strconv.Atoi(dday.Date[4:6])
-	day, err3 := strconv.Atoi(dday.Date[6:8])
-
-	if err1 != nil || err2 != nil || err3 != nil || month < 1 || month > 12 || day < 1 || day > 31 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date values"})
-		return
-	}
-
-	// Set current time for timestamps
+	// set current time for timestamps
 	now := time.Now()
 
-	// Create a new document in the ddays collection
+	// create a new document in the ddays collection
 	newDDay := map[string]interface{}{
 		"title":          dday.Title,
 		"group":          dday.Group,
@@ -250,14 +250,14 @@ func CreateDDay(c *gin.Context) {
 		"updatedAt":      now,
 	}
 
-	// Add the document to Firestore
+	// add document to Firestore
 	newDoc, _, err := fsClient.Collection("ddays").Add(context.Background(), newDDay)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create event: " + err.Error()})
 		return
 	}
 
-	// Return the created event
+	// return created evetn
 	dday.ID = newDoc.ID
 	dday.CreatedBy = userEmail
 	dday.CreatedAt = now
@@ -286,33 +286,39 @@ func UpdateDDay(c *gin.Context) {
 	}
 	userEmail := userDoc.Data()["email"].(string)
 
-	// parse request body
-	var dday DDay
-	if err := c.ShouldBindJSON(&dday); err != nil {
-
+	var updates map[string]interface{}
+	if err := c.ShouldBindJSON(&updates); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
 	}
 
-	// validate date format
-	if len(dday.Date) != 8 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Use YYYYMMDD"})
-		return
+	if dateVal, ok := updates["date"]; ok {
+		dateStr, isString := dateVal.(string)
+		if !isString {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "date field must be a string"})
+			return
+		}
+		// Only validate non-empty date strings.
+		if dateStr != "" {
+			if len(dateStr) != 8 {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Use YYYYMMDD"})
+				return
+			}
+			_, err1 := strconv.Atoi(dateStr[0:4])
+			month, err2 := strconv.Atoi(dateStr[4:6])
+			day, err3 := strconv.Atoi(dateStr[6:8])
+			if err1 != nil || err2 != nil || err3 != nil || month < 1 || month > 12 || day < 1 || day > 31 {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date values"})
+				return
+			}
+		}
 	}
 
-	// validate title
-	if dday.Title == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Title is required"})
-		return
-	}
-
-	// Validate date values
-	_, err1 := strconv.Atoi(dday.Date[0:4])
-	month, err2 := strconv.Atoi(dday.Date[4:6])
-	day, err3 := strconv.Atoi(dday.Date[6:8])
-	if err1 != nil || err2 != nil || err3 != nil || month < 1 || month > 12 || day < 1 || day > 31 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date values"})
-		return
+	if titleVal, ok := updates["title"]; ok {
+		if titleStr, isString := titleVal.(string); !isString || titleStr == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Title cannot be empty if provided"})
+			return
+		}
 	}
 
 	// get event ID from URL
@@ -328,26 +334,27 @@ func UpdateDDay(c *gin.Context) {
 		return
 	}
 
-	// Update the document in Firestore
-	updatedDDay := map[string]interface{}{
-		"title":          dday.Title,
-		"group":          dday.Group,
-		"description":    dday.Description,
-		"date":           dday.Date,
-		"isAnnual":       dday.IsAnnual,
-		"connectedUsers": dday.ConnectedUsers,
-		"updatedAt":      time.Now(),
-	}
-	if _, err := ddayRef.Set(context.Background(), updatedDDay, firestore.MergeAll); err != nil {
+	updates["updatedAt"] = time.Now()
+
+	if _, err := ddayRef.Set(context.Background(), updates, firestore.MergeAll); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update event: " + err.Error()})
 		return
 	}
 
-	// Return the updated event
-	dday.ID = id
-	dday.CreatedBy = userEmail
-	dday.UpdatedAt = time.Now()
-	c.JSON(http.StatusOK, gin.H{"dday": dday})
+	updatedDoc, err := ddayRef.Get(context.Background())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve updated event"})
+		return
+	}
+
+	var updatedDDay DDay
+	if err := updatedDoc.DataTo(&updatedDDay); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse updated event data"})
+		return
+	}
+	updatedDDay.ID = updatedDoc.Ref.ID
+
+	c.JSON(http.StatusOK, gin.H{"dday": updatedDDay})
 
 }
 

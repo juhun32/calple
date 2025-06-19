@@ -65,11 +65,9 @@ export function useDDays(currentDate: Date = new Date()) {
             }
 
             const data = await response.json();
-            console.log("Raw response data:", data);
-            console.log("Fetched D-days:", data.ddays);
 
             const formattedDdays = data.ddays.map((dday: any) => {
-                let dateObj;
+                let dateObj: Date | undefined = undefined;
 
                 if (
                     typeof dday.date === "string" &&
@@ -79,8 +77,6 @@ export function useDDays(currentDate: Date = new Date()) {
                     const month = parseInt(dday.date.substring(4, 6)) - 1; // 0-indexed month
                     const day = parseInt(dday.date.substring(6, 8));
                     dateObj = new Date(year, month, day);
-                } else {
-                    dateObj = new Date(dday.date);
                 }
 
                 return {
@@ -89,7 +85,7 @@ export function useDDays(currentDate: Date = new Date()) {
                     group: dday.group || "",
                     description: dday.description || "",
                     date: dateObj,
-                    days: calculateDDay(dateObj),
+                    days: dateObj ? calculateDDay(dateObj) : "Unscheduled",
                     isAnnual: dday.isAnnual,
                     createdBy: dday.createdBy,
                     connectedUsers: dday.connectedUsers || [],
@@ -116,6 +112,10 @@ export function useDDays(currentDate: Date = new Date()) {
         return ddays.filter((dday) => {
             const eventDate = dday.date;
 
+            if (!eventDate) {
+                return false;
+            }
+
             if (!dday.isAnnual) {
                 return (
                     eventDate.getDate() === day &&
@@ -135,10 +135,21 @@ export function useDDays(currentDate: Date = new Date()) {
         dday: Omit<DDay, "days" | "id">
     ): Promise<boolean> => {
         try {
-            const year = dday.date.getFullYear();
-            const month = String(dday.date.getMonth() + 1).padStart(2, "0");
-            const day = String(dday.date.getDate()).padStart(2, "0");
-            const dateString = `${year}${month}${day}`;
+            const dateString = dday.date
+                ? `${dday.date.getFullYear()}
+                   ${String(dday.date.getMonth() + 1).padStart(2, "0")}
+                   ${String(dday.date.getDate()).padStart(2, "0")}`
+                : "";
+
+            const payload = {
+                title: dday.title,
+                group: dday.group,
+                description: dday.description,
+                isAnnual: dday.isAnnual,
+                connectedUsers: dday.connectedUsers || [],
+                createdBy: dday.createdBy,
+                date: dateString,
+            };
 
             const response = await fetch(
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/ddays`,
@@ -148,29 +159,19 @@ export function useDDays(currentDate: Date = new Date()) {
                         "Content-Type": "application/json",
                     },
                     credentials: "include",
-                    body: JSON.stringify({
-                        title: dday.title,
-                        group: dday.group || "",
-                        date: dateString,
-                        description: dday.description || "",
-                        isAnnual: dday.isAnnual,
-                        connectedUsers: dday.connectedUsers || [],
-                    }),
+                    body: JSON.stringify(payload),
                 }
             );
 
             if (!response.ok) {
-                throw new Error(`Failed to create D-day: ${response.status}`);
+                const errorBody = await response.json().catch(() => null);
+                const errorMessage =
+                    errorBody?.error ||
+                    `Failed to create D-day: ${response.status}`;
+                throw new Error(errorMessage);
             }
 
-            const data = await response.json();
-            const newDday = {
-                ...dday,
-                id: data.dday.id,
-                days: calculateDDay(dday.date),
-            };
-
-            setDdays((prev) => [...prev, newDday]);
+            await fetchDDays();
             return true;
         } catch (error) {
             console.error("Failed to create D-day:", error);
@@ -183,15 +184,19 @@ export function useDDays(currentDate: Date = new Date()) {
         updates: Partial<Omit<DDay, "days" | "id">>
     ): Promise<boolean> => {
         try {
-            let dateString = undefined;
-            if (updates.date) {
-                const year = updates.date.getFullYear();
-                const month = String(updates.date.getMonth() + 1).padStart(
-                    2,
-                    "0"
-                );
-                const day = String(updates.date.getDate()).padStart(2, "0");
-                dateString = `${year}${month}${day}`;
+            const payload = { ...updates };
+
+            if (Object.prototype.hasOwnProperty.call(updates, "date")) {
+                const date = updates.date;
+                // Format to YYYYMMDD string or empty string if date is null/undefined
+                (payload as any).date = date
+                    ? `${date.getFullYear()}${String(
+                          date.getMonth() + 1
+                      ).padStart(2, "0")}${String(date.getDate()).padStart(
+                          2,
+                          "0"
+                      )}`
+                    : "";
             }
 
             const response = await fetch(
@@ -202,10 +207,7 @@ export function useDDays(currentDate: Date = new Date()) {
                         "Content-Type": "application/json",
                     },
                     credentials: "include",
-                    body: JSON.stringify({
-                        ...updates,
-                        date: dateString,
-                    }),
+                    body: JSON.stringify(payload),
                 }
             );
 
@@ -216,11 +218,12 @@ export function useDDays(currentDate: Date = new Date()) {
             setDdays((prev) =>
                 prev.map((dday) => {
                     if (dday.id === id) {
-                        const updatedDate = updates.date || dday.date;
+                        const updatedDday = { ...dday, ...updates };
                         return {
-                            ...dday,
-                            ...updates,
-                            days: calculateDDay(updatedDate),
+                            ...updatedDday,
+                            days: updatedDday.date
+                                ? calculateDDay(updatedDday.date)
+                                : "Unscheduled",
                         };
                     }
                     return dday;

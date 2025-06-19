@@ -47,7 +47,7 @@ export function NavBar() {
                                 size="sm"
                                 className="rounded-full px-3 w-8 h-8 sm:w-fit"
                                 onClick={() => {
-                                    window.location.href = "/dates";
+                                    window.location.href = "/calendar";
                                 }}
                             >
                                 <CalendarCheck />

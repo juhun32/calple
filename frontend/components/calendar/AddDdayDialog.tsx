@@ -21,7 +21,8 @@ import * as Select from "@/components/ui/select";
 import { Plus, Calendar as CalendarIcon, CircleSmall } from "lucide-react";
 
 // types
-import { type AddDDayDialogProps } from "@/lib/types/calendar";
+import { type AddDDayDialogProps, DDay } from "@/lib/types/calendar";
+import { clear } from "console";
 
 export function AddDDayDialog({
     isOpen,
@@ -29,7 +30,9 @@ export function AddDDayDialog({
     initialDate,
     createDDay,
 }: AddDDayDialogProps) {
-    const [date, setDate] = useState<Date>(initialDate || new Date());
+    const [date, setDate] = useState<Date | undefined>(
+        initialDate || undefined
+    );
     const [group, setGroup] = useState("");
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -38,13 +41,12 @@ export function AddDDayDialog({
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
-        if (initialDate) {
-            setDate(initialDate);
-        }
+        setDate(initialDate || undefined);
     }, [initialDate]);
 
     const handleSubmitAdd = async () => {
-        if (!title || !date) {
+        // title is required
+        if (!title) {
             return;
         }
 
@@ -53,28 +55,38 @@ export function AddDDayDialog({
 
         const connectedUsers = connectedEmail ? [connectedEmail] : [];
 
-        const success = await createDDay({
+        const ddayData: Omit<DDay, "id" | "days"> = {
             title,
-            date,
             group: group || "others",
             description: description || "",
             isAnnual,
             connectedUsers,
             createdBy: "",
-        });
+        };
+
+        if (date) {
+            ddayData.date = date;
+        }
+
+        const success = await createDDay(ddayData);
 
         setIsSubmitting(false);
 
         if (success) {
-            setTitle("");
-            setGroup("");
-            setDescription("");
-            setIsAnnual(false);
-            setConnectedEmail("");
+            clearFields();
         }
         if (onOpenChange) {
             onOpenChange(false);
         }
+    };
+
+    const clearFields = () => {
+        setTitle("");
+        setGroup("");
+        setDescription("");
+        setIsAnnual(false);
+        setConnectedEmail("");
+        setDate(undefined);
     };
 
     const isControlled = isOpen !== undefined && onOpenChange !== undefined;
@@ -88,7 +100,7 @@ export function AddDDayDialog({
                         className="rounded-full flex items-center gap-2 hover:cursor-pointer sm:w-fit h-8 w-8"
                     >
                         <Plus className="h-6" />
-                        <span className="hidden sm:flex">Create</span>
+                        <span className="hidden sm:flex">Add Event</span>
                     </Button>
                 </AlertDialog.AlertDialogTrigger>
             )}
@@ -212,7 +224,7 @@ export function AddDDayDialog({
                                                 {date ? (
                                                     format(date, "PPP")
                                                 ) : (
-                                                    <span>Pick a date</span>
+                                                    <span>(Optional)</span>
                                                 )}
                                             </Button>
                                         </Popover.PopoverTrigger>
@@ -254,12 +266,12 @@ export function AddDDayDialog({
                     </AlertDialog.AlertDialogDescription>
                 </AlertDialog.AlertDialogHeader>
                 <AlertDialog.AlertDialogFooter>
-                    <AlertDialog.AlertDialogCancel>
+                    <AlertDialog.AlertDialogCancel onClick={clearFields}>
                         Cancel
                     </AlertDialog.AlertDialogCancel>
                     <AlertDialog.AlertDialogAction
                         onClick={handleSubmitAdd}
-                        disabled={isSubmitting || !title || !date}
+                        disabled={isSubmitting || !title}
                     >
                         {isSubmitting ? "Adding..." : "Add"}
                     </AlertDialog.AlertDialogAction>

@@ -60,9 +60,12 @@ export function DDayIndicator({
                             <div className="flex justify-between items-baseline gap-2">
                                 <div className="flex items-baseline gap-2">
                                     {dday.title}
-                                    <span className="text-xs text-gray-500">
-                                        [{dday.date.toLocaleDateString()}]
-                                    </span>
+                                    {/* FIX: Conditionally render the date only if it exists */}
+                                    {dday.date && (
+                                        <span className="text-xs text-gray-500">
+                                            [{dday.date.toLocaleDateString()}]
+                                        </span>
+                                    )}
                                 </div>
                                 {dday.days}
                             </div>

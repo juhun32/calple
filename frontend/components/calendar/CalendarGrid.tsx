@@ -1,6 +1,9 @@
 "use client";
 import { useState } from "react";
 
+// drag & drop
+import { useDroppable } from "@dnd-kit/core";
+
 // components
 import { Button } from "../ui/button";
 
@@ -59,22 +62,42 @@ export function CalendarGrid({
 
                 <div className="grid grid-cols-7 auto-rows-fr h-full">
                     {monthData.map((day, i) => {
+                        // We need a unique and stable ID for each droppable day
+                        const dateForId = day
+                            ? new Date(
+                                  currentDate.getFullYear(),
+                                  currentDate.getMonth(),
+                                  day
+                              )
+                            : null;
+                        const droppableId = dateForId
+                            ? dateForId.toISOString().split("T")[0] // Format as 'YYYY-MM-DD'
+                            : `empty-${i}`;
+
+                        const { isOver, setNodeRef } = useDroppable({
+                            id: droppableId,
+                            disabled: !day, // Disable droppable for empty cells
+                        });
+
                         const weekNumber = Math.floor(i / 7) + 1;
+
                         const isHighlightedWeek =
                             weekNumber === 2 ||
                             weekNumber === 4 ||
                             weekNumber === 6;
+
                         const dayDdays = getDDaysForDay(day, currentDate);
 
                         return (
                             <div
+                                ref={setNodeRef}
                                 key={i}
                                 className={`p-2 flex flex-col h-full
                                 ${
                                     isHighlightedWeek
                                         ? "border-y border-dashed"
                                         : ""
-                                }`}
+                                }${isOver ? " bg-accent" : ""}`}
                                 onClick={() => day && selectDate(day)}
                             >
                                 {day && (
@@ -118,7 +141,7 @@ export function CalendarGrid({
                                                         key={`dday-slice-${day}-${idx}-${
                                                             dday.id || idx
                                                         }`}
-                                                        className="border rounded-full h-5 flex items-center"
+                                                        className="border rounded-full h-5 flex items-center text-xs"
                                                     >
                                                         <DDayIndicator
                                                             dday={dday}

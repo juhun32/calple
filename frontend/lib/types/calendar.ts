@@ -2,7 +2,7 @@ export type DDay = {
     id: string;
     title: string;
     group: string;
-    date: Date;
+    date?: Date;
     description: string;
     days: string;
     isAnnual: boolean;

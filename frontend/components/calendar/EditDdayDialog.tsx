@@ -57,7 +57,7 @@ export function EditDdayDialog({
     }, [dday]);
 
     const handleSubmit = async () => {
-        if (!title || !date || !dday.id) {
+        if (!title || !dday.id) {
             toast("Missing information");
             return;
         }
@@ -298,7 +298,7 @@ export function EditDdayDialog({
 
                     <Button
                         onClick={handleSubmit}
-                        disabled={isSubmitting || !title || !date}
+                        disabled={isSubmitting || !title}
                     >
                         {isSubmitting ? "Saving..." : "Save"}
                     </Button>
