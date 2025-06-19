@@ -128,7 +128,7 @@ export function AddDDayDialog({
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                     className={cn(
-                                        "border rounded-md text-sm w-full focus:text-foreground",
+                                        "border rounded-md text-sm w-full focus:text-foreground rounded-full",
                                         !title
                                             ? "text-muted-foreground"
                                             : "text-foreground"
@@ -149,7 +149,7 @@ export function AddDDayDialog({
                                     value={group ? group : "others"}
                                     onValueChange={setGroup}
                                 >
-                                    <Select.SelectTrigger className="w-full text-sm">
+                                    <Select.SelectTrigger className="w-full text-sm rounded-full">
                                         <Select.SelectValue placeholder="Others" />
                                     </Select.SelectTrigger>
                                     <Select.SelectContent className="w-full">
@@ -189,7 +189,7 @@ export function AddDDayDialog({
                                         setDescription(e.target.value)
                                     }
                                     className={cn(
-                                        "border rounded-md text-sm w-full focus:text-foreground",
+                                        "border rounded-md text-sm w-full focus:text-foreground rounded-full",
                                         !description
                                             ? "text-muted-foreground"
                                             : "text-foreground"
@@ -212,7 +212,7 @@ export function AddDDayDialog({
                                             <Button
                                                 variant="outline"
                                                 className={cn(
-                                                    "justify-start text-left font-normal w-3/4 text-foreground",
+                                                    "justify-start text-left font-normal w-3/4 text-foreground rounded-full",
                                                     !date &&
                                                         "text-muted-foreground"
                                                 )}
@@ -240,7 +240,7 @@ export function AddDDayDialog({
                                             />
                                         </Popover.PopoverContent>
                                     </Popover.Popover>
-                                    <div className="flex items-center text-sm justify-end px-2 w-1/4 gap-2">
+                                    <div className="flex items-center text-sm justify-end px-2 w-1/3 sm:w-1/4 gap-2">
                                         <Label
                                             className={cn(
                                                 !isAnnual
@@ -263,13 +263,17 @@ export function AddDDayDialog({
                         </div>
                     </AlertDialog.AlertDialogDescription>
                 </AlertDialog.AlertDialogHeader>
-                <AlertDialog.AlertDialogFooter>
-                    <AlertDialog.AlertDialogCancel onClick={clearFields}>
+                <AlertDialog.AlertDialogFooter className="flex flex-row gap-2 justify-end">
+                    <AlertDialog.AlertDialogCancel
+                        onClick={clearFields}
+                        className="rounded-full"
+                    >
                         Cancel
                     </AlertDialog.AlertDialogCancel>
                     <AlertDialog.AlertDialogAction
                         onClick={handleSubmitAdd}
                         disabled={isSubmitting || !title}
+                        className="rounded-full"
                     >
                         {isSubmitting ? "Adding..." : "Add"}
                     </AlertDialog.AlertDialogAction>

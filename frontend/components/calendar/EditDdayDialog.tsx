@@ -125,7 +125,7 @@ export function EditDdayDialog({
                     </AlertDialog.AlertDialogTitle>
                     <AlertDialog.AlertDialogDescription asChild>
                         <div className="flex flex-col gap-2">
-                            <div className="grid grid-cols-[1fr_4fr] gap-2 items-center">
+                            <div className="grid grid-cols-[1fr_5fr] gap-2 items-center">
                                 <Label
                                     className={cn(
                                         "text-sm font-medium",
@@ -142,7 +142,7 @@ export function EditDdayDialog({
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                     className={cn(
-                                        "border rounded-md text-sm w-full focus:text-foreground",
+                                        "border rounded-md text-sm w-full focus:text-foreground rounded-full",
                                         !title
                                             ? "text-muted-foreground"
                                             : "text-foreground"
@@ -163,7 +163,7 @@ export function EditDdayDialog({
                                     value={group}
                                     onValueChange={setGroup}
                                 >
-                                    <Select.SelectTrigger className="w-full text-sm">
+                                    <Select.SelectTrigger className="w-full text-sm rounded-full">
                                         <Select.SelectValue placeholder="Select Group" />
                                     </Select.SelectTrigger>
                                     <Select.SelectContent className="w-full">
@@ -203,7 +203,7 @@ export function EditDdayDialog({
                                         setDescription(e.target.value)
                                     }
                                     className={cn(
-                                        "border rounded-md text-sm w-full focus:text-foreground",
+                                        "border rounded-md text-sm w-full rounded-full focus:text-foreground",
                                         !description
                                             ? "text-muted-foreground"
                                             : "text-foreground"
@@ -226,7 +226,7 @@ export function EditDdayDialog({
                                             <Button
                                                 variant="outline"
                                                 className={cn(
-                                                    "justify-start text-left font-normal w-3/4 text-foreground",
+                                                    "rounded-full justify-start text-left font-normal w-3/4 text-foreground",
                                                     !date &&
                                                         "text-muted-foreground"
                                                 )}
@@ -256,7 +256,7 @@ export function EditDdayDialog({
                                             />
                                         </Popover.PopoverContent>
                                     </Popover.Popover>
-                                    <div className="flex items-center text-sm justify-end px-2 w-1/4 gap-2">
+                                    <div className="flex items-center text-sm justify-end px-2 w-1/3 sm:w-1/4 gap-2">
                                         <Label
                                             className={cn(
                                                 !isAnnual
@@ -279,29 +279,33 @@ export function EditDdayDialog({
                         </div>
                     </AlertDialog.AlertDialogDescription>
                 </AlertDialog.AlertDialogHeader>
-                <AlertDialog.AlertDialogFooter>
+                <AlertDialog.AlertDialogFooter className="flex flex-row justify-between">
                     <Button
                         variant="destructive"
                         onClick={handleDelete}
                         disabled={isDeleting}
-                        className="sm:mr-auto"
+                        className="sm:mr-auto rounded-full w-20"
                     >
                         {isDeleting ? "Deleting..." : "Delete"}
                     </Button>
+                    <div className="flex flex-row gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => onOpenChange(false)}
+                            disabled={isSubmitting}
+                            className="rounded-full w-20"
+                        >
+                            Cancel
+                        </Button>
 
-                    <Button
-                        variant="outline"
-                        onClick={() => onOpenChange(false)}
-                    >
-                        Cancel
-                    </Button>
-
-                    <Button
-                        onClick={handleSubmit}
-                        disabled={isSubmitting || !title}
-                    >
-                        {isSubmitting ? "Saving..." : "Save"}
-                    </Button>
+                        <Button
+                            onClick={handleSubmit}
+                            disabled={isSubmitting || !title}
+                            className="rounded-full w-20"
+                        >
+                            {isSubmitting ? "Saving..." : "Save"}
+                        </Button>
+                    </div>
                 </AlertDialog.AlertDialogFooter>
             </AlertDialog.AlertDialogContent>
         </AlertDialog.AlertDialog>

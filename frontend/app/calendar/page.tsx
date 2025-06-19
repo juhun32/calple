@@ -84,7 +84,7 @@ export default function Calendar() {
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 5,
+                distance: 2,
             },
         })
     );
@@ -171,9 +171,9 @@ export default function Calendar() {
                     </div>
                 </div>
             </div>
-            <DragOverlay>
+            <DragOverlay className="rounded-full">
                 {activeDDay ? (
-                    <div className="flex items-center rounded-md bg-background px-2 border border-dashed">
+                    <div className="flex items-center rounded-md bg-background px-2 border border-dashed w-fit rounded-full">
                         <CircleSmall
                             className={`h-4 w-4 ${getColorFromGroup(
                                 activeDDay.group

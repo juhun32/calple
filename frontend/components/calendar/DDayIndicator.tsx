@@ -60,7 +60,6 @@ export function DDayIndicator({
                             <div className="flex justify-between items-baseline gap-2">
                                 <div className="flex items-baseline gap-2">
                                     {dday.title}
-                                    {/* FIX: Conditionally render the date only if it exists */}
                                     {dday.date && (
                                         <span className="text-xs text-gray-500">
                                             [{dday.date.toLocaleDateString()}]
@@ -70,9 +69,19 @@ export function DDayIndicator({
                                 {dday.days}
                             </div>
                         </AlertDialog.AlertDialogTitle>
-
+                        <AlertDialog.AlertDialogDescription className="text-sm text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                                <CircleSmall
+                                    className={`h-4 w-4 ${getColorFromGroup(
+                                        dday.group
+                                    )}`}
+                                    strokeWidth={1.5}
+                                />
+                                {dday.group}
+                            </span>
+                        </AlertDialog.AlertDialogDescription>
                         {dday.description ? (
-                            <AlertDialog.AlertDialogDescription className="text-sm text-muted-foreground pt-2">
+                            <AlertDialog.AlertDialogDescription className="text-sm text-muted-foreground p-2 border rounded-lg">
                                 {dday.description}
                             </AlertDialog.AlertDialogDescription>
                         ) : null}
@@ -81,12 +90,12 @@ export function DDayIndicator({
                     <AlertDialog.AlertDialogFooter className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-0">
                         <Button
                             variant="outline"
-                            className="flex-1 sm:mr-2"
+                            className="sm:mr-2 rounded-full w-20"
                             onClick={handleEditClick}
                         >
                             Edit
                         </Button>
-                        <AlertDialog.AlertDialogCancel className="flex-1">
+                        <AlertDialog.AlertDialogCancel className="rounded-full w-20">
                             Close
                         </AlertDialog.AlertDialogCancel>
                     </AlertDialog.AlertDialogFooter>

@@ -46,34 +46,72 @@ function DraggableDDayItem({
     const style = {
         transform: CSS.Translate.toString(transform),
         touchAction: "none",
+        opacity: isDragging ? 0 : 1,
     };
 
     return (
-        <Table.TableCell
-            ref={setNodeRef}
-            style={style}
-            {...attributes}
-            {...listeners}
-            className={cn(
-                "flex items-center rounded-md",
-                isDragging ? "border border-dashed w-fit" : ""
-            )}
-        >
-            <DDayIndicator
-                dday={dday}
-                updateDDay={updateDDay}
-                deleteDDay={deleteDDay}
-            />
-        </Table.TableCell>
+        <Table.TableRow ref={setNodeRef} style={style}>
+            <Table.TableCell
+                className="flex items-center gap-1"
+                {...attributes}
+                {...listeners}
+            >
+                <div className="border rounded-full w-full">
+                    <DDayIndicator
+                        dday={dday}
+                        updateDDay={updateDDay}
+                        deleteDDay={deleteDDay}
+                    />
+                </div>
+            </Table.TableCell>
+            <Table.TableCell className="text-muted-foreground">
+                {dday.date ? dday.date.toLocaleDateString() : "(Unscheduled)"}
+            </Table.TableCell>
+            <Table.TableCell className="text-right">
+                {dday.date ? dday.days : "-"}
+            </Table.TableCell>
+        </Table.TableRow>
     );
 }
 
 export function DDaySheet({ ddays, updateDDay, deleteDDay }: DDaySheetProps) {
-    const datedDdays = ddays.filter((d) => d.date);
-    const datelessDdays = ddays.filter((d) => !d.date);
+    const allDdays = [...ddays].sort((a, b) => {
+        if (!a.date && b.date) return -1;
+        if (a.date && !b.date) return 1;
+        if (a.date && b.date) {
+            return a.date.getTime() - b.date.getTime();
+        }
+        return 0;
+    });
 
-    const sortedDdays = [...datedDdays].sort(
-        (a, b) => a.date!.getTime() - b.date!.getTime()
+    const renderTable = () => (
+        <div className="overflow-y-auto border rounded-lg">
+            <Table.Table>
+                <Table.TableHeader>
+                    <Table.TableRow>
+                        <Table.TableHead className="w-3/5 text-xs">
+                            Event
+                        </Table.TableHead>
+                        <Table.TableHead className="text-xs">
+                            Date
+                        </Table.TableHead>
+                        <Table.TableHead className="text-right text-xs">
+                            Count
+                        </Table.TableHead>
+                    </Table.TableRow>
+                </Table.TableHeader>
+                <Table.TableBody>
+                    {allDdays.map((day) => (
+                        <DraggableDDayItem
+                            key={day.id}
+                            dday={day}
+                            updateDDay={updateDDay}
+                            deleteDDay={deleteDDay}
+                        />
+                    ))}
+                </Table.TableBody>
+            </Table.Table>
+        </div>
     );
 
     return (
@@ -96,96 +134,15 @@ export function DDaySheet({ ddays, updateDDay, deleteDDay }: DDaySheetProps) {
                                 Days until or since, and the date of the event.
                             </Sheet.SheetDescription>
                         </Sheet.SheetHeader>
-                        <div className="flex-1 overflow-y-auto px-4 space-y-4">
-                            {datelessDdays.length > 0 && (
-                                <div>
-                                    <h4 className="font-medium text-xs mb-2">
-                                        Unscheduled
-                                    </h4>
-                                    <div className="overflow-y-auto border rounded-md">
-                                        <Table.Table>
-                                            <Table.TableHeader>
-                                                <Table.TableRow>
-                                                    <Table.TableHead className="w-full">
-                                                        Event
-                                                    </Table.TableHead>
-                                                </Table.TableRow>
-                                            </Table.TableHeader>
-                                            <Table.TableBody>
-                                                {datelessDdays.map((day) => (
-                                                    <Table.TableRow
-                                                        key={day.id}
-                                                    >
-                                                        <DraggableDDayItem
-                                                            dday={day}
-                                                            updateDDay={
-                                                                updateDDay
-                                                            }
-                                                            deleteDDay={
-                                                                deleteDDay
-                                                            }
-                                                        />
-                                                    </Table.TableRow>
-                                                ))}
-                                            </Table.TableBody>
-                                        </Table.Table>
-                                    </div>
-                                </div>
-                            )}
-                            {sortedDdays.length > 0 && (
-                                <div>
-                                    <h4 className="font-medium text-xs mb-2">
-                                        Scheduled
-                                    </h4>
-                                    <div className="overflow-y-auto border rounded-md">
-                                        <Table.Table>
-                                            <Table.TableHeader>
-                                                <Table.TableRow>
-                                                    <Table.TableHead className="w-4/5">
-                                                        Event
-                                                    </Table.TableHead>
-                                                    <Table.TableHead>
-                                                        Date
-                                                    </Table.TableHead>
-                                                    <Table.TableHead className="text-right">
-                                                        Count
-                                                    </Table.TableHead>
-                                                </Table.TableRow>
-                                            </Table.TableHeader>
-                                            <Table.TableBody>
-                                                {sortedDdays.map((day) => (
-                                                    <Table.TableRow
-                                                        key={day.id}
-                                                    >
-                                                        <DraggableDDayItem
-                                                            dday={day}
-                                                            updateDDay={
-                                                                updateDDay
-                                                            }
-                                                            deleteDDay={
-                                                                deleteDDay
-                                                            }
-                                                        />
-                                                        <Table.TableCell className="text-muted-foreground">
-                                                            {day.date!.toLocaleDateString()}
-                                                        </Table.TableCell>
-                                                        <Table.TableCell className="text-right">
-                                                            {day.days}
-                                                        </Table.TableCell>
-                                                    </Table.TableRow>
-                                                ))}
-                                            </Table.TableBody>
-                                        </Table.Table>
-                                    </div>
-                                </div>
-                            )}
+                        <div className="flex-1 overflow-y-auto px-4">
+                            {renderTable()}
                         </div>
                         <Sheet.SheetFooter className="max-w-screen flex flex-row px-8 justify-center">
                             <Sheet.SheetClose asChild>
                                 <Button
                                     variant="outline"
                                     type="submit"
-                                    className="w-1/2 hover:cursor-pointer"
+                                    className="w-1/2 hover:cursor-pointer rounded-full"
                                 >
                                     Close
                                 </Button>
@@ -196,87 +153,18 @@ export function DDaySheet({ ddays, updateDDay, deleteDDay }: DDaySheetProps) {
             </div>
 
             <div className="hidden lg:flex flex-col h-full gap-4">
-                {datelessDdays.length > 0 && (
-                    <div>
-                        <h4 className="font-medium text-xs">Unscheduled</h4>
-                        <div className="overflow-y-auto border rounded-md">
-                            <Table.Table>
-                                <Table.TableHeader>
-                                    <Table.TableRow>
-                                        <Table.TableHead className="w-40">
-                                            Event
-                                        </Table.TableHead>
-                                        <Table.TableHead>Date</Table.TableHead>
-                                        <Table.TableHead>Count</Table.TableHead>
-                                    </Table.TableRow>
-                                </Table.TableHeader>
-                                <Table.TableBody>
-                                    {datelessDdays.map((day) => (
-                                        <Table.TableRow key={day.id}>
-                                            <DraggableDDayItem
-                                                dday={day}
-                                                updateDDay={updateDDay}
-                                                deleteDDay={deleteDDay}
-                                            />
-                                            <Table.TableCell className="text-muted-foreground">
-                                                Not assigned
-                                            </Table.TableCell>
-                                            <Table.TableCell>-</Table.TableCell>
-                                        </Table.TableRow>
-                                    ))}
-                                </Table.TableBody>
-                            </Table.Table>
-                        </div>
-                    </div>
-                )}
-                {sortedDdays.length > 0 ? (
-                    <div>
-                        <h4 className="font-medium text-xs">Scheduled</h4>
-                        <div className="overflow-y-auto border rounded-md">
-                            <Table.Table>
-                                <Table.TableHeader>
-                                    <Table.TableRow>
-                                        <Table.TableHead className="w-40">
-                                            Event
-                                        </Table.TableHead>
-                                        <Table.TableHead>Date</Table.TableHead>
-                                        <Table.TableHead>Count</Table.TableHead>
-                                    </Table.TableRow>
-                                </Table.TableHeader>
-                                <Table.TableBody>
-                                    {sortedDdays.map((day) => (
-                                        <Table.TableRow key={day.id}>
-                                            <DraggableDDayItem
-                                                dday={day}
-                                                updateDDay={updateDDay}
-                                                deleteDDay={deleteDDay}
-                                            />
-                                            <Table.TableCell className="text-muted-foreground">
-                                                {day.date!.toLocaleDateString()}
-                                            </Table.TableCell>
-                                            <Table.TableCell>
-                                                {day.days}
-                                            </Table.TableCell>
-                                        </Table.TableRow>
-                                    ))}
-                                </Table.TableBody>
-                            </Table.Table>
-                        </div>
-                    </div>
+                {allDdays.length > 0 ? (
+                    renderTable()
                 ) : (
                     <div className="border border-dashed rounded-lg flex flex-col gap-2 items-center justify-center h-full p-4">
                         <p className="text-sm text-muted-foreground">
                             Add your first event!
                         </p>
-                        <p className="text-xs text-muted-foreground">
-                            You can drag and drop your events to the calendar to
-                            assign dates.
-                        </p>
                     </div>
                 )}
             </div>
 
-            <div className="hidden lg:flex flex-col gap-1">
+            <div className="hidden lg:grid grid-cols-3 gap-1">
                 {selectGroups.map((group, idx) => (
                     <div key={idx} className="flex items-center gap-1">
                         <CircleSmall

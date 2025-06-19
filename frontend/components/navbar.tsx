@@ -68,7 +68,7 @@ export function NavBar() {
                                     Tracker
                                 </span>
                             </Button> */}
-                            <Button
+                            {/* <Button
                                 variant="outline"
                                 size="sm"
                                 className="rounded-full px-3 w-8 h-8 sm:w-fit"
@@ -80,7 +80,7 @@ export function NavBar() {
                                 <span className="hidden md:flex text-xs">
                                     Roulette
                                 </span>
-                            </Button>
+                            </Button> */}
                         </div>
                     </div>
 
@@ -142,13 +142,13 @@ export function NavBar() {
                                             <User className="h-4 w-4" />
                                             Profile
                                         </DropdownMenu.DropdownMenuItem>
-                                        <DropdownMenu.DropdownMenuItem>
+                                        <DropdownMenu.DropdownMenuItem disabled>
                                             <Settings className="h-4 w-4" />
                                             Settings
                                         </DropdownMenu.DropdownMenuItem>
                                     </DropdownMenu.DropdownMenuGroup>
                                     <DropdownMenu.DropdownMenuSeparator />
-                                    <DropdownMenu.DropdownMenuItem>
+                                    <DropdownMenu.DropdownMenuItem disabled>
                                         <Siren className="h-4 w-4" />
                                         Support
                                     </DropdownMenu.DropdownMenuItem>

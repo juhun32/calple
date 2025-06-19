@@ -208,7 +208,10 @@ export function ConnectionManager() {
                 }}
             >
                 <DialogTrigger asChild>
-                    <Button variant="outline" className="w-full sm:w-auto">
+                    <Button
+                        variant="outline"
+                        className="w-full sm:w-auto rounded-full"
+                    >
                         Manage Connection
                     </Button>
                 </DialogTrigger>
@@ -225,14 +228,18 @@ export function ConnectionManager() {
                         onValueChange={setActiveTab}
                         className="w-full"
                     >
-                        <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="connection">
+                        <TabsList className="grid w-full grid-cols-2 rounded-full">
+                            <TabsTrigger
+                                value="connection"
+                                className="rounded-full"
+                            >
                                 My Connection
                             </TabsTrigger>
                             {!connection ? (
                                 <TabsTrigger
                                     value="invitations"
                                     data-count={pendingInvitations.length}
+                                    className="rounded-full"
                                 >
                                     Invitations
                                     {pendingInvitations.length > 0 &&
@@ -273,8 +280,8 @@ export function ConnectionManager() {
                                     </CardContent>
                                 </Card>
                             ) : (
-                                <Card>
-                                    <CardHeader>
+                                <Card className="gap-8">
+                                    <CardHeader className="gap-2">
                                         <CardTitle>No Connection</CardTitle>
                                         <CardDescription>
                                             Invite someone to share your
@@ -282,11 +289,14 @@ export function ConnectionManager() {
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="flex flex-col space-y-2">
-                                            <Label htmlFor="email">
+                                        <div className="flex flex-col gap-2">
+                                            <Label
+                                                htmlFor="email"
+                                                className="text-sm text-muted-foreground"
+                                            >
                                                 Email address
                                             </Label>
-                                            <div className="flex space-x-2">
+                                            <div className="flex gap-4">
                                                 <Input
                                                     id="email"
                                                     placeholder="partner@example.com"
@@ -297,10 +307,12 @@ export function ConnectionManager() {
                                                             e.target.value
                                                         )
                                                     }
+                                                    className="rounded-full"
                                                     disabled={isLoading}
                                                 />
                                                 <Button
                                                     onClick={handleInvite}
+                                                    className="rounded-full"
                                                     disabled={
                                                         isLoading ||
                                                         !inviteEmail.trim()
@@ -320,7 +332,7 @@ export function ConnectionManager() {
                         <TabsContent value="invitations" className="mt-4">
                             {pendingInvitations.length === 0 ? (
                                 <Card>
-                                    <CardHeader>
+                                    <CardHeader className="gap-4">
                                         <CardTitle>
                                             No Pending Invitations
                                         </CardTitle>
@@ -430,6 +442,8 @@ export function ConnectionManager() {
                         <Button
                             variant="outline"
                             onClick={() => setOpen(false)}
+                            className="rounded-full"
+                            disabled={isLoading}
                         >
                             Close
                         </Button>
