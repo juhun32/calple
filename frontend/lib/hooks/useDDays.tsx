@@ -136,9 +136,12 @@ export function useDDays(currentDate: Date = new Date()) {
     ): Promise<boolean> => {
         try {
             const dateString = dday.date
-                ? `${dday.date.getFullYear()}
-                   ${String(dday.date.getMonth() + 1).padStart(2, "0")}
-                   ${String(dday.date.getDate()).padStart(2, "0")}`
+                ? `${dday.date.getFullYear()}${String(
+                      dday.date.getMonth() + 1
+                  ).padStart(2, "0")}${String(dday.date.getDate()).padStart(
+                      2,
+                      "0"
+                  )}`
                 : "";
 
             const payload = {

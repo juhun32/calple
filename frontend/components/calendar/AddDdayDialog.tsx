@@ -235,9 +235,7 @@ export function AddDDayDialog({
                                             <Calendar
                                                 mode="single"
                                                 selected={date}
-                                                onSelect={(date) =>
-                                                    setDate(date || new Date())
-                                                }
+                                                onSelect={setDate}
                                                 className="pointer-events-auto"
                                             />
                                         </Popover.PopoverContent>

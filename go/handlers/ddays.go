@@ -217,6 +217,7 @@ func CreateDDay(c *gin.Context) {
 		// expected format: YYYYMMDD
 		if len(dday.Date) != 8 {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Use YYYYMMDD"})
+			fmt.Println("Invalid date format:", dday.Date)
 			return
 		}
 		_, err1 := strconv.Atoi(dday.Date[0:4])

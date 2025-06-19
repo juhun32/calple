@@ -41,6 +41,8 @@ import { AddDDayDialog } from "@/components/calendar/AddDdayDialog";
 // drag & drop
 import {
     DndContext,
+    DragOverlay,
+    DragStartEvent,
     PointerSensor,
     useSensor,
     useSensors,
@@ -48,6 +50,9 @@ import {
 } from "@dnd-kit/core";
 import { useState } from "react";
 import { DDay } from "@/lib/types/calendar";
+import { set } from "date-fns";
+import { CircleSmall } from "lucide-react";
+import { getColorFromGroup } from "@/lib/utils";
 
 export default function Calendar() {
     const { authState } = useAuth();
@@ -74,6 +79,8 @@ export default function Calendar() {
     const { ddays, getDDaysForDay, updateDDay, deleteDDay, createDDay } =
         useDDays(currentDate);
 
+    const [activeDDay, setActiveDDay] = useState<DDay | null>(null);
+
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
@@ -81,6 +88,14 @@ export default function Calendar() {
             },
         })
     );
+
+    const handleDragStart = (event: DragStartEvent) => {
+        const { active } = event;
+        const dday = ddays.find((d) => d.id === active.id);
+        if (dday) {
+            setActiveDDay(dday);
+        }
+    };
 
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
@@ -101,10 +116,16 @@ export default function Calendar() {
             // update event with the new date
             updateDDay(ddayId, { date: correctedDate });
         }
+
+        setActiveDDay(null);
     };
 
     return (
-        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        <DndContext
+            sensors={sensors}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+        >
             <div className="h-screen flex items-center justify-center">
                 <div className="container lg:grid lg:grid-cols-[3fr_1fr] h-full">
                     <div className="flex flex-col h-full container pt-12 pb-8">
@@ -150,6 +171,21 @@ export default function Calendar() {
                     </div>
                 </div>
             </div>
+            <DragOverlay>
+                {activeDDay ? (
+                    <div className="flex items-center rounded-md bg-background px-2 border border-dashed">
+                        <CircleSmall
+                            className={`h-4 w-4 ${getColorFromGroup(
+                                activeDDay.group
+                            )}`}
+                            strokeWidth={1.5}
+                        />
+                        <span className="text-sm font-medium">
+                            {activeDDay.title}
+                        </span>
+                    </div>
+                ) : null}
+            </DragOverlay>
         </DndContext>
     );
 }

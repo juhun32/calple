@@ -138,7 +138,7 @@ func Callback(c *gin.Context) {
 	session.Save()
 
 	var frontendURL = os.Getenv("FRONTEND_URL")
-	c.Redirect(http.StatusFound, frontendURL+"/dates")
+	c.Redirect(http.StatusFound, frontendURL+"/calendar")
 }
 
 // auth status returns whether the user is authenticated
