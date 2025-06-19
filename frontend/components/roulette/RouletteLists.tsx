@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { usePosts } from "@/lib/hooks/useIdeas";
-import RouletteCards from "@/components/roulette/RouletteCards";
+import RouletteCards from "@/components/roulette/RouletteCard";
 
 import { List, Plus, X } from "lucide-react";
 
