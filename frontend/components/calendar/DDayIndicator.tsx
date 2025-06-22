@@ -87,7 +87,7 @@ export function DDayIndicator({
                         ) : null}
                     </AlertDialog.AlertDialogHeader>
 
-                    <AlertDialog.AlertDialogFooter className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-0">
+                    <AlertDialog.AlertDialogFooter className="flex flex-row justify-end gap-2 sm:gap-0">
                         <Button
                             variant="outline"
                             className="sm:mr-2 rounded-full w-20"

@@ -1,77 +1,35 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Calendar, User } from "lucide-react";
+import { User } from "lucide-react";
 
 export default function Start() {
     return (
-        <div className="flex flex-col h-screen justify-center items-center">
-            <div className="container mx-auto p-8 gap-4 flex flex-col items-center">
-                <h1 className="text-2xl font-bold">Welcome to Calple!</h1>
-                <p>
-                    Get started with calendar app. You can plan and share your
-                    schedule with your partner.
-                </p>
-                <Button
-                    className="rounded-full w-40"
-                    onClick={() => {
-                        window.location.href = "/calendar";
-                    }}
-                    variant="secondary"
-                >
-                    <Calendar className="h-4 w-4" />
-                    Go to Calendar
-                </Button>
-
-                <p>Connect and share your calple with your partner.</p>
-                <Button
-                    className="rounded-full w-40"
-                    onClick={() => {
-                        window.location.href = "/profile";
-                    }}
-                    variant="secondary"
-                >
-                    <User className="h-4 w-4" />
-                    Go to Profile
-                </Button>
-            </div>
-            <p>
-                How it works We know online dating isn’t one-size-fits-all, so
-                we’re letting you choose your own adventure and connect with
-                other singles in a way that feels right for you. Whether you’re
-                into sending a good-old-fashioned DM or otherwise, we’ve got
-                lots of options to make finding your person actually fun. How it
-                works We know online dating isn’t one-size-fits-all, so we’re
-                letting you choose your own adventure and connect with other
-                singles in a way that feels right for you. Whether you’re into
-                sending a good-old-fashioned DM or otherwise, we’ve got lots of
-                options to make finding your person actually fun. How it works
-                We know online dating isn’t one-size-fits-all, so we’re letting
-                you choose your own adventure and connect with other singles in
-                a way that feels right for you. Whether you’re into sending a
-                good-old-fashioned DM or otherwise, we’ve got lots of options to
-                make finding your person actually fun. How it works We know
-                online dating isn’t one-size-fits-all, so we’re letting you
-                choose your own adventure and connect with other singles in a
-                way that feels right for you. Whether you’re into sending a
-                good-old-fashioned DM or otherwise, we’ve got lots of options to
-                make finding your person actually fun. How it works We know
-                online dating isn’t one-size-fits-all, so we’re letting you
-                choose your own adventure and connect with other singles in a
-                way that feels right for you. Whether you’re into sending a
-                good-old-fashioned DM or otherwise, we’ve got lots of options to
-                make finding your person actually fun. How it works We know
-                online dating isn’t one-size-fits-all, so we’re letting you
-                choose your own adventure and connect with other singles in a
-                way that feels right for you. Whether you’re into sending a
-                good-old-fashioned DM or otherwise, we’ve got lots of options to
-                make finding your person actually fun. How it works We know
-                online dating isn’t one-size-fits-all, so we’re letting you
-                choose your own adventure and connect with other singles in a
-                way that feels right for you. Whether you’re into sending a
-                good-old-fashioned DM or otherwise, we’ve got lots of options to
-                make finding your person actually fun.
+        <div className="container flex flex-col gap-4 px-8 my-16 md:px-20 font-serif">
+            <h1 className="text-2xl font-bold">
+                Happier Dating life with Calple
+            </h1>
+            <p className="text-muted-foreground">
+                Dating is hard when it gets to planning, squeezing your tasks,
+                and keeping track of your partner's schedule. Calple is here to
+                help you manage your dating life schedule!
             </p>
+
+            <p>
+                Get started by connecting and sharing your calple with your
+                partner.
+            </p>
+            <Button
+                className="rounded-full w-fit"
+                variant="outline"
+                size={"sm"}
+                onClick={() => {
+                    window.location.href = "/profile";
+                }}
+            >
+                <User className="h-4 w-4 text-rose-500" />
+                Go to Profile
+            </Button>
         </div>
     );
 }

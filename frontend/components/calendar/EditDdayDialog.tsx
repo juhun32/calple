@@ -125,7 +125,7 @@ export function EditDdayDialog({
                     </AlertDialog.AlertDialogTitle>
                     <AlertDialog.AlertDialogDescription asChild>
                         <div className="flex flex-col gap-2">
-                            <div className="grid grid-cols-[1fr_5fr] gap-2 items-center">
+                            <div className="grid grid-cols-[1fr_4fr] gap-2 items-center">
                                 <Label
                                     className={cn(
                                         "text-sm font-medium",
@@ -160,11 +160,11 @@ export function EditDdayDialog({
                                     Group:
                                 </Label>
                                 <Select.Select
-                                    value={group}
+                                    value={group ? group : "others"}
                                     onValueChange={setGroup}
                                 >
                                     <Select.SelectTrigger className="w-full text-sm rounded-full">
-                                        <Select.SelectValue placeholder="Select Group" />
+                                        <Select.SelectValue placeholder="Others" />
                                     </Select.SelectTrigger>
                                     <Select.SelectContent className="w-full">
                                         <Select.SelectGroup>
@@ -203,12 +203,12 @@ export function EditDdayDialog({
                                         setDescription(e.target.value)
                                     }
                                     className={cn(
-                                        "border rounded-md text-sm w-full rounded-full focus:text-foreground",
+                                        "border rounded-md text-sm w-full focus:text-foreground rounded-full",
                                         !description
                                             ? "text-muted-foreground"
                                             : "text-foreground"
                                     )}
-                                    placeholder="Optional"
+                                    placeholder="(Optional)"
                                 />
                                 <Label
                                     className={cn(
@@ -222,11 +222,37 @@ export function EditDdayDialog({
                                 </Label>
                                 <div className="flex">
                                     <Popover.Popover>
-                                        <Popover.PopoverTrigger asChild>
+                                        <Popover.PopoverTrigger
+                                            asChild
+                                            className="flex sm:hidden"
+                                        >
                                             <Button
                                                 variant="outline"
                                                 className={cn(
-                                                    "rounded-full justify-start text-left font-normal w-3/4 text-foreground",
+                                                    "justify-start text-left font-normal w-3/5 text-foreground rounded-full gap-1",
+                                                    !date &&
+                                                        "text-muted-foreground"
+                                                )}
+                                            >
+                                                <CalendarIcon
+                                                    className="h-4 w-4"
+                                                    strokeWidth={1.3}
+                                                />
+                                                {date ? (
+                                                    format(date, "M/d/yy")
+                                                ) : (
+                                                    <span>(Optional)</span>
+                                                )}
+                                            </Button>
+                                        </Popover.PopoverTrigger>
+                                        <Popover.PopoverTrigger
+                                            asChild
+                                            className="hidden sm:flex"
+                                        >
+                                            <Button
+                                                variant="outline"
+                                                className={cn(
+                                                    "justify-start text-left font-normal w-3/5 sm:w-3/4 text-foreground rounded-full gap-1",
                                                     !date &&
                                                         "text-muted-foreground"
                                                 )}
@@ -238,7 +264,7 @@ export function EditDdayDialog({
                                                 {date ? (
                                                     format(date, "PPP")
                                                 ) : (
-                                                    <span>Pick a date</span>
+                                                    <span>(Optional)</span>
                                                 )}
                                             </Button>
                                         </Popover.PopoverTrigger>
@@ -249,14 +275,12 @@ export function EditDdayDialog({
                                             <Calendar
                                                 mode="single"
                                                 selected={date}
-                                                onSelect={(date) =>
-                                                    setDate(date || new Date())
-                                                }
+                                                onSelect={setDate}
                                                 className="pointer-events-auto"
                                             />
                                         </Popover.PopoverContent>
                                     </Popover.Popover>
-                                    <div className="flex items-center text-sm justify-end px-2 w-1/3 sm:w-1/4 gap-2">
+                                    <div className="flex items-center text-sm justify-end sm:px-2 w-2/5 sm:w-1/4 gap-1">
                                         <Label
                                             className={cn(
                                                 !isAnnual

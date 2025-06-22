@@ -208,11 +208,37 @@ export function AddDDayDialog({
                                 </Label>
                                 <div className="flex">
                                     <Popover.Popover>
-                                        <Popover.PopoverTrigger asChild>
+                                        <Popover.PopoverTrigger
+                                            asChild
+                                            className="flex sm:hidden"
+                                        >
                                             <Button
                                                 variant="outline"
                                                 className={cn(
-                                                    "justify-start text-left font-normal w-3/4 text-foreground rounded-full",
+                                                    "justify-start text-left font-normal w-3/5 text-foreground rounded-full gap-1",
+                                                    !date &&
+                                                        "text-muted-foreground"
+                                                )}
+                                            >
+                                                <CalendarIcon
+                                                    className="h-4 w-4"
+                                                    strokeWidth={1.3}
+                                                />
+                                                {date ? (
+                                                    format(date, "M/d/yy")
+                                                ) : (
+                                                    <span>(Optional)</span>
+                                                )}
+                                            </Button>
+                                        </Popover.PopoverTrigger>
+                                        <Popover.PopoverTrigger
+                                            asChild
+                                            className="hidden sm:flex"
+                                        >
+                                            <Button
+                                                variant="outline"
+                                                className={cn(
+                                                    "justify-start text-left font-normal w-3/5 sm:w-3/4 text-foreground rounded-full gap-1",
                                                     !date &&
                                                         "text-muted-foreground"
                                                 )}
@@ -240,7 +266,7 @@ export function AddDDayDialog({
                                             />
                                         </Popover.PopoverContent>
                                     </Popover.Popover>
-                                    <div className="flex items-center text-sm justify-end px-2 w-1/3 sm:w-1/4 gap-2">
+                                    <div className="flex items-center text-sm justify-end sm:px-2 w-2/5 sm:w-1/4 gap-1">
                                         <Label
                                             className={cn(
                                                 !isAnnual

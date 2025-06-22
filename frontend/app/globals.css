@@ -87,7 +87,7 @@
   --font-sans: Libre Baskerville, serif;
   --font-serif: Lora, serif;
   --font-mono: IBM Plex Mono, monospace;
-  --radius: 0.25rem;
+  --radius: 1rem;
   --shadow-2xs: 2px 3px 5px 0px hsl(28 13% 20% / 0.06);
   --shadow-xs: 2px 3px 5px 0px hsl(28 13% 20% / 0.06);
   --shadow-sm: 2px 3px 5px 0px hsl(28 13% 20% / 0.12), 2px 1px 2px -1px hsl(28 13% 20% / 0.12);
@@ -134,7 +134,7 @@
   --font-sans: Libre Baskerville, serif;
   --font-serif: Lora, serif;
   --font-mono: IBM Plex Mono, monospace;
-  --radius: 0.25rem;
+  --radius: 1rem;
   --shadow-2xs: 2px 3px 5px 0px hsl(28 13% 20% / 0.06);
   --shadow-xs: 2px 3px 5px 0px hsl(28 13% 20% / 0.06);
   --shadow-sm: 2px 3px 5px 0px hsl(28 13% 20% / 0.12), 2px 1px 2px -1px hsl(28 13% 20% / 0.12);
@@ -181,7 +181,7 @@
   --font-sans: Poppins, sans-serif;
   --font-serif: Playfair Display, serif;
   --font-mono: Space Mono, monospace;
-  --radius: 0.5rem;
+  --radius: 1rem;
   --shadow-2xs: 0px 3px 0px 0px hsl(330 70% 30% / 0.09);
   --shadow-xs: 0px 3px 0px 0px hsl(330 70% 30% / 0.09);
   --shadow-sm: 0px 3px 0px 0px hsl(330 70% 30% / 0.18), 0px 1px 2px -1px hsl(330 70% 30% / 0.18);

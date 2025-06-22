@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
 // icons
-import { LayoutDashboard } from "lucide-react";
+import { Calendar, LayoutDashboard } from "lucide-react";
 import Rectangle from "@/lib/assets/rectangle";
 import Start from "./start";
 
@@ -19,15 +19,15 @@ export default function Home() {
     const { authState } = useAuth();
 
     return (
-        <div className="w-full min-h-screen py-20 flex flex-col items-center justify-center md:px-8 overflow-scroll">
+        <div className="w-full min-h-screen flex flex-col items-center justify-center pt-32 md:px-8 font-serif overflow-scroll">
             <Rectangle className="absolute inset-0 w-full h-full z-[-1]" />
-            <div className="container px-8 h-full w-full md:border-8 border-border/20 bg-background/50 md:px-20 md:py-20 rounded-lg flex flex-col">
-                <div className="flex flex-col gap-2 items-start justify-start pb-4">
-                    <h1 className="flex flex-col md:flex-row sm:gap-2 text-4xl sm:text-4xl font-serif font-medium">
+            <div className="container px-8 gap-4 h-full w-full md:border-8 border-border/20 bg-background/50 md:px-20 md:py-20 rounded-lg flex flex-col">
+                <div className="flex flex-col gap-2 items-start justify-start">
+                    <h1 className="flex flex-col md:flex-row sm:gap-2 text-4xl sm:text-4xl font-medium">
                         For Your Healthier
                         <p className="text-rose-500">Dating</p> Life
                     </h1>
-                    <p className="text-normal sm:text-xl font-serif text-muted-foreground">
+                    <p className="text-normal sm:text-xl text-muted-foreground">
                         Everything a couple needs to make their life easier.
                         Plan your dates, manage your tasks, and stay organized
                         with Calple.
@@ -71,39 +71,15 @@ export default function Home() {
                         <span>Sign in with Google</span>
                     </Button>
                 ) : (
-                    <div className="flex w-fit gap-6 items-center justify-center border px-6 py-4 rounded-md">
-                        <div>
-                            <h1 className="hidden sm:flex gap-1 sm:text-xl font-bold">
-                                Welcome to
-                                <p className="text-rose-500">Calple</p>
-                            </h1>
-                            <p className="text-xs text-muted-foreground">
-                                {authState.user?.email}
-                            </p>
-                        </div>
-
-                        <Separator
-                            orientation="vertical"
-                            className="hidden sm:flex py-4"
-                        />
-
-                        <div className="flex flex-gap-2 items-center">
-                            {/* <p className="text-xs text-muted-foreground">
-                                    Get started with Calple
-                                </p> */}
-                            <Button
-                                variant="outline"
-                                size={"sm"}
-                                className="rounded-full px-3"
-                                onClick={() => {
-                                    window.location.href = "/start";
-                                }}
-                            >
-                                <LayoutDashboard className="w-4 h-4" />
-                                Get Started
-                            </Button>
-                        </div>
-                    </div>
+                    <Button
+                        variant="outline"
+                        size={"sm"}
+                        className="rounded-full px-3 w-fit"
+                        onClick={login}
+                    >
+                        <Calendar className="h-4 w-4 text-rose-500" />
+                        <span>Calendar</span>
+                    </Button>
                 )}
             </div>
             <Start />

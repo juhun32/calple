@@ -29,6 +29,7 @@ import {
     Flower,
     Download,
     LogIn,
+    Home,
 } from "lucide-react";
 
 export function NavBar() {
@@ -47,7 +48,17 @@ export function NavBar() {
                             <Button
                                 variant="outline"
                                 size="sm"
-                                className="hidden sm:flex rounded-full px-3 w-8 h-8 w-fit"
+                                className="hidden sm:flex rounded-full px- w-8 h-8"
+                                onClick={() => {
+                                    window.location.href = "/";
+                                }}
+                            >
+                                <Home />
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="hidden sm:flex rounded-full px-3 h-8 w-fit"
                                 onClick={() => {
                                     window.location.href = "/calendar";
                                 }}

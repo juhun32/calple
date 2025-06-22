@@ -129,7 +129,7 @@ export default function Calendar() {
             <div className="h-screen flex items-center justify-center">
                 <div className="container lg:grid lg:grid-cols-[3fr_1fr] h-full">
                     <div className="flex flex-col h-full container pt-12 pb-8">
-                        <div className="flex items-center justify-between px-4 md:px-8 pt-8">
+                        <div className="flex items-center justify-between px-4 pt-4 md:px-8 md:pt-8">
                             <CalendarHeader
                                 currentDate={currentDate}
                                 goToNextMonth={goToNextMonth}
