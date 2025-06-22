@@ -2,13 +2,10 @@ import React from "react";
 
 export const Calple = () => (
     <svg
-        id="svg"
-        version="1.1"
         xmlns="http://www.w3.org/2000/svg"
-        xmlnsXlink="http://www.w3.org/1999/xlink"
-        width="70"
-        height="30"
-        viewBox="10, 0, 370, 170"
+        width="100"
+        height="33"
+        viewBox="35 30 330 115"
     >
         <g id="svgg">
             <path

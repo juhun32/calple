@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Lora } from "next/font/google";
 import "./globals.css";
 
 import { cookies } from "next/headers";
@@ -9,13 +9,13 @@ import { AuthProvider } from "@/components/auth-provider";
 import { NavBar } from "@/components/navbar";
 import { Toaster } from "@/components/ui/sonner";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
-
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({
-    variable: "--font-geist-mono",
+const lora = Lora({
     subsets: ["latin"],
+    variable: "--font-serif",
+    weight: ["400", "500", "600", "700"],
 });
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export const metadata: Metadata = {
     title: "Calple",
@@ -66,9 +66,7 @@ export default async function RootLayout({
 
     return (
         <html lang="en" suppressHydrationWarning className="h-full">
-            <body
-                className={`${geistSans.variable} ${geistMono.variable} h-full font-sans flex flex-col`}
-            >
+            <body className={`${lora.variable} font-sans h-full flex flex-col`}>
                 <ThemeProvider
                     attribute="class"
                     defaultTheme="system"
