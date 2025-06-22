@@ -78,7 +78,7 @@ export default async function RootLayout({
                         <div className="fixed bottom-0 left-0 h-8 w-full flex justify-center z-50 border-t border-dashed px-8 backdrop-blur">
                             <div className="container flex itms-center justify-between">
                                 <div className="flex flex-col px-6 py-2 container text-muted-foreground text-xs justify-center">
-                                    J&E &copy; 2025
+                                    For J&E by Juhun P. &copy; 2025
                                 </div>
                                 <div className="flex items-center justify-end gap-2 px-6 py-2 container text-muted-foreground text-xs">
                                     <a
@@ -86,12 +86,6 @@ export default async function RootLayout({
                                         className="text-muted-foreground hover:text-stone-500 underline"
                                     >
                                         [Privacy]
-                                    </a>
-                                    <a
-                                        href="/terms"
-                                        className="text-muted-foreground hover:text-stone-500 underline"
-                                    >
-                                        [Terms]
                                     </a>
                                 </div>
                             </div>

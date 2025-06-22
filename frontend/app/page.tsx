@@ -19,7 +19,7 @@ export default function Home() {
     const { authState } = useAuth();
 
     return (
-        <div className="w-full min-h-screen flex flex-col items-center justify-center pt-32 md:px-8 font-serif overflow-scroll">
+        <div className="container w-full min-h-screen flex flex-col items-center justify-center pt-32 md:px-8 font-serif mx-auto">
             <Rectangle className="absolute inset-0 w-full h-full z-[-1]" />
             <div className="container px-8 gap-4 h-full w-full md:border-8 border-border/20 bg-background/50 md:px-20 md:py-20 rounded-lg flex flex-col">
                 <div className="flex flex-col gap-2 items-start justify-start">
