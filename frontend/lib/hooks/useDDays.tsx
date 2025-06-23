@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
-import { type DDay } from "@/lib/types/calendar";
+import { EventPosition, type DDay } from "@/lib/types/calendar";
 
 export function useDDays(currentDate: Date = new Date()) {
     const [ddays, setDdays] = useState<DDay[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [eventLayout, setEventLayout] = useState<Map<string, number>>(
+        new Map()
+    );
 
     const calculateDDay = (targetDate: Date): string => {
         const now = new Date();
@@ -68,6 +71,7 @@ export function useDDays(currentDate: Date = new Date()) {
 
             const formattedDdays = data.ddays.map((dday: any) => {
                 let dateObj: Date | undefined = undefined;
+                let endDateObj: Date | undefined = undefined;
 
                 if (
                     typeof dday.date === "string" &&
@@ -79,12 +83,23 @@ export function useDDays(currentDate: Date = new Date()) {
                     dateObj = new Date(year, month, day);
                 }
 
+                if (
+                    typeof dday.endDate === "string" &&
+                    dday.endDate.match(/^\d{8}$/)
+                ) {
+                    const year = parseInt(dday.endDate.substring(0, 4));
+                    const month = parseInt(dday.endDate.substring(4, 6)) - 1; // 0-indexed month
+                    const day = parseInt(dday.endDate.substring(6, 8));
+                    endDateObj = new Date(year, month, day);
+                }
+
                 return {
                     id: dday.id,
                     title: dday.title,
                     group: dday.group || "",
                     description: dday.description || "",
                     date: dateObj,
+                    endDate: endDateObj,
                     days: dateObj ? calculateDDay(dateObj) : "Unscheduled",
                     isAnnual: dday.isAnnual,
                     createdBy: dday.createdBy,
@@ -93,6 +108,7 @@ export function useDDays(currentDate: Date = new Date()) {
             });
 
             setDdays(formattedDdays);
+            setEventLayout(calculateEventLayout(formattedDdays));
             setError(null);
         } catch (err) {
             console.error("Failed to fetch D-days:", err);
@@ -109,25 +125,34 @@ export function useDDays(currentDate: Date = new Date()) {
     const getDDaysForDay = (day: number | null, currentDate: Date) => {
         if (!day) return [];
 
-        return ddays.filter((dday) => {
-            const eventDate = dday.date;
+        const targetDate = new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            day
+        );
+        targetDate.setHours(0, 0, 0, 0);
+        const targetTime = targetDate.getTime();
 
-            if (!eventDate) {
+        return ddays.filter((dday) => {
+            if (!dday.date) {
                 return false;
             }
 
-            if (!dday.isAnnual) {
+            const startDate = new Date(dday.date);
+            startDate.setHours(0, 0, 0, 0);
+            const startTime = startDate.getTime();
+
+            if (dday.isAnnual) {
                 return (
-                    eventDate.getDate() === day &&
-                    eventDate.getMonth() === currentDate.getMonth() &&
-                    eventDate.getFullYear() === currentDate.getFullYear()
-                );
-            } else {
-                return (
-                    eventDate.getDate() === day &&
-                    eventDate.getMonth() === currentDate.getMonth()
+                    startDate.getDate() === day &&
+                    startDate.getMonth() === currentDate.getMonth()
                 );
             }
+            const endDate = dday.endDate ? new Date(dday.endDate) : startDate;
+            endDate.setHours(0, 0, 0, 0);
+            const endTime = endDate.getTime();
+
+            return targetTime >= startTime && targetTime <= endTime;
         });
     };
 
@@ -144,6 +169,15 @@ export function useDDays(currentDate: Date = new Date()) {
                   )}`
                 : "";
 
+            const endDateString = dday.endDate
+                ? `${dday.endDate.getFullYear()}${String(
+                      dday.endDate.getMonth() + 1
+                  ).padStart(2, "0")}${String(dday.endDate.getDate()).padStart(
+                      2,
+                      "0"
+                  )}`
+                : "";
+
             const payload = {
                 title: dday.title,
                 group: dday.group,
@@ -152,6 +186,7 @@ export function useDDays(currentDate: Date = new Date()) {
                 connectedUsers: dday.connectedUsers || [],
                 createdBy: dday.createdBy,
                 date: dateString,
+                endDate: endDateString,
             };
 
             const response = await fetch(
@@ -182,6 +217,84 @@ export function useDDays(currentDate: Date = new Date()) {
         }
     };
 
+    const calculateEventLayout = (events: DDay[]): Map<string, number> => {
+        const layout = new Map<string, number>();
+        const daySlots = new Map<string, boolean[]>(); // date string -> occupied rows
+
+        const sortedEvents = [...events].sort((a, b) => {
+            if (!a.date || !b.date) return 0;
+            const aStart = a.date.getTime();
+            const bStart = b.date.getTime();
+            if (aStart !== bStart) return aStart - bStart;
+
+            const aEnd = a.endDate?.getTime() || aStart;
+            const bEnd = b.endDate?.getTime() || bStart;
+
+            // longer events first
+            return bEnd - aEnd;
+        });
+
+        sortedEvents.forEach((event) => {
+            if (!event.date) return;
+
+            let row = 0;
+            while (true) {
+                let isRowAvailable = true;
+                const eventEndDate = event.endDate || event.date;
+                for (
+                    let d = new Date(event.date);
+                    d <= eventEndDate;
+                    d.setDate(d.getDate() + 1)
+                ) {
+                    const dateString = d.toISOString().split("T")[0];
+                    if (daySlots.get(dateString)?.[row]) {
+                        isRowAvailable = false;
+                        break;
+                    }
+                }
+
+                if (isRowAvailable) {
+                    layout.set(event.id, row);
+                    for (
+                        let d = new Date(event.date);
+                        d <= eventEndDate;
+                        d.setDate(d.getDate() + 1)
+                    ) {
+                        const dateString = d.toISOString().split("T")[0];
+                        if (!daySlots.has(dateString)) {
+                            daySlots.set(dateString, []);
+                        }
+                        daySlots.get(dateString)![row] = true;
+                    }
+                    break;
+                }
+                row++;
+            }
+        });
+        return layout;
+    };
+
+    const getRenderableDDaysForDay = (
+        day: number | null,
+        currentDate: Date
+    ): (DDay | null)[] => {
+        const eventsForDay = getDDaysForDay(day, currentDate);
+        const renderableEvents: (DDay | null)[] = [];
+
+        eventsForDay.forEach((event) => {
+            const row = eventLayout.get(event.id);
+            if (row !== undefined) {
+                // make sure array is long enough
+                while (renderableEvents.length <= row) {
+                    renderableEvents.push(null);
+                }
+                renderableEvents[row] = event;
+            }
+        });
+
+        return renderableEvents;
+    };
+
     const updateDDay = async (
         id: string,
         updates: Partial<Omit<DDay, "days" | "id">>
@@ -191,11 +304,24 @@ export function useDDays(currentDate: Date = new Date()) {
 
             if (Object.prototype.hasOwnProperty.call(updates, "date")) {
                 const date = updates.date;
-                // Format to YYYYMMDD string or empty string if date is null/undefined
+                // format to YYYYMMDD string or empty string if date is null/undefined
                 (payload as any).date = date
                     ? `${date.getFullYear()}${String(
                           date.getMonth() + 1
                       ).padStart(2, "0")}${String(date.getDate()).padStart(
+                          2,
+                          "0"
+                      )}`
+                    : "";
+            }
+
+            if (Object.prototype.hasOwnProperty.call(updates, "endDate")) {
+                const endDate = updates.endDate;
+                // format to YYYYMMDD string or empty string if endDate is null/undefined
+                (payload as any).endDate = endDate
+                    ? `${endDate.getFullYear()}${String(
+                          endDate.getMonth() + 1
+                      ).padStart(2, "0")}${String(endDate.getDate()).padStart(
                           2,
                           "0"
                       )}`
@@ -218,20 +344,7 @@ export function useDDays(currentDate: Date = new Date()) {
                 throw new Error(`Failed to update D-day: ${response.status}`);
             }
 
-            setDdays((prev) =>
-                prev.map((dday) => {
-                    if (dday.id === id) {
-                        const updatedDday = { ...dday, ...updates };
-                        return {
-                            ...updatedDday,
-                            days: updatedDday.date
-                                ? calculateDDay(updatedDday.date)
-                                : "Unscheduled",
-                        };
-                    }
-                    return dday;
-                })
-            );
+            await fetchDDays();
 
             return true;
         } catch (error) {
@@ -267,9 +380,43 @@ export function useDDays(currentDate: Date = new Date()) {
         loading,
         error,
         getDDaysForDay,
+        getRenderableDDaysForDay,
         createDDay,
         updateDDay,
         deleteDDay,
         refreshDDays: fetchDDays,
     };
+}
+
+export function getEventPosition(event: DDay, date: Date): EventPosition {
+    if (!event.date) return "single";
+
+    const eventStartDate = event.date;
+    const eventEndDate = event.endDate || eventStartDate;
+
+    const normalizeDate = (d: Date) =>
+        new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+
+    const normalizedCurrent = normalizeDate(date);
+    const normalizedStart = normalizeDate(eventStartDate);
+    const normalizedEnd = normalizeDate(eventEndDate);
+
+    if (
+        normalizedCurrent < normalizedStart ||
+        normalizedCurrent > normalizedEnd
+    )
+        return "single";
+
+    const isSingleDay = normalizedStart === normalizedEnd;
+
+    if (isSingleDay) {
+        return "single";
+    }
+    if (normalizedCurrent === normalizedStart) {
+        return "start";
+    }
+    if (normalizedCurrent === normalizedEnd) {
+        return "end";
+    }
+    return "middle";
 }

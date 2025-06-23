@@ -16,9 +16,45 @@ import { AddDDayDialog } from "./AddDdayDialog";
 import { ShowAllEvents } from "./ShowAllEvents";
 
 // types
-import { CalendarGridProps, DDay } from "@/lib/types/calendar";
+import { CalendarGridProps, DDay, EventPosition } from "@/lib/types/calendar";
 
-// This is the new component for a single day cell.
+import { getEventPosition } from "@/lib/hooks/useDDays";
+import { cn } from "@/lib/utils";
+
+function GridDDayItem({
+    dday,
+    position = "single",
+    updateDDay,
+    deleteDDay,
+    dayIndex,
+    droppableId,
+    activeDDay,
+}: {
+    dday: DDay;
+    position?: EventPosition;
+    updateDDay: CalendarGridProps["updateDDay"];
+    deleteDDay: CalendarGridProps["deleteDDay"];
+    dayIndex?: number;
+    droppableId: string;
+    activeDDay?: DDay | null;
+}) {
+    const isEventBeingDragged = activeDDay && activeDDay.id === dday.id;
+
+    return (
+        <div className={cn("w-full", isEventBeingDragged ? "invisible" : "")}>
+            <DDayIndicator
+                dday={dday}
+                updateDDay={updateDDay}
+                deleteDDay={deleteDDay}
+                context="grid"
+                position={position}
+                dayIndex={dayIndex}
+                droppableId={droppableId}
+            />
+        </div>
+    );
+}
+
 function CalendarDayCell({
     day,
     index,
@@ -30,6 +66,7 @@ function CalendarDayCell({
     updateDDay,
     deleteDDay,
     handleAddClick,
+    activeDDay,
 }: {
     day: number | null;
     index: number;
@@ -41,11 +78,18 @@ function CalendarDayCell({
     updateDDay: CalendarGridProps["updateDDay"];
     deleteDDay: CalendarGridProps["deleteDDay"];
     handleAddClick: (e: React.MouseEvent, day: number) => void;
+    activeDDay?: DDay | null;
 }) {
-    // The useDroppable hook is now correctly called at the top level of this component.
+    const todayDate = day
+        ? new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
+        : null;
+
+    const dayDdays = todayDate ? getDDaysForDay(day, currentDate) : [];
+
     const dateForId = day
         ? new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
         : null;
+
     const droppableId = dateForId
         ? dateForId.toISOString().split("T")[0]
         : `empty-${index}`;
@@ -56,21 +100,21 @@ function CalendarDayCell({
     });
 
     const weekNumber = Math.floor(index / 7) + 1;
+
     const isHighlightedWeek =
         weekNumber === 2 || weekNumber === 4 || weekNumber === 6;
-    const dayDdays = getDDaysForDay(day, currentDate);
 
     return (
         <div
             ref={setNodeRef}
-            className={`p-2 flex flex-col h-full
+            className={`flex flex-col h-full
             ${isHighlightedWeek ? "border-y border-dashed" : ""}
-            ${isOver ? " bg-accent" : ""}`}
+            ${isOver ? " bg-muted" : ""}`}
             onClick={() => day && selectDate(day)}
         >
             {day && (
                 <div className="flex flex-col h-full">
-                    <div className="flex flex-col gap-1">
+                    <div className="p-1 flex flex-col gap-1">
                         {isSelected(day) ? (
                             <div className="flex items-center justify-between h-6">
                                 <div className="w-6 flex justify-center border-b border-foreground">
@@ -97,24 +141,45 @@ function CalendarDayCell({
                     </div>
 
                     <div className="flex flex-col mt-1 gap-1 text-xs">
-                        {dayDdays.slice(0, 2).map((dday, idx) => (
-                            <div
-                                key={`dday-slice-${day}-${idx}-${
-                                    dday.id || idx
-                                }`}
-                                className="border rounded-full h-5 flex items-center text-xs"
-                            >
-                                <DDayIndicator
+                        {dayDdays.slice(0, 3).map((dday, idx) => {
+                            if (!dday) {
+                                return (
+                                    <div
+                                        key={`placeholder-${day}-${idx}`}
+                                        className="flex text-sm border border-transparent"
+                                    >
+                                        &nbsp;
+                                    </div>
+                                );
+                            }
+
+                            const position = todayDate
+                                ? getEventPosition(dday, todayDate)
+                                : "single";
+
+                            return (
+                                <GridDDayItem
+                                    key={`dday-slice-${day}-${idx}-${
+                                        dday.id || idx
+                                    }`}
                                     dday={dday}
+                                    position={position}
                                     updateDDay={updateDDay}
                                     deleteDDay={deleteDDay}
+                                    dayIndex={index}
+                                    droppableId={droppableId}
+                                    activeDDay={activeDDay}
                                 />
-                            </div>
-                        ))}
+                            );
+                        })}
                         <div>
-                            {dayDdays.length >= 3 && (
+                            {dayDdays.length >= 4 && (
                                 <ShowAllEvents
-                                    ddays={dayDdays}
+                                    ddays={
+                                        dayDdays.filter(
+                                            (d) => d !== null
+                                        ) as DDay[]
+                                    }
                                     updateDDay={updateDDay}
                                     deleteDDay={deleteDDay}
                                 />
@@ -137,15 +202,13 @@ export function CalendarGrid({
     createDDay,
     updateDDay,
     deleteDDay,
+    activeDDay,
 }: CalendarGridProps) {
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
     const [selectedDateForAdd, setSelectedDateForAdd] = useState<Date | null>(
         null
     );
-
-    const [isShowAllEventsDialogOpen, setIsShowAllEventsDialogOpen] =
-        useState(false);
 
     const handleAddClick = (e: React.MouseEvent, day: number) => {
         // prevent the click event from bubbling up to the parent div
@@ -183,6 +246,7 @@ export function CalendarGrid({
                             updateDDay={updateDDay}
                             deleteDDay={deleteDDay}
                             handleAddClick={handleAddClick}
+                            activeDDay={activeDDay}
                         />
                     ))}
                 </div>

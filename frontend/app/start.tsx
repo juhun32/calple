@@ -27,8 +27,8 @@ export default function Start() {
                     window.location.href = "/profile";
                 }}
             >
-                <User className="h-4 w-4 text-rose-500" />
-                Go to Profile
+                <User className="h-4 w-4 text-rose-500 border border-rose-500 rounded-full" />
+                Profile
             </Button>
         </div>
     );

@@ -8,10 +8,9 @@ import { useAuth } from "@/components/auth-provider";
 
 // ui
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 
 // icons
-import { Calendar, LayoutDashboard } from "lucide-react";
+import { Calendar } from "lucide-react";
 import Rectangle from "@/lib/assets/rectangle";
 import Start from "./start";
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useDraggable } from "@dnd-kit/core";
 
 // components
 import * as AlertDialog from "@/components/ui/alert-dialog";
@@ -6,7 +7,7 @@ import { Button } from "@/components/ui/button";
 
 // internal components
 import { EditDdayDialog } from "./EditDdayDialog";
-import { getColorFromGroup } from "@/lib/utils";
+import { cn, getColorFromGroup } from "@/lib/utils";
 
 // types
 import { type DDayIndicatorProps } from "@/lib/types/calendar";
@@ -16,9 +17,23 @@ export function DDayIndicator({
     dday,
     updateDDay,
     deleteDDay,
+    context = "grid",
+    length = "short",
+    position = "single",
+    dayIndex,
+    droppableId,
 }: DDayIndicatorProps) {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
+    const draggableId = droppableId
+        ? `${dday.id}-${droppableId}`
+        : `${dday.id}-${context}`;
+
+    const { attributes, listeners, setNodeRef } = useDraggable({
+        id: draggableId,
+        data: { dday, context, position },
+    });
 
     const handleEditClick = () => {
         setIsDetailsOpen(false);
@@ -28,29 +43,61 @@ export function DDayIndicator({
         }, 200);
     };
 
+    const getBorderStyles = () => {
+        switch (position) {
+            case "start":
+                return "ml-1 rounded-l-full rounded-r-none border-r-0";
+            case "middle":
+                return "rounded-none border-l-0 border-r-0";
+            case "end":
+                return "mr-1 rounded-l-none rounded-r-full border-l-0";
+            case "single":
+            default:
+                return "rounded-full mx-1";
+        }
+    };
+
+    const isStartOfWeek = dayIndex !== undefined && dayIndex % 7 === 0;
+    const showTitle =
+        position === "start" || position === "single" || isStartOfWeek;
+
     return (
-        <>
+        <div className={`border border-dashed ${getBorderStyles()} text-sm`}>
             <AlertDialog.AlertDialog
                 open={isDetailsOpen}
                 onOpenChange={setIsDetailsOpen}
             >
                 <AlertDialog.AlertDialogTrigger asChild>
                     <div
+                        ref={setNodeRef}
+                        {...attributes}
+                        {...listeners}
                         className="flex items-center sm:gap-1 w-full h-full px-1 font-normal hover:cursor-pointer"
                         title={`${dday.title} (${dday.days})`}
                     >
-                        <CircleSmall
-                            className={`h-4 w-4 ${getColorFromGroup(
-                                dday.group
-                            )}`}
-                            strokeWidth={1.5}
-                        />
-                        <p
-                            className="truncate w-full flex items-center"
-                            title={dday.title}
-                        >
-                            {dday.title}
-                        </p>
+                        {showTitle ? (
+                            <>
+                                <CircleSmall
+                                    className={`h-4 w-4 ${getColorFromGroup(
+                                        dday.group
+                                    )}`}
+                                    strokeWidth={1.5}
+                                />
+                                <p
+                                    className={cn(
+                                        "w-full",
+                                        length === "long"
+                                            ? "truncate max-w-[20rem]"
+                                            : "truncate max-w-[7rem]"
+                                    )}
+                                    title={dday.title}
+                                >
+                                    {dday.title}
+                                </p>
+                            </>
+                        ) : (
+                            <>&nbsp;</>
+                        )}
                     </div>
                 </AlertDialog.AlertDialogTrigger>
 
@@ -109,6 +156,6 @@ export function DDayIndicator({
                 updateDDay={updateDDay}
                 deleteDDay={deleteDDay}
             />
-        </>
+        </div>
     );
 }

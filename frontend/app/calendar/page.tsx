@@ -43,16 +43,15 @@ import {
     DndContext,
     DragOverlay,
     DragStartEvent,
-    PointerSensor,
+    MouseSensor,
+    TouchSensor,
     useSensor,
     useSensors,
     type DragEndEvent,
 } from "@dnd-kit/core";
 import { useState } from "react";
-import { DDay } from "@/lib/types/calendar";
-import { set } from "date-fns";
-import { CircleSmall } from "lucide-react";
-import { getColorFromGroup } from "@/lib/utils";
+import { DDay, EventPosition } from "@/lib/types/calendar";
+import { DDayIndicator } from "@/components/calendar/DDayIndicator";
 
 export default function Calendar() {
     const { authState } = useAuth();
@@ -76,33 +75,51 @@ export default function Calendar() {
 
     // hooks for dday state
     // this will fetch all dday events for the current month
-    const { ddays, getDDaysForDay, updateDDay, deleteDDay, createDDay } =
-        useDDays(currentDate);
+    const {
+        ddays,
+        updateDDay,
+        deleteDDay,
+        createDDay,
+        getRenderableDDaysForDay,
+    } = useDDays(currentDate);
 
     const [activeDDay, setActiveDDay] = useState<DDay | null>(null);
+    const [activeContext, setActiveContext] = useState<
+        "sheet" | "grid" | undefined
+    >();
+    const [activePosition, setActivePosition] =
+        useState<EventPosition>("single");
 
     const sensors = useSensors(
-        useSensor(PointerSensor, {
+        useSensor(MouseSensor, {
             activationConstraint: {
-                distance: 2,
+                distance: 5,
+            },
+        }),
+        useSensor(TouchSensor, {
+            activationConstraint: {
+                delay: 250,
+                tolerance: 5,
             },
         })
     );
 
     const handleDragStart = (event: DragStartEvent) => {
         const { active } = event;
-        const dday = ddays.find((d) => d.id === active.id);
-        if (dday) {
-            setActiveDDay(dday);
+        if (active.data.current) {
+            setActiveDDay(active.data.current.dday as DDay);
+            setActiveContext(active.data.current.context as "grid" | "sheet");
+            setActivePosition(active.data.current.position as EventPosition);
         }
     };
 
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
 
-        if (over && active.id) {
-            const ddayId = active.id as string;
+        if (over && active.id && active.data.current) {
+            const ddayId = (active.id as string).split("-")[0];
             const targetDateStr = over.id as string;
+            const originalDDay = active.data.current.dday as DDay;
 
             // parse date string from the droppable area's ID
             // new Date() with a string like 'YYYY-MM-DD' creates a date in UTC
@@ -113,11 +130,30 @@ export default function Calendar() {
                 targetDate.getTime() + userTimezoneOffset
             );
 
+            const updates: Partial<Omit<DDay, "id" | "days">> = {
+                date: correctedDate,
+            };
+
+            if (originalDDay.date && originalDDay.endDate) {
+                const originalStartDate = new Date(originalDDay.date);
+                originalStartDate.setHours(0, 0, 0, 0);
+
+                const originalEndDate = new Date(originalDDay.endDate);
+                originalEndDate.setHours(0, 0, 0, 0);
+
+                const duration =
+                    originalEndDate.getTime() - originalStartDate.getTime();
+
+                const newEndDate = new Date(correctedDate.getTime() + duration);
+                updates.endDate = newEndDate;
+            }
+
             // update event with the new date
-            updateDDay(ddayId, { date: correctedDate });
+            updateDDay(ddayId, updates);
         }
 
         setActiveDDay(null);
+        setActiveContext(undefined);
     };
 
     return (
@@ -146,7 +182,7 @@ export default function Calendar() {
                             </div>
                         </div>
 
-                        <div className="flex-1 overflow-auto p-4 md:p-8 flex flex-col h-full">
+                        <div className="flex-1 overflow-auto p-4 md:px-8 flex flex-col h-full">
                             <CalendarGrid
                                 currentDate={currentDate}
                                 monthData={monthData}
@@ -154,10 +190,11 @@ export default function Calendar() {
                                 isSelected={isSelected}
                                 isToday={isToday}
                                 selectDate={selectDate}
-                                getDDaysForDay={getDDaysForDay}
+                                getDDaysForDay={getRenderableDDaysForDay}
                                 createDDay={createDDay}
                                 updateDDay={updateDDay}
                                 deleteDDay={deleteDDay}
+                                activeDDay={activeDDay}
                             />
                         </div>
                     </div>
@@ -171,18 +208,17 @@ export default function Calendar() {
                     </div>
                 </div>
             </div>
-            <DragOverlay className="rounded-full">
+            <DragOverlay>
                 {activeDDay ? (
-                    <div className="flex items-center rounded-md bg-background px-2 border border-dashed w-fit rounded-full">
-                        <CircleSmall
-                            className={`h-4 w-4 ${getColorFromGroup(
-                                activeDDay.group
-                            )}`}
-                            strokeWidth={1.5}
+                    <div className="h-6 w-32 rounded-full shadow-lg">
+                        <DDayIndicator
+                            dday={activeDDay}
+                            context={activeContext}
+                            position={activePosition}
+                            // not used in drag overlay so just passing dummy functions
+                            updateDDay={async () => true}
+                            deleteDDay={async () => true}
                         />
-                        <span className="text-sm font-medium">
-                            {activeDDay.title}
-                        </span>
                     </div>
                 ) : null}
             </DragOverlay>

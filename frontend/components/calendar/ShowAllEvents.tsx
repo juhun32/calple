@@ -7,10 +7,9 @@ import * as AlertDialog from "@/components/ui/alert-dialog";
 import { type DDay } from "@/lib/types/calendar";
 
 // constants
-import { CircleSmall, EllipsisVertical } from "lucide-react";
-import { getColorFromGroup } from "@/lib/utils";
-import { Button } from "../ui/button";
+import { MoreHorizontal } from "lucide-react";
 import { DDayIndicator } from "./DDayIndicator";
+import * as Table from "../ui/table";
 
 type ShowAllEventsProps = {
     ddays: DDay[];
@@ -29,8 +28,8 @@ export function ShowAllEvents({
     return (
         <AlertDialog.AlertDialog>
             <AlertDialog.AlertDialogTrigger asChild>
-                <div className="h-5 w-full flex items-center justify-center gap-1 px-1 rounded-full text-xs font-normal border hover:cursor-pointer">
-                    <EllipsisVertical className="h-3 w-3" />
+                <div className="h-5 w-full flex items-center justify-center gap-1 px-1 rounded-full text-xs font-normal border border-dashed hover:cursor-pointer">
+                    <MoreHorizontal className="h-4 w-4" strokeWidth={1} />
                 </div>
             </AlertDialog.AlertDialogTrigger>
             <AlertDialog.AlertDialogContent>
@@ -43,27 +42,51 @@ export function ShowAllEvents({
                         {ddays[0]?.date?.toLocaleDateString("default", {
                             month: "long",
                             day: "numeric",
+                            year: "numeric",
                         })}
                     </AlertDialog.AlertDialogTitle>
                 </AlertDialog.AlertDialogHeader>
                 <AlertDialog.AlertDialogDescription asChild>
                     <div>
-                        {ddays.length > 0
-                            ? ddays.map((individualDday, idx) => (
-                                  <div
-                                      key={`dday-dialog-${
-                                          individualDday.id || idx
-                                      }`}
-                                      className="flex gap-2 items-center p-2 border-b text-foreground"
-                                  >
-                                      <DDayIndicator
-                                          dday={individualDday}
-                                          updateDDay={updateDDay}
-                                          deleteDDay={deleteDDay}
-                                      />
-                                  </div>
-                              ))
-                            : null}
+                        {ddays.length > 0 ? (
+                            <Table.Table>
+                                <Table.TableHeader>
+                                    <Table.TableRow>
+                                        <Table.TableHead className="w-3/5 text-xs">
+                                            Event
+                                        </Table.TableHead>
+                                        <Table.TableHead className="text-xs">
+                                            Date
+                                        </Table.TableHead>
+                                        <Table.TableHead className="text-right text-xs">
+                                            Count
+                                        </Table.TableHead>
+                                    </Table.TableRow>
+                                </Table.TableHeader>
+                                <Table.TableBody>
+                                    {ddays.map((day) => (
+                                        <Table.TableRow key={day.id}>
+                                            <Table.TableCell>
+                                                <DDayIndicator
+                                                    dday={day}
+                                                    length="long"
+                                                    updateDDay={updateDDay}
+                                                    deleteDDay={deleteDDay}
+                                                />
+                                            </Table.TableCell>
+                                            <Table.TableCell className="text-muted-foreground">
+                                                {day.date
+                                                    ? day.date.toLocaleDateString()
+                                                    : "(Unscheduled)"}
+                                            </Table.TableCell>
+                                            <Table.TableCell className="text-right">
+                                                {day.date ? day.days : "-"}
+                                            </Table.TableCell>
+                                        </Table.TableRow>
+                                    ))}
+                                </Table.TableBody>
+                            </Table.Table>
+                        ) : null}
                     </div>
                 </AlertDialog.AlertDialogDescription>
 

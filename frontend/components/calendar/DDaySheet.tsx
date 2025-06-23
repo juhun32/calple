@@ -1,20 +1,18 @@
-// drag & drop
-import { useDraggable } from "@dnd-kit/core";
-import { CSS } from "@dnd-kit/utilities";
+"use client";
+
+import { useState } from "react";
 
 // componetns
 import * as Sheet from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import * as Table from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // icons
-import { Calendar1, CircleSmall, GripVertical } from "lucide-react";
+import { Calendar, CircleSmall } from "lucide-react";
 
 // types
 import { type DDay } from "@/lib/types/calendar";
-
-// utils
-import { cn, getColorFromGroup } from "@/lib/utils";
 
 // constants
 import { selectGroups } from "@/lib/constants/calendar";
@@ -29,7 +27,7 @@ type DDaySheetProps = {
     deleteDDay: (id: string) => Promise<boolean>;
 };
 
-function DraggableDDayItem({
+function DDayRow({
     dday,
     updateDDay,
     deleteDDay,
@@ -38,34 +36,25 @@ function DraggableDDayItem({
     updateDDay: DDaySheetProps["updateDDay"];
     deleteDDay: DDaySheetProps["deleteDDay"];
 }) {
-    const { attributes, listeners, setNodeRef, transform, isDragging } =
-        useDraggable({
-            id: dday.id,
-        });
+    const [isDragging, setIsDragging] = useState(false);
 
-    const style = {
-        transform: CSS.Translate.toString(transform),
-        touchAction: "none",
-        opacity: isDragging ? 0 : 1,
+    const style: React.CSSProperties = {
+        visibility: isDragging ? "hidden" : "visible",
     };
 
     return (
-        <Table.TableRow ref={setNodeRef} style={style}>
-            <Table.TableCell
-                className="flex items-center gap-1"
-                {...attributes}
-                {...listeners}
-            >
-                <div className="border rounded-full w-full">
-                    <DDayIndicator
-                        dday={dday}
-                        updateDDay={updateDDay}
-                        deleteDDay={deleteDDay}
-                    />
-                </div>
+        <Table.TableRow style={style}>
+            <Table.TableCell className="">
+                <DDayIndicator
+                    dday={dday}
+                    updateDDay={updateDDay}
+                    deleteDDay={deleteDDay}
+                    context="sheet"
+                    onDraggingChange={setIsDragging}
+                />
             </Table.TableCell>
             <Table.TableCell className="text-muted-foreground">
-                {dday.date ? dday.date.toLocaleDateString() : "(Unscheduled)"}
+                {dday.date ? dday.date.toLocaleDateString() : "(No Date)"}
             </Table.TableCell>
             <Table.TableCell className="text-right">
                 {dday.date ? dday.days : "-"}
@@ -89,20 +78,20 @@ export function DDaySheet({ ddays, updateDDay, deleteDDay }: DDaySheetProps) {
             <Table.Table>
                 <Table.TableHeader>
                     <Table.TableRow>
-                        <Table.TableHead className="w-3/5 text-xs">
+                        <Table.TableHead className="w-1/2 text-xs">
                             Event
                         </Table.TableHead>
-                        <Table.TableHead className="text-xs">
+                        <Table.TableHead className="w-1/3 text-xs">
                             Date
                         </Table.TableHead>
-                        <Table.TableHead className="text-right text-xs">
+                        <Table.TableHead className="w-1/6 text-right text-xs">
                             Count
                         </Table.TableHead>
                     </Table.TableRow>
                 </Table.TableHeader>
                 <Table.TableBody>
                     {allDdays.map((day) => (
-                        <DraggableDDayItem
+                        <DDayRow
                             key={day.id}
                             dday={day}
                             updateDDay={updateDDay}
@@ -123,7 +112,7 @@ export function DDaySheet({ ddays, updateDDay, deleteDDay }: DDaySheetProps) {
                             variant="outline"
                             className="rounded-full h-8 w-8 sm:w-fit"
                         >
-                            <Calendar1 className="h-6" />
+                            <Calendar className="h-6" />
                             <p className="hidden sm:flex">D-Days</p>
                         </Button>
                     </Sheet.SheetTrigger>
@@ -134,7 +123,7 @@ export function DDaySheet({ ddays, updateDDay, deleteDDay }: DDaySheetProps) {
                                 Days until or since, and the date of the event.
                             </Sheet.SheetDescription>
                         </Sheet.SheetHeader>
-                        <div className="flex-1 overflow-y-auto px-4">
+                        <div className="flex-1 overflow-hidden px-4">
                             {renderTable()}
                         </div>
                         <Sheet.SheetFooter className="max-w-screen flex flex-row px-8 justify-center">

@@ -21,6 +21,7 @@ type DDay struct {
 	Group          string    `json:"group"`
 	Description    string    `json:"description"`
 	Date           string    `json:"date,omitempty"`
+	EndDate        string    `json:"endDate,omitempty"`
 	IsAnnual       bool      `json:"isAnnual"`
 	CreatedBy      string    `json:"createdBy"`
 	ConnectedUsers []string  `json:"connectedUsers"`
@@ -105,6 +106,7 @@ func GetDDays(c *gin.Context) {
 
 			// make sure date field exists and is a string
 			dateStr, dateExists := data["date"].(string)
+			endDateStr, endDateExists := data["endDate"].(string)
 
 			// apply filtering only if date field exists. it may not exist for drag & drop events
 			if dateExists && dateStr != "" {
@@ -130,6 +132,14 @@ func GetDDays(c *gin.Context) {
 						continue
 					}
 				}
+			}
+
+			// if endDate is not provided, set it to the same as date
+			if !endDateExists || endDateStr == "" {
+				endDateStr = dateStr
+			} else if len(endDateStr) != 8 {
+				fmt.Printf("Warning: Invalid endDate string length for document %s: %s\n", doc.Ref.ID, endDateStr)
+				continue
 			}
 
 			title, _ := data["title"].(string)
@@ -170,6 +180,7 @@ func GetDDays(c *gin.Context) {
 				Group:          group,
 				Description:    description,
 				Date:           dateStr,
+				EndDate:        endDateStr,
 				IsAnnual:       isAnnual,
 				CreatedBy:      createdBy,
 				ConnectedUsers: util.ToStringSlice(data["connectedUsers"]),
@@ -244,6 +255,7 @@ func CreateDDay(c *gin.Context) {
 		"group":          dday.Group,
 		"description":    dday.Description,
 		"date":           dday.Date,
+		"endDate":        dday.EndDate,
 		"isAnnual":       dday.IsAnnual,
 		"createdBy":      userEmail,
 		"connectedUsers": dday.ConnectedUsers,

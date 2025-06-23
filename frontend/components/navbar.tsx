@@ -5,7 +5,7 @@ import { useTheme } from "next-themes";
 import { useAuth } from "@/components/auth-provider";
 
 // utils
-import { login, logout } from "@/lib/utils";
+import { logout } from "@/lib/utils";
 
 // ui
 import { Button } from "@/components/ui/button";
@@ -24,12 +24,10 @@ import {
     User,
     Settings,
     Siren,
-    Dices,
-    CalendarCheck,
     Flower,
     Download,
-    LogIn,
     Home,
+    Calendar,
 } from "lucide-react";
 
 export function NavBar() {
@@ -63,7 +61,7 @@ export function NavBar() {
                                     window.location.href = "/calendar";
                                 }}
                             >
-                                <CalendarCheck />
+                                <Calendar />
                                 <span className="flex text-xs">Calendar</span>
                             </Button>
                             <Button

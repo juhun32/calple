@@ -16,13 +16,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import * as Select from "@/components/ui/select";
+import { DateRange } from "react-day-picker";
 
 // icons
 import { Plus, Calendar as CalendarIcon, CircleSmall } from "lucide-react";
 
 // types
 import { type AddDDayDialogProps, DDay } from "@/lib/types/calendar";
-import { clear } from "console";
 
 export function AddDDayDialog({
     isOpen,
@@ -30,9 +30,10 @@ export function AddDDayDialog({
     initialDate,
     createDDay,
 }: AddDDayDialogProps) {
-    const [date, setDate] = useState<Date | undefined>(
-        initialDate || undefined
+    const [dateRange, setDateRange] = useState<DateRange | undefined>(
+        initialDate ? { from: initialDate, to: initialDate } : undefined
     );
+    const [isMultiDay, setIsMultiDay] = useState(false);
     const [group, setGroup] = useState("");
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -41,7 +42,9 @@ export function AddDDayDialog({
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
-        setDate(initialDate || undefined);
+        if (initialDate) {
+            setDateRange({ from: initialDate, to: initialDate });
+        }
     }, [initialDate]);
 
     const handleSubmitAdd = async () => {
@@ -64,8 +67,12 @@ export function AddDDayDialog({
             createdBy: "",
         };
 
-        if (date) {
-            ddayData.date = date;
+        if (dateRange?.from) {
+            ddayData.date = dateRange.from;
+
+            if (isMultiDay && dateRange.to && dateRange.to >= dateRange.from) {
+                ddayData.endDate = dateRange.to;
+            }
         }
 
         const success = await createDDay(ddayData);
@@ -86,10 +93,41 @@ export function AddDDayDialog({
         setDescription("");
         setIsAnnual(false);
         setConnectedEmail("");
-        setDate(undefined);
+        setDateRange(undefined);
+        setIsMultiDay(false);
     };
 
     const isControlled = isOpen !== undefined && onOpenChange !== undefined;
+
+    const formatDateDisplay = () => {
+        if (!dateRange?.from) return <span>(Optional)</span>;
+
+        if (isMultiDay && dateRange.to) {
+            return (
+                <>
+                    <span className="hidden sm:inline">
+                        {format(dateRange.from, "PP")} to{" "}
+                        {format(dateRange.to, "PP")}
+                    </span>
+                    <span className="sm:hidden">
+                        {format(dateRange.from, "M/d/yy")} to{" "}
+                        {format(dateRange.to, "M/d/yy")}
+                    </span>
+                </>
+            );
+        }
+
+        return (
+            <>
+                <span className="hidden sm:inline">
+                    {format(dateRange.from, "PPP")}
+                </span>
+                <span className="sm:hidden">
+                    {format(dateRange.from, "M/d/yy")}
+                </span>
+            </>
+        );
+    };
 
     return (
         <AlertDialog.AlertDialog open={isOpen} onOpenChange={onOpenChange}>
@@ -199,83 +237,127 @@ export function AddDDayDialog({
                                 <Label
                                     className={cn(
                                         "text-sm font-medium",
-                                        !date
+                                        !dateRange?.from
                                             ? "text-muted-foreground"
                                             : "text-foreground"
                                     )}
                                 >
                                     Date:
                                 </Label>
-                                <div className="flex">
-                                    <Popover.Popover>
-                                        <Popover.PopoverTrigger
-                                            asChild
-                                            className="flex sm:hidden"
+                                <Popover.Popover>
+                                    <Popover.PopoverTrigger
+                                        asChild
+                                        className="flex sm:hidden"
+                                    >
+                                        <Button
+                                            variant="outline"
+                                            className={cn(
+                                                "justify-start text-left font-normal w-full text-foreground rounded-full gap-1",
+                                                !dateRange?.from &&
+                                                    "text-muted-foreground"
+                                            )}
                                         >
-                                            <Button
-                                                variant="outline"
-                                                className={cn(
-                                                    "justify-start text-left font-normal w-3/5 text-foreground rounded-full gap-1",
-                                                    !date &&
-                                                        "text-muted-foreground"
-                                                )}
-                                            >
-                                                <CalendarIcon
-                                                    className="h-4 w-4"
-                                                    strokeWidth={1.3}
-                                                />
-                                                {date ? (
-                                                    format(date, "M/d/yy")
-                                                ) : (
-                                                    <span>(Optional)</span>
-                                                )}
-                                            </Button>
-                                        </Popover.PopoverTrigger>
-                                        <Popover.PopoverTrigger
-                                            asChild
-                                            className="hidden sm:flex"
+                                            <CalendarIcon
+                                                className="h-4 w-4"
+                                                strokeWidth={1.3}
+                                            />
+                                            {formatDateDisplay()}
+                                        </Button>
+                                    </Popover.PopoverTrigger>
+
+                                    <Popover.PopoverTrigger
+                                        asChild
+                                        className="hidden sm:flex"
+                                    >
+                                        <Button
+                                            variant="outline"
+                                            className={cn(
+                                                "justify-start text-left font-normal w-full text-foreground rounded-full gap-1",
+                                                !dateRange?.from &&
+                                                    "text-muted-foreground"
+                                            )}
                                         >
-                                            <Button
-                                                variant="outline"
-                                                className={cn(
-                                                    "justify-start text-left font-normal w-3/5 sm:w-3/4 text-foreground rounded-full gap-1",
-                                                    !date &&
-                                                        "text-muted-foreground"
-                                                )}
-                                            >
-                                                <CalendarIcon
-                                                    className="h-4 w-4"
-                                                    strokeWidth={1.3}
-                                                />
-                                                {date ? (
-                                                    format(date, "PPP")
-                                                ) : (
-                                                    <span>(Optional)</span>
-                                                )}
-                                            </Button>
-                                        </Popover.PopoverTrigger>
-                                        <Popover.PopoverContent
-                                            className="w-auto p-0 z-50"
-                                            align="start"
-                                        >
+                                            <CalendarIcon
+                                                className="h-4 w-4"
+                                                strokeWidth={1.3}
+                                            />
+                                            {formatDateDisplay()}
+                                        </Button>
+                                    </Popover.PopoverTrigger>
+
+                                    <Popover.PopoverContent
+                                        className="w-auto p-0 z-50"
+                                        align="start"
+                                    >
+                                        {isMultiDay ? (
+                                            <Calendar
+                                                mode="range"
+                                                selected={dateRange}
+                                                onSelect={setDateRange}
+                                                className="pointer-events-auto"
+                                                numberOfMonths={2}
+                                            />
+                                        ) : (
                                             <Calendar
                                                 mode="single"
-                                                selected={date}
-                                                onSelect={setDate}
+                                                selected={dateRange?.from}
+                                                onSelect={(date) =>
+                                                    setDateRange(
+                                                        date
+                                                            ? {
+                                                                  from: date,
+                                                                  to: date,
+                                                              }
+                                                            : undefined
+                                                    )
+                                                }
                                                 className="pointer-events-auto"
+                                                numberOfMonths={1}
                                             />
-                                        </Popover.PopoverContent>
-                                    </Popover.Popover>
-                                    <div className="flex items-center text-sm justify-end sm:px-2 w-2/5 sm:w-1/4 gap-1">
+                                        )}
+                                    </Popover.PopoverContent>
+                                </Popover.Popover>
+                                <Label
+                                    className={cn(
+                                        "text-sm font-medium",
+                                        "text-foreground"
+                                    )}
+                                >
+                                    Options:
+                                </Label>
+                                <div className="flex items-center gap-4 p-2">
+                                    <div className="flex items-center gap-2">
+                                        <Checkbox
+                                            id="isMultiDay"
+                                            checked={isMultiDay}
+                                            onCheckedChange={(checked) => {
+                                                setIsMultiDay(checked === true);
+                                                if (checked === false) {
+                                                    // Reset to single day if unchecking
+                                                    setDateRange(
+                                                        dateRange?.from
+                                                            ? {
+                                                                  from: dateRange.from,
+                                                                  to: dateRange.from,
+                                                              }
+                                                            : undefined
+                                                    );
+                                                }
+                                            }}
+                                        />
                                         <Label
+                                            htmlFor="isMultiDay"
                                             className={cn(
-                                                !isAnnual
+                                                !isMultiDay
                                                     ? "text-muted-foreground"
                                                     : "text-foreground"
                                             )}
                                         >
-                                            Annual:
+                                            Multi-day
                                         </Label>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
                                         <Checkbox
                                             id="isAnnual"
                                             checked={isAnnual}
@@ -283,6 +365,16 @@ export function AddDDayDialog({
                                                 setIsAnnual(checked === true)
                                             }
                                         />
+                                        <Label
+                                            htmlFor="isAnnual"
+                                            className={cn(
+                                                !isAnnual
+                                                    ? "text-muted-foreground"
+                                                    : "text-foreground"
+                                            )}
+                                        >
+                                            Annual
+                                        </Label>
                                     </div>
                                 </div>
                             </div>

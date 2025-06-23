@@ -121,24 +121,20 @@ export function usePosts() {
                         `Failed to update post: ${response.status}`
                 );
             }
-            // Option 1: Refetch all posts
-            // await fetchAllPosts();
-            // Option 2: Optimistically update the specific post
-            const updatedPostDetails: Idea = await response.json(); // Assuming backend returns the full updated post or a success message
+
+            const updatedPostDetails: Idea = await response.json();
+
             setAllPosts((prevPosts) =>
-                prevPosts.map(
-                    (post) =>
-                        post.id === postId
-                            ? { ...post, ...updatedPostDetails }
-                            : post // Ensure updatedPostDetails has the correct structure
+                prevPosts.map((post) =>
+                    post.id === postId
+                        ? { ...post, ...updatedPostDetails }
+                        : post
                 )
             );
             setError(null);
-            // If backend only returns a success message, you might need to merge updatedPostData with existing post
-            // For simplicity, let's assume it returns the updated post or we refetch.
-            // For now, we'll refetch to ensure data consistency if the PUT response isn't the full object.
-            await fetchAllPosts(); // Or handle optimistic update more carefully
-            return allPosts.find((p) => p.id === postId) || null; // Return the updated post from state
+            await fetchAllPosts();
+
+            return allPosts.find((p) => p.id === postId) || null;
         } catch (err) {
             if (err instanceof Error) {
                 setError(err.message);

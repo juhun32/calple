@@ -1,3 +1,5 @@
+import { Analytics } from "@vercel/analytics/next";
+
 import type { Metadata } from "next";
 import { Lora } from "next/font/google";
 import "./globals.css";
@@ -75,6 +77,7 @@ export default async function RootLayout({
                     <AuthProvider initialState={authState}>
                         <NavBar />
                         <div className="h-full">{children}</div>
+                        <Analytics />
                         <div className="fixed bottom-0 left-0 h-8 w-full flex justify-center z-50 border-t border-dashed px-8 backdrop-blur">
                             <div className="container flex itms-center justify-between">
                                 <div className="flex sm:px-8 py-2 container text-muted-foreground text-xs">

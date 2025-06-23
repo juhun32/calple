@@ -2,6 +2,7 @@ import { useState } from "react";
 
 export function useCalendar() {
     const [currentDate, setCurrentDate] = useState(new Date());
+
     const [selectedDate, setSelectedDate] = useState(new Date());
 
     const getDaysInMonth = (year: number, month: number) => {

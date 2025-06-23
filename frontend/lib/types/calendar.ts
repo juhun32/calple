@@ -3,6 +3,7 @@ export type DDay = {
     title: string;
     group: string;
     date?: Date;
+    endDate?: Date;
     description: string;
     days: string;
     isAnnual: boolean;
@@ -10,8 +11,11 @@ export type DDay = {
     connectedUsers?: string[];
 };
 
+export type EventPosition = "start" | "middle" | "end" | "single";
+
 export interface CalendarGridProps {
     currentDate: Date;
+    endDate?: Date;
     monthData: (number | null)[];
     requiredRows: number;
     isSelected: (day: number | null) => boolean;
@@ -24,6 +28,7 @@ export interface CalendarGridProps {
         updates: Partial<Omit<any, "id" | "days">>
     ) => Promise<boolean>;
     deleteDDay: (id: string) => Promise<boolean>;
+    activeDDay: DDay | null;
 }
 
 export interface AddDDayDialogProps {
@@ -40,6 +45,12 @@ export interface DDayIndicatorProps {
         updates: Partial<Omit<DDay, "id" | "days">>
     ) => Promise<boolean>;
     deleteDDay: (id: string) => Promise<boolean>;
+    onDraggingChange?: (isDragging: boolean) => void;
+    context?: "sheet" | "grid";
+    length?: "short" | "long";
+    position?: EventPosition;
+    dayIndex?: number;
+    droppableId?: string;
 }
 
 export interface CalendarHeaderProps {
