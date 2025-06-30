@@ -74,7 +74,7 @@ function CalendarDayCell({
     isSelected: (day: number) => boolean;
     isToday: (day: number) => boolean;
     selectDate: (day: number) => void;
-    getDDaysForDay: (day: number | null, currentDate: Date) => DDay[];
+    getDDaysForDay: (day: number | null, currentDate: Date) => (DDay | null)[];
     updateDDay: CalendarGridProps["updateDDay"];
     deleteDDay: CalendarGridProps["deleteDDay"];
     handleAddClick: (e: React.MouseEvent, day: number) => void;

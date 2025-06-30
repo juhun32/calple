@@ -13,6 +13,7 @@ import { cn, getBorderColorFromGroup, getColorFromGroup } from "@/lib/utils";
 import { type DDayIndicatorProps } from "@/lib/types/calendar";
 import { CircleSmall } from "lucide-react";
 
+// individual event indicator component used in calendar grid and event lists - used by CalendarGrid, DDaySheet, and ShowAllEvents
 export function DDayIndicator({
     dday,
     updateDDay,
@@ -23,26 +24,33 @@ export function DDayIndicator({
     dayIndex,
     droppableId,
 }: DDayIndicatorProps) {
+    // state for controlling the edit dialog - used by EditDdayDialog
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    // state for controlling the details dialog - used by AlertDialog
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
+    // create unique id for drag & drop functionality - used by @dnd-kit/core library
     const draggableId = droppableId
         ? `${dday.id}-${droppableId}`
         : `${dday.id}-${context}`;
 
+    // set up drag & drop for this event - from @dnd-kit/core library
     const { attributes, listeners, setNodeRef } = useDraggable({
         id: draggableId,
         data: { dday, context, position },
     });
 
+    // handle edit button click - close details and open edit dialog - called from details dialog
     const handleEditClick = () => {
         setIsDetailsOpen(false);
 
+        // small delay to ensure smooth transition
         setTimeout(() => {
             setIsEditDialogOpen(true);
         }, 200);
     };
 
+    // get border styles based on event position in multi-day layout - used for visual continuity
     const getBorderStyles = () => {
         switch (position) {
             case "start":
@@ -57,7 +65,9 @@ export function DDayIndicator({
         }
     };
 
+    // determine if this is the start of a week (for showing event titles) - used for visual layout
     const isStartOfWeek = dayIndex !== undefined && dayIndex % 7 === 0;
+    // show event title if it's the start of a multi-day event, single event, or start of week - affects display
     const showTitle =
         position === "start" || position === "single" || isStartOfWeek;
 
@@ -67,6 +77,7 @@ export function DDayIndicator({
                 dday.group
             )} text-sm`}
         >
+            {/* event details dialog - shows event information and edit/delete options */}
             <AlertDialog.AlertDialog
                 open={isDetailsOpen}
                 onOpenChange={setIsDetailsOpen}
@@ -81,18 +92,20 @@ export function DDayIndicator({
                     >
                         {showTitle ? (
                             <>
+                                {/* event group color indicator - used for visual grouping */}
                                 <CircleSmall
                                     className={`h-4 w-4 ${getColorFromGroup(
                                         dday.group
                                     )}`}
                                     strokeWidth={1.5}
                                 />
+                                {/* event title with smart truncation - stays within cell boundaries */}
                                 <p
                                     className={cn(
-                                        "w-full",
+                                        "w-full overflow-hidden text-ellipsis whitespace-nowrap",
                                         length === "long"
-                                            ? "truncate max-w-[20rem]"
-                                            : "truncate max-w-[7rem]"
+                                            ? "max-w-[20rem]"
+                                            : "max-w-full"
                                     )}
                                     title={dday.title}
                                 >
@@ -108,16 +121,22 @@ export function DDayIndicator({
                 <AlertDialog.AlertDialogContent>
                     <AlertDialog.AlertDialogHeader>
                         <AlertDialog.AlertDialogTitle>
-                            <div className="flex justify-between items-baseline gap-2">
-                                <div className="flex items-baseline gap-2">
-                                    {dday.title}
+                            <div className="flex flex-col sm:flex-row justify-between items-baseline gap-1 sm:gap-2">
+                                <div className="truncate w-[15rem] sm:w-full">
+                                    <span className="truncate block">
+                                        {dday.title}
+                                    </span>
+                                </div>
+                                <div className="w-full flex items-baseline justify-between gap-1 sm:gap-2">
                                     {dday.date && (
                                         <span className="text-xs text-gray-500">
                                             [{dday.date.toLocaleDateString()}]
                                         </span>
                                     )}
+                                    <span className="text-xs sm:text-base">
+                                        {dday.days}
+                                    </span>
                                 </div>
-                                {dday.days}
                             </div>
                         </AlertDialog.AlertDialogTitle>
                         <AlertDialog.AlertDialogDescription className="text-sm text-muted-foreground">
@@ -131,12 +150,21 @@ export function DDayIndicator({
                                 {dday.group}
                             </span>
                         </AlertDialog.AlertDialogDescription>
-                        {dday.description ? (
-                            <AlertDialog.AlertDialogDescription className="text-sm text-muted-foreground p-2 border rounded-lg">
-                                {dday.description}
-                            </AlertDialog.AlertDialogDescription>
-                        ) : null}
                     </AlertDialog.AlertDialogHeader>
+                    {dday.description ? (
+                        <div className="text-sm text-muted-foreground p-2 border rounded-lg">
+                            <p
+                                style={{
+                                    whiteSpace: "pre-wrap",
+                                    wordBreak: "break-word",
+                                    overflowWrap: "break-word",
+                                    maxWidth: "100%",
+                                }}
+                            >
+                                {dday.description}
+                            </p>
+                        </div>
+                    ) : null}
 
                     <AlertDialog.AlertDialogFooter className="flex flex-row justify-end gap-2 sm:gap-0">
                         <Button

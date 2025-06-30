@@ -24,6 +24,7 @@
 // for days with >2 events
 
 import { redirect } from "next/navigation";
+import { useState } from "react";
 
 // hooks
 import { useCalendar } from "@/lib/hooks/useCalendar";
@@ -35,8 +36,9 @@ import { useAuth } from "@/components/auth-provider";
 // components/calendar
 import { CalendarHeader } from "@/components/calendar/CalendarHeader";
 import { CalendarGrid } from "@/components/calendar/CalendarGrid";
-import { DDaySheet } from "@/components/calendar/DDaySheet";
+import { DDaySheet } from "@/components/calendar/DdaySheet";
 import { AddDDayDialog } from "@/components/calendar/AddDdayDialog";
+import { DDayIndicator } from "@/components/calendar/DDayIndicator";
 
 // drag & drop
 import {
@@ -49,9 +51,7 @@ import {
     useSensors,
     type DragEndEvent,
 } from "@dnd-kit/core";
-import { useState } from "react";
 import { DDay, EventPosition } from "@/lib/types/calendar";
-import { DDayIndicator } from "@/components/calendar/DDayIndicator";
 
 export default function Calendar() {
     const { authState } = useAuth();
@@ -60,11 +60,10 @@ export default function Calendar() {
         redirect("/");
     }
 
-    // hooks for calendar state
+    // Calendar state
     const {
         currentDate,
         monthData,
-        requiredRows,
         goToNextMonth,
         goToPrevMonth,
         goToToday,
@@ -73,8 +72,7 @@ export default function Calendar() {
         selectDate,
     } = useCalendar();
 
-    // hooks for dday state
-    // this will fetch all dday events for the current month
+    // D-Day state
     const {
         ddays,
         updateDDay,
@@ -83,6 +81,7 @@ export default function Calendar() {
         getRenderableDDaysForDay,
     } = useDDays(currentDate);
 
+    // Drag and drop state
     const [activeDDay, setActiveDDay] = useState<DDay | null>(null);
     const [activeContext, setActiveContext] = useState<
         "sheet" | "grid" | undefined
@@ -91,16 +90,9 @@ export default function Calendar() {
         useState<EventPosition>("single");
 
     const sensors = useSensors(
-        useSensor(MouseSensor, {
-            activationConstraint: {
-                distance: 5,
-            },
-        }),
+        useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
         useSensor(TouchSensor, {
-            activationConstraint: {
-                delay: 250,
-                tolerance: 5,
-            },
+            activationConstraint: { delay: 250, tolerance: 5 },
         })
     );
 
@@ -121,9 +113,7 @@ export default function Calendar() {
             const targetDateStr = over.id as string;
             const originalDDay = active.data.current.dday as DDay;
 
-            // parse date string from the droppable area's ID
-            // new Date() with a string like 'YYYY-MM-DD' creates a date in UTC
-            // adjust to the user's local timezone
+            // Parse target date and adjust for timezone
             const targetDate = new Date(targetDateStr);
             const userTimezoneOffset = targetDate.getTimezoneOffset() * 60000;
             const correctedDate = new Date(
@@ -134,6 +124,7 @@ export default function Calendar() {
                 date: correctedDate,
             };
 
+            // Handle multi-day events
             if (originalDDay.date && originalDDay.endDate) {
                 const originalStartDate = new Date(originalDDay.date);
                 originalStartDate.setHours(0, 0, 0, 0);
@@ -143,12 +134,10 @@ export default function Calendar() {
 
                 const duration =
                     originalEndDate.getTime() - originalStartDate.getTime();
-
                 const newEndDate = new Date(correctedDate.getTime() + duration);
                 updates.endDate = newEndDate;
             }
 
-            // update event with the new date
             updateDDay(ddayId, updates);
         }
 
@@ -164,8 +153,9 @@ export default function Calendar() {
         >
             <div className="h-screen flex items-center justify-center">
                 <div className="container lg:grid lg:grid-cols-[3fr_1fr] h-full">
+                    {/* Main calendar area */}
                     <div className="flex flex-col h-full container pt-12 pb-8">
-                        <div className="flex items-center justify-between px-4 pt-4 md:pl-8 md:pt-8">
+                        <div className="flex items-center justify-between px-4 pt-4 md:px-8 md:pt-8">
                             <CalendarHeader
                                 currentDate={currentDate}
                                 goToNextMonth={goToNextMonth}
@@ -182,11 +172,10 @@ export default function Calendar() {
                             </div>
                         </div>
 
-                        <div className="flex-1 overflow-auto p-4 md:pl-8 flex flex-col h-full">
+                        <div className="flex-1 overflow-auto p-4 md:px-8 flex flex-col h-full">
                             <CalendarGrid
                                 currentDate={currentDate}
                                 monthData={monthData}
-                                requiredRows={requiredRows}
                                 isSelected={isSelected}
                                 isToday={isToday}
                                 selectDate={selectDate}
@@ -198,7 +187,9 @@ export default function Calendar() {
                             />
                         </div>
                     </div>
-                    <div className="hidden lg:flex flex-col h-full pr-4 md:pr-8 pt-20 pb-12 gap-4">
+
+                    {/* Sidebar */}
+                    <div className="hidden lg:flex flex-col h-full pr-4 md:pr-8 pt-20 pb-16 gap-8">
                         <AddDDayDialog createDDay={createDDay} />
                         <DDaySheet
                             ddays={ddays}
@@ -208,6 +199,8 @@ export default function Calendar() {
                     </div>
                 </div>
             </div>
+
+            {/* Drag overlay */}
             <DragOverlay>
                 {activeDDay ? (
                     <div className="h-6 w-32 rounded-full shadow-lg">
@@ -215,7 +208,6 @@ export default function Calendar() {
                             dday={activeDDay}
                             context={activeContext}
                             position={activePosition}
-                            // not used in drag overlay so just passing dummy functions
                             updateDDay={async () => true}
                             deleteDDay={async () => true}
                         />

@@ -1,226 +1,60 @@
 import { useEffect, useState } from "react";
 import { EventPosition, type DDay } from "@/lib/types/calendar";
 
+// main hook for managing D-day events (calendar events) - used by calendar page and all calendar components
 export function useDDays(currentDate: Date = new Date()) {
+    // array of all D-day events for the current month - passed to CalendarGrid, DDaySheet, and other components
     const [ddays, setDdays] = useState<DDay[]>([]);
+    // loading state for API calls - used by calendar page for loading indicators
     const [loading, setLoading] = useState(true);
+    // error state for failed operations - used by calendar page for error handling
     const [error, setError] = useState<string | null>(null);
+    // map of event IDs to their row positions for multi-day layout - used by CalendarGrid for visual continuity
     const [eventLayout, setEventLayout] = useState<Map<string, number>>(
         new Map()
     );
 
+    // calculate the D-day count (days until/since an event) - used to populate DDay.days field
     const calculateDDay = (targetDate: Date): string => {
-        const now = new Date();
-        const today = new Date(
-            now.getFullYear(),
-            now.getMonth(),
-            now.getDate()
-        );
-        const target = new Date(
-            targetDate.getFullYear(),
-            targetDate.getMonth(),
-            targetDate.getDate()
-        );
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const target = new Date(targetDate);
+        target.setHours(0, 0, 0, 0);
 
-        const diffTime = Math.abs(today.getTime() - target.getTime());
+        const diffTime = target.getTime() - today.getTime();
         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-        if (target.getTime() === today.getTime()) {
-            return "Today";
-        } else if (target < today) {
-            return `D+${diffDays}`;
-        } else {
-            return `D-${diffDays}`;
+        if (diffDays === 0) return "Today";
+        if (diffDays > 0) return `D-${diffDays}`;
+        return `D+${Math.abs(diffDays)}`;
+    };
+
+    // parse date string from API format (YYYYMMDD) to Date object - used when fetching from backend
+    const parseDateString = (dateStr: string): Date => {
+        if (dateStr.match(/^\d{8}$/)) {
+            const year = parseInt(dateStr.substring(0, 4));
+            const month = parseInt(dateStr.substring(4, 6)) - 1;
+            const day = parseInt(dateStr.substring(6, 8));
+            return new Date(year, month, day);
         }
+        return new Date(dateStr);
     };
 
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth() + 1;
-
-    const fetchDDays = async () => {
-        try {
-            setLoading(true);
-
-            const base =
-                process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
-            const endpoint = "/api/ddays";
-            const queryParams = new URLSearchParams({
-                view:
-                    currentDate.getFullYear().toString() +
-                    month.toString().padStart(2, "0"),
-            });
-            const urlWithParams = `${base}${endpoint}?${queryParams.toString()}`;
-            const url = new URL(urlWithParams);
-
-            console.log("Request URL:", url);
-
-            const response = await fetch(url, {
-                credentials: "include",
-            }).catch((err) => {
-                console.error("Fetch network error:", err);
-                throw err;
-            });
-
-            console.log("Response status:", response.status);
-
-            if (!response.ok) {
-                throw new Error(`Failed to fetch D-days: ${response.status}`);
-            }
-
-            const data = await response.json();
-
-            const formattedDdays = data.ddays.map((dday: any) => {
-                let dateObj: Date | undefined = undefined;
-                let endDateObj: Date | undefined = undefined;
-
-                if (
-                    typeof dday.date === "string" &&
-                    dday.date.match(/^\d{8}$/)
-                ) {
-                    const year = parseInt(dday.date.substring(0, 4));
-                    const month = parseInt(dday.date.substring(4, 6)) - 1; // 0-indexed month
-                    const day = parseInt(dday.date.substring(6, 8));
-                    dateObj = new Date(year, month, day);
-                }
-
-                if (
-                    typeof dday.endDate === "string" &&
-                    dday.endDate.match(/^\d{8}$/)
-                ) {
-                    const year = parseInt(dday.endDate.substring(0, 4));
-                    const month = parseInt(dday.endDate.substring(4, 6)) - 1; // 0-indexed month
-                    const day = parseInt(dday.endDate.substring(6, 8));
-                    endDateObj = new Date(year, month, day);
-                }
-
-                return {
-                    id: dday.id,
-                    title: dday.title,
-                    group: dday.group || "",
-                    description: dday.description || "",
-                    date: dateObj,
-                    endDate: endDateObj,
-                    days: dateObj ? calculateDDay(dateObj) : "Unscheduled",
-                    isAnnual: dday.isAnnual,
-                    createdBy: dday.createdBy,
-                    connectedUsers: dday.connectedUsers || [],
-                };
-            });
-
-            setDdays(formattedDdays);
-            setEventLayout(calculateEventLayout(formattedDdays));
-            setError(null);
-        } catch (err) {
-            console.error("Failed to fetch D-days:", err);
-            setError("Failed to load calendar events");
-        } finally {
-            setLoading(false);
-        }
+    // format Date object to API format (YYYYMMDD) - used when sending data to backend
+    const formatDateForAPI = (date: Date | undefined): string => {
+        if (!date) return "";
+        return `${date.getFullYear()}${String(date.getMonth() + 1).padStart(
+            2,
+            "0"
+        )}${String(date.getDate()).padStart(2, "0")}`;
     };
 
-    useEffect(() => {
-        fetchDDays();
-    }, [year, month]);
-
-    const getDDaysForDay = (day: number | null, currentDate: Date) => {
-        if (!day) return [];
-
-        const targetDate = new Date(
-            currentDate.getFullYear(),
-            currentDate.getMonth(),
-            day
-        );
-        targetDate.setHours(0, 0, 0, 0);
-        const targetTime = targetDate.getTime();
-
-        return ddays.filter((dday) => {
-            if (!dday.date) {
-                return false;
-            }
-
-            const startDate = new Date(dday.date);
-            startDate.setHours(0, 0, 0, 0);
-            const startTime = startDate.getTime();
-
-            if (dday.isAnnual) {
-                return (
-                    startDate.getDate() === day &&
-                    startDate.getMonth() === currentDate.getMonth()
-                );
-            }
-            const endDate = dday.endDate ? new Date(dday.endDate) : startDate;
-            endDate.setHours(0, 0, 0, 0);
-            const endTime = endDate.getTime();
-
-            return targetTime >= startTime && targetTime <= endTime;
-        });
-    };
-
-    const createDDay = async (
-        dday: Omit<DDay, "days" | "id">
-    ): Promise<boolean> => {
-        try {
-            const dateString = dday.date
-                ? `${dday.date.getFullYear()}${String(
-                      dday.date.getMonth() + 1
-                  ).padStart(2, "0")}${String(dday.date.getDate()).padStart(
-                      2,
-                      "0"
-                  )}`
-                : "";
-
-            const endDateString = dday.endDate
-                ? `${dday.endDate.getFullYear()}${String(
-                      dday.endDate.getMonth() + 1
-                  ).padStart(2, "0")}${String(dday.endDate.getDate()).padStart(
-                      2,
-                      "0"
-                  )}`
-                : "";
-
-            const payload = {
-                title: dday.title,
-                group: dday.group,
-                description: dday.description,
-                isAnnual: dday.isAnnual,
-                connectedUsers: dday.connectedUsers || [],
-                createdBy: dday.createdBy,
-                date: dateString,
-                endDate: endDateString,
-            };
-
-            const response = await fetch(
-                `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/ddays`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    credentials: "include",
-                    body: JSON.stringify(payload),
-                }
-            );
-
-            if (!response.ok) {
-                const errorBody = await response.json().catch(() => null);
-                const errorMessage =
-                    errorBody?.error ||
-                    `Failed to create D-day: ${response.status}`;
-                throw new Error(errorMessage);
-            }
-
-            await fetchDDays();
-            return true;
-        } catch (error) {
-            console.error("Failed to create D-day:", error);
-            return false;
-        }
-    };
-
+    // calculate layout positions for multi-day events to ensure visual continuity - used by CalendarGrid
     const calculateEventLayout = (events: DDay[]): Map<string, number> => {
         const layout = new Map<string, number>();
         const daySlots = new Map<string, boolean[]>(); // date string -> occupied rows
 
+        // sort events by start date, then by duration (longer events first)
         const sortedEvents = [...events].sort((a, b) => {
             if (!a.date || !b.date) return 0;
             const aStart = a.date.getTime();
@@ -241,6 +75,8 @@ export function useDDays(currentDate: Date = new Date()) {
             while (true) {
                 let isRowAvailable = true;
                 const eventEndDate = event.endDate || event.date;
+
+                // check if this row is available for all days of the event
                 for (
                     let d = new Date(event.date);
                     d <= eventEndDate;
@@ -255,6 +91,8 @@ export function useDDays(currentDate: Date = new Date()) {
 
                 if (isRowAvailable) {
                     layout.set(event.id, row);
+
+                    // mark this row as occupied for all days of the event
                     for (
                         let d = new Date(event.date);
                         d <= eventEndDate;
@@ -274,6 +112,93 @@ export function useDDays(currentDate: Date = new Date()) {
         return layout;
     };
 
+    // fetch D-day events from the API for the current month - called when month changes or after CRUD operations
+    const fetchDDays = async () => {
+        try {
+            setLoading(true);
+            const year = currentDate.getFullYear();
+            const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+            const view = `${year}${month}`;
+
+            const base =
+                process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+            const response = await fetch(`${base}/api/ddays?view=${view}`, {
+                credentials: "include",
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch D-days: ${response.status}`);
+            }
+
+            const data = await response.json();
+            // transform API data to DDay format with calculated D-day counts
+            const formattedDdays = data.ddays.map((dday: any) => ({
+                id: dday.id,
+                title: dday.title,
+                group: dday.group || "others",
+                description: dday.description || "",
+                date: dday.date ? parseDateString(dday.date) : undefined,
+                endDate: dday.endDate
+                    ? parseDateString(dday.endDate)
+                    : undefined,
+                days: dday.date
+                    ? calculateDDay(parseDateString(dday.date))
+                    : "Unscheduled",
+                isAnnual: dday.isAnnual,
+                createdBy: dday.createdBy,
+                connectedUsers: dday.connectedUsers || [],
+            }));
+
+            setDdays(formattedDdays);
+            setEventLayout(calculateEventLayout(formattedDdays));
+            setError(null);
+        } catch (err) {
+            console.error("Failed to fetch D-days:", err);
+            setError("Failed to load calendar events");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // fetch events when month changes - triggers when useCalendar hook changes currentDate
+    useEffect(() => {
+        fetchDDays();
+    }, [currentDate.getFullYear(), currentDate.getMonth()]);
+
+    // get all events for a specific day - used by CalendarGrid to display events in day cells
+    const getDDaysForDay = (day: number | null, currentDate: Date) => {
+        if (!day) return [];
+
+        const targetDate = new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            day
+        );
+        targetDate.setHours(0, 0, 0, 0);
+
+        return ddays.filter((dday) => {
+            if (!dday.date) return false;
+
+            const startDate = new Date(dday.date);
+            startDate.setHours(0, 0, 0, 0);
+
+            // handle annual events (same day/month, any year)
+            if (dday.isAnnual) {
+                return (
+                    startDate.getDate() === day &&
+                    startDate.getMonth() === currentDate.getMonth()
+                );
+            }
+
+            // handle regular and multi-day events
+            const endDate = dday.endDate ? new Date(dday.endDate) : startDate;
+            endDate.setHours(0, 0, 0, 0);
+
+            return targetDate >= startDate && targetDate <= endDate;
+        });
+    };
+
+    // get events for a day with layout positions (includes null placeholders) - used by CalendarGrid for visual layout
     const getRenderableDDaysForDay = (
         day: number | null,
         currentDate: Date
@@ -295,6 +220,45 @@ export function useDDays(currentDate: Date = new Date()) {
         return renderableEvents;
     };
 
+    // create a new D-day event - called by AddDdayDialog and DDayForm
+    const createDDay = async (
+        dday: Omit<DDay, "days" | "id">
+    ): Promise<boolean> => {
+        try {
+            const payload = {
+                title: dday.title,
+                group: dday.group,
+                description: dday.description,
+                isAnnual: dday.isAnnual,
+                connectedUsers: dday.connectedUsers || [],
+                createdBy: dday.createdBy,
+                date: formatDateForAPI(dday.date),
+                endDate: formatDateForAPI(dday.endDate),
+            };
+
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/ddays`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify(payload),
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(`Failed to create D-day: ${response.status}`);
+            }
+
+            await fetchDDays();
+            return true;
+        } catch (error) {
+            console.error("Failed to create D-day:", error);
+            return false;
+        }
+    };
+
+    // update an existing D-day event - called by EditDdayDialog and DDayForm
     const updateDDay = async (
         id: string,
         updates: Partial<Omit<DDay, "days" | "id">>
@@ -302,39 +266,18 @@ export function useDDays(currentDate: Date = new Date()) {
         try {
             const payload = { ...updates };
 
-            if (Object.prototype.hasOwnProperty.call(updates, "date")) {
-                const date = updates.date;
-                // format to YYYYMMDD string or empty string if date is null/undefined
-                (payload as any).date = date
-                    ? `${date.getFullYear()}${String(
-                          date.getMonth() + 1
-                      ).padStart(2, "0")}${String(date.getDate()).padStart(
-                          2,
-                          "0"
-                      )}`
-                    : "";
+            if (updates.date !== undefined) {
+                (payload as any).date = formatDateForAPI(updates.date);
             }
-
-            if (Object.prototype.hasOwnProperty.call(updates, "endDate")) {
-                const endDate = updates.endDate;
-                // format to YYYYMMDD string or empty string if endDate is null/undefined
-                (payload as any).endDate = endDate
-                    ? `${endDate.getFullYear()}${String(
-                          endDate.getMonth() + 1
-                      ).padStart(2, "0")}${String(endDate.getDate()).padStart(
-                          2,
-                          "0"
-                      )}`
-                    : "";
+            if (updates.endDate !== undefined) {
+                (payload as any).endDate = formatDateForAPI(updates.endDate);
             }
 
             const response = await fetch(
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/ddays/${id}`,
                 {
                     method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
+                    headers: { "Content-Type": "application/json" },
                     credentials: "include",
                     body: JSON.stringify(payload),
                 }
@@ -345,7 +288,6 @@ export function useDDays(currentDate: Date = new Date()) {
             }
 
             await fetchDDays();
-
             return true;
         } catch (error) {
             console.error("Failed to update D-day:", error);
@@ -353,6 +295,7 @@ export function useDDays(currentDate: Date = new Date()) {
         }
     };
 
+    // delete a D-day event - called by EditDdayDialog and DDayIndicator
     const deleteDDay = async (id: string): Promise<boolean> => {
         try {
             const response = await fetch(
@@ -376,47 +319,35 @@ export function useDDays(currentDate: Date = new Date()) {
     };
 
     return {
-        ddays,
-        loading,
-        error,
-        getDDaysForDay,
-        getRenderableDDaysForDay,
-        createDDay,
-        updateDDay,
-        deleteDDay,
-        refreshDDays: fetchDDays,
+        ddays, // array of all D-day events - passed to CalendarGrid, DDaySheet, etc.
+        loading, // loading state - used by calendar page for loading indicators
+        error, // error state - used by calendar page for error handling
+        getDDaysForDay, // get events for a specific day - passed to CalendarGrid
+        getRenderableDDaysForDay, // get events with layout positions - passed to CalendarGrid
+        createDDay, // create new event - passed to AddDdayDialog and DDayForm
+        updateDDay, // update existing event - passed to EditDdayDialog and DDayForm
+        deleteDDay, // delete event - passed to EditDdayDialog and DDayIndicator
+        refreshDDays: fetchDDays, // refresh events from API - used for manual refresh
     };
 }
 
+// determine the visual position of an event in a multi-day layout - used by CalendarGrid and DDayIndicator
 export function getEventPosition(event: DDay, date: Date): EventPosition {
     if (!event.date) return "single";
 
-    const eventStartDate = event.date;
-    const eventEndDate = event.endDate || eventStartDate;
+    const eventStart = new Date(event.date);
+    const eventEnd = event.endDate ? new Date(event.endDate) : eventStart;
+    const current = new Date(date);
 
-    const normalizeDate = (d: Date) =>
-        new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    // normalize all dates to start of day
+    eventStart.setHours(0, 0, 0, 0);
+    eventEnd.setHours(0, 0, 0, 0);
+    current.setHours(0, 0, 0, 0);
 
-    const normalizedCurrent = normalizeDate(date);
-    const normalizedStart = normalizeDate(eventStartDate);
-    const normalizedEnd = normalizeDate(eventEndDate);
+    if (current < eventStart || current > eventEnd) return "single";
 
-    if (
-        normalizedCurrent < normalizedStart ||
-        normalizedCurrent > normalizedEnd
-    )
-        return "single";
-
-    const isSingleDay = normalizedStart === normalizedEnd;
-
-    if (isSingleDay) {
-        return "single";
-    }
-    if (normalizedCurrent === normalizedStart) {
-        return "start";
-    }
-    if (normalizedCurrent === normalizedEnd) {
-        return "end";
-    }
+    if (eventStart.getTime() === eventEnd.getTime()) return "single";
+    if (current.getTime() === eventStart.getTime()) return "start";
+    if (current.getTime() === eventEnd.getTime()) return "end";
     return "middle";
 }
