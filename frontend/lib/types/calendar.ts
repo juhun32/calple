@@ -64,6 +64,7 @@ export interface EditDdayDialogProps {
     dday: DDay;
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
+    initialDate?: Date | null;
     updateDDay: (
         id: string,
         updates: Partial<Omit<DDay, "days" | "id">>

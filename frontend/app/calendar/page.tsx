@@ -165,7 +165,7 @@ export default function Calendar() {
             <div className="h-screen flex items-center justify-center">
                 <div className="container lg:grid lg:grid-cols-[3fr_1fr] h-full">
                     <div className="flex flex-col h-full container pt-12 pb-8">
-                        <div className="flex items-center justify-between px-4 pt-4 md:px-8 md:pt-8">
+                        <div className="flex items-center justify-between px-4 pt-4 md:pl-8 md:pt-8">
                             <CalendarHeader
                                 currentDate={currentDate}
                                 goToNextMonth={goToNextMonth}
@@ -182,7 +182,7 @@ export default function Calendar() {
                             </div>
                         </div>
 
-                        <div className="flex-1 overflow-auto p-4 md:px-8 flex flex-col h-full">
+                        <div className="flex-1 overflow-auto p-4 md:pl-8 flex flex-col h-full">
                             <CalendarGrid
                                 currentDate={currentDate}
                                 monthData={monthData}
@@ -198,7 +198,7 @@ export default function Calendar() {
                             />
                         </div>
                     </div>
-                    <div className="hidden lg:flex flex-col h-full pr-4 md:pr-8 pt-20 pb-16 gap-8">
+                    <div className="hidden lg:flex flex-col h-full pr-4 md:pr-8 pt-20 pb-12 gap-4">
                         <AddDDayDialog createDDay={createDDay} />
                         <DDaySheet
                             ddays={ddays}

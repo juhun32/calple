@@ -25,3 +25,11 @@ export function getColorFromGroup(groupValue: string): string {
     const groupInfo = selectGroups.find((group) => group.value === groupValue);
     return groupInfo ? groupInfo.color : "";
 }
+
+export function getBorderColorFromGroup(groupValue: string): string {
+    if (!groupValue) {
+        return "";
+    }
+    const groupInfo = selectGroups.find((group) => group.value === groupValue);
+    return groupInfo ? groupInfo.borderColor : "";
+}

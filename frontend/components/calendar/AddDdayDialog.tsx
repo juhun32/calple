@@ -19,7 +19,14 @@ import * as Select from "@/components/ui/select";
 import { DateRange } from "react-day-picker";
 
 // icons
-import { Plus, Calendar as CalendarIcon, CircleSmall } from "lucide-react";
+import {
+    Plus,
+    Calendar as CalendarIcon,
+    CircleSmall,
+    Pencil,
+    SquareChevronRight,
+    Settings,
+} from "lucide-react";
 
 // types
 import { type AddDDayDialogProps, DDay } from "@/lib/types/calendar";
@@ -158,6 +165,7 @@ export function AddDDayDialog({
                                             : "text-foreground"
                                     )}
                                 >
+                                    <Pencil className="h-4 w-4" />
                                     Title:
                                 </Label>
                                 <Input
@@ -166,7 +174,7 @@ export function AddDDayDialog({
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                     className={cn(
-                                        "border rounded-md text-sm w-full focus:text-foreground rounded-full",
+                                        "border rounded-md text-sm w-full focus:text-foreground rounded-full px-4",
                                         !title
                                             ? "text-muted-foreground"
                                             : "text-foreground"
@@ -181,13 +189,14 @@ export function AddDDayDialog({
                                             : "text-foreground"
                                     )}
                                 >
+                                    <CircleSmall className="h-4 w-4" />
                                     Group:
                                 </Label>
                                 <Select.Select
                                     value={group ? group : "others"}
                                     onValueChange={setGroup}
                                 >
-                                    <Select.SelectTrigger className="w-full text-sm rounded-full">
+                                    <Select.SelectTrigger className="w-full text-sm rounded-full px-4">
                                         <Select.SelectValue placeholder="Others" />
                                     </Select.SelectTrigger>
                                     <Select.SelectContent className="w-full">
@@ -217,6 +226,7 @@ export function AddDDayDialog({
                                             : "text-foreground"
                                     )}
                                 >
+                                    <SquareChevronRight className="h-4 w-4" />
                                     Description:
                                 </Label>
                                 <Input
@@ -227,7 +237,7 @@ export function AddDDayDialog({
                                         setDescription(e.target.value)
                                     }
                                     className={cn(
-                                        "border rounded-md text-sm w-full focus:text-foreground rounded-full",
+                                        "border rounded-md text-sm w-full focus:text-foreground rounded-full px-4",
                                         !description
                                             ? "text-muted-foreground"
                                             : "text-foreground"
@@ -242,6 +252,7 @@ export function AddDDayDialog({
                                             : "text-foreground"
                                     )}
                                 >
+                                    <CalendarIcon className="h-4 w-4" />
                                     Date:
                                 </Label>
                                 <Popover.Popover>
@@ -252,15 +263,11 @@ export function AddDDayDialog({
                                         <Button
                                             variant="outline"
                                             className={cn(
-                                                "justify-start text-left font-normal w-full text-foreground rounded-full gap-1",
+                                                "justify-start text-left font-normal w-full text-foreground rounded-full px-4",
                                                 !dateRange?.from &&
                                                     "text-muted-foreground"
                                             )}
                                         >
-                                            <CalendarIcon
-                                                className="h-4 w-4"
-                                                strokeWidth={1.3}
-                                            />
                                             {formatDateDisplay()}
                                         </Button>
                                     </Popover.PopoverTrigger>
@@ -272,15 +279,11 @@ export function AddDDayDialog({
                                         <Button
                                             variant="outline"
                                             className={cn(
-                                                "justify-start text-left font-normal w-full text-foreground rounded-full gap-1",
+                                                "justify-start text-left font-normal w-full text-foreground rounded-full px-4",
                                                 !dateRange?.from &&
                                                     "text-muted-foreground"
                                             )}
                                         >
-                                            <CalendarIcon
-                                                className="h-4 w-4"
-                                                strokeWidth={1.3}
-                                            />
                                             {formatDateDisplay()}
                                         </Button>
                                     </Popover.PopoverTrigger>
@@ -323,6 +326,7 @@ export function AddDDayDialog({
                                         "text-foreground"
                                     )}
                                 >
+                                    <Settings className="h-4 w-4" />
                                     Options:
                                 </Label>
                                 <div className="flex items-center gap-4 p-2">
@@ -333,7 +337,6 @@ export function AddDDayDialog({
                                             onCheckedChange={(checked) => {
                                                 setIsMultiDay(checked === true);
                                                 if (checked === false) {
-                                                    // Reset to single day if unchecking
                                                     setDateRange(
                                                         dateRange?.from
                                                             ? {

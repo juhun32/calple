@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 
 // internal components
 import { EditDdayDialog } from "./EditDdayDialog";
-import { cn, getColorFromGroup } from "@/lib/utils";
+import { cn, getBorderColorFromGroup, getColorFromGroup } from "@/lib/utils";
 
 // types
 import { type DDayIndicatorProps } from "@/lib/types/calendar";
@@ -62,7 +62,11 @@ export function DDayIndicator({
         position === "start" || position === "single" || isStartOfWeek;
 
     return (
-        <div className={`border border-dashed ${getBorderStyles()} text-sm`}>
+        <div
+            className={`border ${getBorderStyles()} ${getBorderColorFromGroup(
+                dday.group
+            )} text-sm`}
+        >
             <AlertDialog.AlertDialog
                 open={isDetailsOpen}
                 onOpenChange={setIsDetailsOpen}

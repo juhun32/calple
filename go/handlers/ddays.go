@@ -51,127 +51,98 @@ func GetDDays(c *gin.Context) {
 
 	// parse view date from query params
 	viewDate := c.Query("view")
+	// ex) "202507"
 
 	if viewDate == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing view date parameter"})
 		return
 	}
 
-	// validate view date format
-	// expected format: YYYYMM (6 characters)
-	// example: "202510" for October 2025
-	if len(viewDate) != 6 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Use YYYYMM"})
-		return
-	}
-
-	// get events created by the user
-	q1, err := fsClient.Collection("ddays").Where("createdBy", "==", userEmail).Documents(context.Background()).GetAll()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch events: " + err.Error()})
-		return
-	}
-
-	// get events where user is connected
-	q2, err := fsClient.Collection("ddays").Where("connectedUsers", "array-contains", userEmail).Documents(context.Background()).GetAll()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch connected events: " + err.Error()})
-		return
-	}
-
-	// combine results and remove duplicates
+	ctx := context.Background()
 	events := []DDay{}
 	seen := make(map[string]bool)
 
-	// iterate through both query results
-	// and collect unique events based on document ID
-	for _, docs := range [][]*firestore.DocumentSnapshot{q1, q2} {
+	// To find all events that overlap with the current month, we need multiple queries.
+	// An event overlaps if its start date is before the month's end AND its end date is after the month's start.
+	// Since Firestore can only have one range filter per query, we split this into two main scenarios:
+	// 1. Events that START within the current month.
+	// 2. Events that START BEFORE the current month but END in or after it.
+
+	viewMonthStart := viewDate + "01"
+	viewMonthEnd := viewDate + "31" // Using "31" is safe for YYYYMMDD string comparison.
+
+	// --- Define the queries ---
+	queries := []firestore.Query{
+		// Query 1: Events created by user that START in the current month.
+		fsClient.Collection("ddays").
+			Where("createdBy", "==", userEmail).
+			Where("date", ">=", viewMonthStart).
+			Where("date", "<=", viewMonthEnd),
+
+		// Query 2: Events user is connected to that START in the current month.
+		fsClient.Collection("ddays").
+			Where("connectedUsers", "array-contains", userEmail).
+			Where("date", ">=", viewMonthStart).
+			Where("date", "<=", viewMonthEnd),
+
+		// Query 3: Events created by user that START BEFORE the month but are still ongoing.
+		fsClient.Collection("ddays").
+			Where("createdBy", "==", userEmail).
+			Where("date", "<", viewMonthStart).
+			Where("endDate", ">=", viewMonthStart),
+
+		// Query 4: Events user is connected to that START BEFORE the month but are still ongoing.
+		fsClient.Collection("ddays").
+			Where("connectedUsers", "array-contains", userEmail).
+			Where("date", "<", viewMonthStart).
+			Where("endDate", ">=", viewMonthStart),
+	}
+
+	// --- Process results from all queries ---
+	for _, q := range queries {
+		docs, err := q.Documents(ctx).GetAll()
+		if err != nil {
+			// Log the error but continue processing other results to show partial data if possible.
+			fmt.Printf("Warning: Firestore query failed: %v\n", err)
+			continue
+		}
+
 		for _, doc := range docs {
 			if seen[doc.Ref.ID] {
-				// skip if already seen
 				continue
 			}
-
-			data := doc.Data()
 			seen[doc.Ref.ID] = true
 
-			// scope check cause isAnnual will be defined inside if block
+			data := doc.Data()
 			var isAnnual bool
 			if val, ok := data["isAnnual"].(bool); ok {
 				isAnnual = val
-			} else {
-				// Default to false if missing or wrong type
-				isAnnual = false
 			}
 
-			// make sure date field exists and is a string
-			dateStr, dateExists := data["date"].(string)
-			endDateStr, endDateExists := data["endDate"].(string)
-
-			// apply filtering only if date field exists. it may not exist for drag & drop events
-			if dateExists && dateStr != "" {
-				// check if date string is in the expected format
-				// expected format: YYYYMMDD (8 characters) (different from viewDate @getDDays)
-				if len(dateStr) != 8 {
-					fmt.Printf("Warning: Invalid date string length for document %s: %s\n", doc.Ref.ID, dateStr)
-					continue
-				}
-
-				// extract year and month from the event date
-				eventYearMonth := dateStr[0:6]
-
-				// check if event is annual
-				if !isAnnual {
-					if eventYearMonth != viewDate {
-						continue
-					}
-				} else {
-					viewMonth := viewDate[4:6]
-					eventMonth := dateStr[4:6]
-					if eventMonth != viewMonth {
-						continue
-					}
+			// For annual events, we still need to check if the month matches,
+			// as the main query doesn't handle the year-agnostic nature of these.
+			dateStr, _ := data["date"].(string)
+			if isAnnual {
+				if len(dateStr) >= 6 && dateStr[4:6] != viewDate[4:6] {
+					continue // Skip annual events that are not in the current month.
 				}
 			}
 
-			// if endDate is not provided, set it to the same as date
-			if !endDateExists || endDateStr == "" {
+			endDateStr, _ := data["endDate"].(string)
+			if endDateStr == "" {
 				endDateStr = dateStr
-			} else if len(endDateStr) != 8 {
-				fmt.Printf("Warning: Invalid endDate string length for document %s: %s\n", doc.Ref.ID, endDateStr)
-				continue
 			}
 
 			title, _ := data["title"].(string)
-
-			group := ""
-			if grpVal, ok := data["group"]; ok {
-				if grpStr, okStr := grpVal.(string); okStr {
-					group = grpStr
-				}
-			}
-
-			description := ""
-			if descVal, ok := data["description"]; ok {
-				if descStr, okStr := descVal.(string); okStr {
-					description = descStr
-				}
-			}
-
+			group, _ := data["group"].(string)
+			description, _ := data["description"].(string)
 			createdBy, _ := data["createdBy"].(string)
-
 			var createdAt, updatedAt time.Time
 			if ct, ok := data["createdAt"].(time.Time); ok {
 				createdAt = ct
-			} else {
-				// error handling ex) log, set to zero value, or skip doc
-				fmt.Printf("Warning: Missing or invalid createdAt for document %s\n", doc.Ref.ID)
 			}
 			if ut, ok := data["updatedAt"].(time.Time); ok {
 				updatedAt = ut
-			} else {
-				// missing or invalid updatedAt handling
-				fmt.Printf("Warning: Missing or invalid updatedAt for document %s\n", doc.Ref.ID)
 			}
 
 			events = append(events, DDay{
