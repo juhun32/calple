@@ -29,6 +29,7 @@ function GridDDayItem({
     dayIndex,
     droppableId,
     activeDDay,
+    currentDate,
 }: {
     dday: DDay;
     position?: EventPosition;
@@ -37,6 +38,7 @@ function GridDDayItem({
     dayIndex?: number;
     droppableId: string;
     activeDDay?: DDay | null;
+    currentDate?: Date;
 }) {
     const isEventBeingDragged = activeDDay && activeDDay.id === dday.id;
 
@@ -50,6 +52,7 @@ function GridDDayItem({
                 position={position}
                 dayIndex={dayIndex}
                 droppableId={droppableId}
+                currentDate={currentDate}
             />
         </div>
     );
@@ -169,6 +172,7 @@ function CalendarDayCell({
                                     dayIndex={index}
                                     droppableId={droppableId}
                                     activeDDay={activeDDay}
+                                    currentDate={currentDate}
                                 />
                             );
                         })}
@@ -232,7 +236,7 @@ export function CalendarGrid({
                     ))}
                 </div>
 
-                <div className="grid grid-cols-7 auto-rows-fr h-full">
+                <div className="grid grid-cols-7 auto-rows-fr h-full overflow-hidden">
                     {monthData.map((day, i) => (
                         <CalendarDayCell
                             key={i}

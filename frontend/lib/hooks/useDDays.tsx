@@ -1,20 +1,23 @@
 import { useEffect, useState } from "react";
 import { EventPosition, type DDay } from "@/lib/types/calendar";
 
-// main hook for managing D-day events (calendar events) - used by calendar page and all calendar components
+// main hook for managing calendar events
 export function useDDays(currentDate: Date = new Date()) {
-    // array of all D-day events for the current month - passed to CalendarGrid, DDaySheet, and other components
+    // array of all D-day events for the current month
+    // passed to CalendarGrid, DDaySheet, and other components
     const [ddays, setDdays] = useState<DDay[]>([]);
-    // loading state for API calls - used by calendar page for loading indicators
+
+    // loading state for API calls used by calendar page for loading indicators
     const [loading, setLoading] = useState(true);
-    // error state for failed operations - used by calendar page for error handling
+
+    // error state for failed operations used by calendar page for error handling
     const [error, setError] = useState<string | null>(null);
-    // map of event IDs to their row positions for multi-day layout - used by CalendarGrid for visual continuity
+    // map of event IDs to their row positions for multi-day layout used by CalendarGrid for visual
     const [eventLayout, setEventLayout] = useState<Map<string, number>>(
         new Map()
     );
 
-    // calculate the D-day count (days until/since an event) - used to populate DDay.days field
+    // calculate the D-day count (days until/since an event); used to populate DDay.days field
     const calculateDDay = (targetDate: Date): string => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -29,7 +32,7 @@ export function useDDays(currentDate: Date = new Date()) {
         return `D+${Math.abs(diffDays)}`;
     };
 
-    // parse date string from API format (YYYYMMDD) to Date object - used when fetching from backend
+    // parse date string from API format (YYYYMMDD) to Date object; used when fetching from backend
     const parseDateString = (dateStr: string): Date => {
         if (dateStr.match(/^\d{8}$/)) {
             const year = parseInt(dateStr.substring(0, 4));
@@ -40,7 +43,7 @@ export function useDDays(currentDate: Date = new Date()) {
         return new Date(dateStr);
     };
 
-    // format Date object to API format (YYYYMMDD) - used when sending data to backend
+    // format Date object to API format (YYYYMMDD); used when sending data to backend
     const formatDateForAPI = (date: Date | undefined): string => {
         if (!date) return "";
         return `${date.getFullYear()}${String(date.getMonth() + 1).padStart(
@@ -49,12 +52,13 @@ export function useDDays(currentDate: Date = new Date()) {
         )}${String(date.getDate()).padStart(2, "0")}`;
     };
 
-    // calculate layout positions for multi-day events to ensure visual continuity - used by CalendarGrid
+    // calculate layout positions for multiday events to ensure visual continuity; used by CalendarGrid
     const calculateEventLayout = (events: DDay[]): Map<string, number> => {
         const layout = new Map<string, number>();
         const daySlots = new Map<string, boolean[]>(); // date string -> occupied rows
 
-        // sort events by start date, then by duration (longer events first)
+        // sort events by start date, then by duration
+        // longer events first
         const sortedEvents = [...events].sort((a, b) => {
             if (!a.date || !b.date) return 0;
             const aStart = a.date.getTime();
@@ -112,7 +116,8 @@ export function useDDays(currentDate: Date = new Date()) {
         return layout;
     };
 
-    // fetch D-day events from the API for the current month - called when month changes or after CRUD operations
+    // fetch dday events from the API for the current month
+    // called when month changes or after CRUD operations
     const fetchDDays = async () => {
         try {
             setLoading(true);
@@ -131,7 +136,7 @@ export function useDDays(currentDate: Date = new Date()) {
             }
 
             const data = await response.json();
-            // transform API data to DDay format with calculated D-day counts
+            // transform API data to DDay format with calculated dday counts
             const formattedDdays = data.ddays.map((dday: any) => ({
                 id: dday.id,
                 title: dday.title,
@@ -160,12 +165,13 @@ export function useDDays(currentDate: Date = new Date()) {
         }
     };
 
-    // fetch events when month changes - triggers when useCalendar hook changes currentDate
+    // fetch events when month changes
     useEffect(() => {
         fetchDDays();
     }, [currentDate.getFullYear(), currentDate.getMonth()]);
 
-    // get all events for a specific day - used by CalendarGrid to display events in day cells
+    // get all events for a specific day
+    // used by CalendarGrid to display events in day cells
     const getDDaysForDay = (day: number | null, currentDate: Date) => {
         if (!day) return [];
 
@@ -190,7 +196,7 @@ export function useDDays(currentDate: Date = new Date()) {
                 );
             }
 
-            // handle regular and multi-day events
+            // handle regular and multiday events
             const endDate = dday.endDate ? new Date(dday.endDate) : startDate;
             endDate.setHours(0, 0, 0, 0);
 
@@ -198,7 +204,8 @@ export function useDDays(currentDate: Date = new Date()) {
         });
     };
 
-    // get events for a day with layout positions (includes null placeholders) - used by CalendarGrid for visual layout
+    // get events for a day with layout positions
+    // used by CalendarGrid for visual
     const getRenderableDDaysForDay = (
         day: number | null,
         currentDate: Date
@@ -220,7 +227,8 @@ export function useDDays(currentDate: Date = new Date()) {
         return renderableEvents;
     };
 
-    // create a new D-day event - called by AddDdayDialog and DDayForm
+    // create a new dday event
+    // called by AddDdayDialog and DDayForm
     const createDDay = async (
         dday: Omit<DDay, "days" | "id">
     ): Promise<boolean> => {
@@ -258,7 +266,8 @@ export function useDDays(currentDate: Date = new Date()) {
         }
     };
 
-    // update an existing D-day event - called by EditDdayDialog and DDayForm
+    // update an existing dday event
+    // called by EditDdayDialog and DDayForm
     const updateDDay = async (
         id: string,
         updates: Partial<Omit<DDay, "days" | "id">>
@@ -295,7 +304,8 @@ export function useDDays(currentDate: Date = new Date()) {
         }
     };
 
-    // delete a D-day event - called by EditDdayDialog and DDayIndicator
+    // delete a dday event
+    // called by EditDdayDialog and DDayIndicator
     const deleteDDay = async (id: string): Promise<boolean> => {
         try {
             const response = await fetch(
@@ -319,19 +329,20 @@ export function useDDays(currentDate: Date = new Date()) {
     };
 
     return {
-        ddays, // array of all D-day events - passed to CalendarGrid, DDaySheet, etc.
-        loading, // loading state - used by calendar page for loading indicators
-        error, // error state - used by calendar page for error handling
-        getDDaysForDay, // get events for a specific day - passed to CalendarGrid
-        getRenderableDDaysForDay, // get events with layout positions - passed to CalendarGrid
-        createDDay, // create new event - passed to AddDdayDialog and DDayForm
-        updateDDay, // update existing event - passed to EditDdayDialog and DDayForm
-        deleteDDay, // delete event - passed to EditDdayDialog and DDayIndicator
-        refreshDDays: fetchDDays, // refresh events from API - used for manual refresh
+        ddays, // array of all dday events; passed to CalendarGrid, DDaySheet, etc.
+        loading, // loading state; used by calendar page for loading indicators
+        error, // error state; used by calendar page for error handling
+        getDDaysForDay, // get events for a specific day; passed to CalendarGrid
+        getRenderableDDaysForDay, // get events with layout positions; passed to CalendarGrid
+        createDDay, // create new event; passed to AddDdayDialog and DDayForm
+        updateDDay, // update existing event; passed to EditDdayDialog and DDayForm
+        deleteDDay, // delete event; passed to EditDdayDialog and DDayIndicator
+        refreshDDays: fetchDDays, // refresh events from API; used for manual refresh
     };
 }
 
-// determine the visual position of an event in a multi-day layout - used by CalendarGrid and DDayIndicator
+// determine the visual position of an event in a multiday layout
+// used by CalendarGrid and DDayIndicator
 export function getEventPosition(event: DDay, date: Date): EventPosition {
     if (!event.date) return "single";
 

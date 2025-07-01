@@ -13,44 +13,42 @@ import { cn, getBorderColorFromGroup, getColorFromGroup } from "@/lib/utils";
 import { type DDayIndicatorProps } from "@/lib/types/calendar";
 import { CircleSmall } from "lucide-react";
 
-// individual event indicator component used in calendar grid and event lists - used by CalendarGrid, DDaySheet, and ShowAllEvents
+// individual event indicator component used in calendar grid and event lists
+// used by CalendarGrid, DDaySheet, and ShowAllEvents
 export function DDayIndicator({
     dday,
     updateDDay,
     deleteDDay,
     context = "grid",
-    length = "short",
     position = "single",
     dayIndex,
     droppableId,
+    currentDate,
 }: DDayIndicatorProps) {
-    // state for controlling the edit dialog - used by EditDdayDialog
+    // state for controlling the edit dialog used by EditDdayDialog
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-    // state for controlling the details dialog - used by AlertDialog
+    // state for controlling the details dialog
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
-    // create unique id for drag & drop functionality - used by @dnd-kit/core library
+    // create unique id for dnd functionality
     const draggableId = droppableId
         ? `${dday.id}-${droppableId}`
         : `${dday.id}-${context}`;
 
-    // set up drag & drop for this event - from @dnd-kit/core library
+    // set up dnd for this event
     const { attributes, listeners, setNodeRef } = useDraggable({
         id: draggableId,
         data: { dday, context, position },
     });
 
-    // handle edit button click - close details and open edit dialog - called from details dialog
     const handleEditClick = () => {
         setIsDetailsOpen(false);
-
-        // small delay to ensure smooth transition
         setTimeout(() => {
             setIsEditDialogOpen(true);
         }, 200);
     };
 
-    // get border styles based on event position in multi-day layout - used for visual continuity
+    // get border styles based on event position in multiday layout
     const getBorderStyles = () => {
         switch (position) {
             case "start":
@@ -65,11 +63,50 @@ export function DDayIndicator({
         }
     };
 
-    // determine if this is the start of a week (for showing event titles) - used for visual layout
+    // determine if this is the start of a week (for showing event titles)
     const isStartOfWeek = dayIndex !== undefined && dayIndex % 7 === 0;
-    // show event title if it's the start of a multi-day event, single event, or start of week - affects display
+
+    // show event title if it's the start of a multiday event, single event, or start of week
     const showTitle =
         position === "start" || position === "single" || isStartOfWeek;
+
+    const getEventWeekSpan = () => {
+        if (
+            !showTitle ||
+            dayIndex === undefined ||
+            !currentDate ||
+            !dday.date
+        ) {
+            return 1;
+        }
+
+        const startOfMonth = new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            1
+        );
+        const firstDayOfGrid = new Date(startOfMonth);
+        firstDayOfGrid.setDate(startOfMonth.getDate() - startOfMonth.getDay());
+
+        const currentCellDate = new Date(firstDayOfGrid);
+        currentCellDate.setDate(firstDayOfGrid.getDate() + dayIndex);
+
+        // get event start and end dates
+        const eventStartDate = dday.date;
+        const eventEndDate = dday.endDate || eventStartDate;
+
+        // how many days are left in the week from the current cell
+        const daysLeftInWeek = 7 - (dayIndex % 7);
+
+        // how many days are left for the event itself starting from the current cell
+        const timeDiff = eventEndDate.getTime() - currentCellDate.getTime();
+        const daysLeftInEvent = Math.floor(timeDiff / (1000 * 3600 * 24)) + 1;
+
+        // span is the smaller of two but at least 1
+        return Math.max(1, Math.min(daysLeftInWeek, daysLeftInEvent));
+    };
+
+    const weekSpan = getEventWeekSpan();
 
     return (
         <div
@@ -77,7 +114,6 @@ export function DDayIndicator({
                 dday.group
             )} text-sm`}
         >
-            {/* event details dialog - shows event information and edit/delete options */}
             <AlertDialog.AlertDialog
                 open={isDetailsOpen}
                 onOpenChange={setIsDetailsOpen}
@@ -91,27 +127,27 @@ export function DDayIndicator({
                         title={`${dday.title} (${dday.days})`}
                     >
                         {showTitle ? (
-                            <>
-                                {/* event group color indicator - used for visual grouping */}
+                            <div
+                                className="flex items-center gap-1 h-full"
+                                style={{
+                                    width: `calc(${weekSpan} * 100% + ${weekSpan} * 2px)`,
+                                }}
+                            >
                                 <CircleSmall
-                                    className={`h-4 w-4 ${getColorFromGroup(
+                                    className={`h-4 w-4 flex-shrink-0 ${getColorFromGroup(
                                         dday.group
                                     )}`}
                                     strokeWidth={1.5}
                                 />
-                                {/* event title with smart truncation - stays within cell boundaries */}
-                                <p
-                                    className={cn(
-                                        "w-full overflow-hidden text-ellipsis whitespace-nowrap",
-                                        length === "long"
-                                            ? "max-w-[20rem]"
-                                            : "max-w-full"
-                                    )}
-                                    title={dday.title}
-                                >
-                                    {dday.title}
-                                </p>
-                            </>
+                                <div className="flex-grow min-w-0 overflow-hidden">
+                                    <p
+                                        className="w-full overflow-hidden text-ellipsis whitespace-nowrap"
+                                        title={dday.title}
+                                    >
+                                        {dday.title}
+                                    </p>
+                                </div>
+                            </div>
                         ) : (
                             <>&nbsp;</>
                         )}

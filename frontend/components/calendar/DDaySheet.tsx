@@ -18,38 +18,36 @@ import { type DDay } from "@/lib/types/calendar";
 import { selectGroups } from "@/lib/constants/calendar";
 import { DDayIndicator } from "./DDayIndicator";
 
-// props for the D-day sheet component - used by calendar page for events list
 type DDaySheetProps = {
-    ddays: DDay[]; // array of events to display - from useDDays hook
+    ddays: DDay[]; // array of events to display from useDDays hook
     updateDDay: (
         id: string,
         updates: Partial<Omit<any, "id" | "days">>
-    ) => Promise<boolean>; // function to update events - from useDDays hook
-    deleteDDay: (id: string) => Promise<boolean>; // function to delete events - from useDDays hook
+    ) => Promise<boolean>; // function to update events from useDDays hook
+    deleteDDay: (id: string) => Promise<boolean>; // function to delete events from useDDays hook
 };
 
-// individual row component for the events table - used by DDaySheet
+// individual row component for the events table used by DDaySheet
 function DDayRow({
     dday,
     updateDDay,
     deleteDDay,
 }: {
-    dday: DDay; // the event to display - from useDDays hook data
-    updateDDay: DDaySheetProps["updateDDay"]; // function to update event - from useDDays hook
-    deleteDDay: DDaySheetProps["deleteDDay"]; // function to delete event - from useDDays hook
+    dday: DDay; // the event to display from useDDays hook data
+    updateDDay: DDaySheetProps["updateDDay"]; // function to update event from useDDays hook
+    deleteDDay: DDaySheetProps["deleteDDay"]; // function to delete event from useDDays hook
 }) {
-    // state for tracking drag operations - used by DDayIndicator onDraggingChange prop
+    // state for tracking drag operations; used by DDayIndicator onDraggingChange prop
     const [isDragging, setIsDragging] = useState(false);
 
-    // style to hide row during drag operations - affects visibility during drag
+    // style to hide row during drag operations
     const style: React.CSSProperties = {
         visibility: isDragging ? "hidden" : "visible",
     };
 
     return (
         <Table.TableRow style={style}>
-            <Table.TableCell>
-                {/* individual event indicator - used by CalendarGrid, DDaySheet, and ShowAllEvents */}
+            <Table.TableCell className="md:max-w-[10rem]">
                 <DDayIndicator
                     dday={dday}
                     updateDDay={updateDDay}
@@ -68,9 +66,9 @@ function DDayRow({
     );
 }
 
-// main D-day sheet component for displaying events in a table format - used by calendar page
+// main event sheet component for displaying events in a table format used by calendar page
 export function DDaySheet({ ddays, updateDDay, deleteDDay }: DDaySheetProps) {
-    // sort events by date (unscheduled events first, then by date) - used for consistent display order
+    // sort events by date (unscheduled events first, then by date) used for consistent display order
     const allDdays = [...ddays].sort((a, b) => {
         if (!a.date && b.date) return -1;
         if (a.date && !b.date) return 1;
@@ -80,7 +78,6 @@ export function DDaySheet({ ddays, updateDDay, deleteDDay }: DDaySheetProps) {
         return 0;
     });
 
-    // render the events table - used by both mobile sheet and desktop table views
     const renderTable = () => (
         <div className="overflow-y-auto border rounded-lg">
             <Table.Table>
@@ -113,7 +110,6 @@ export function DDaySheet({ ddays, updateDDay, deleteDDay }: DDaySheetProps) {
 
     return (
         <>
-            {/* mobile sheet view - responsive design for smaller screens */}
             <div className="flex lg:hidden">
                 <Sheet.Sheet>
                     <Sheet.SheetTrigger asChild>
@@ -150,7 +146,6 @@ export function DDaySheet({ ddays, updateDDay, deleteDDay }: DDaySheetProps) {
                 </Sheet.Sheet>
             </div>
 
-            {/* desktop table view - shown on larger screens */}
             <div className="hidden lg:flex flex-col h-full gap-4">
                 {allDdays.length > 0 ? (
                     renderTable()
@@ -163,7 +158,6 @@ export function DDaySheet({ ddays, updateDDay, deleteDDay }: DDaySheetProps) {
                 )}
             </div>
 
-            {/* group legend for desktop view - shows color coding for event groups */}
             <div className="hidden lg:grid grid-cols-3 gap-1 p-2 px-4 border border-dashed rounded-lg">
                 {selectGroups.map((group, idx) => (
                     <div key={idx} className="flex items-center gap-1">

@@ -60,7 +60,7 @@ export default function Calendar() {
         redirect("/");
     }
 
-    // Calendar state
+    // calendar state
     const {
         currentDate,
         monthData,
@@ -72,7 +72,7 @@ export default function Calendar() {
         selectDate,
     } = useCalendar();
 
-    // D-Day state
+    // dday state
     const {
         ddays,
         updateDDay,
@@ -81,7 +81,7 @@ export default function Calendar() {
         getRenderableDDaysForDay,
     } = useDDays(currentDate);
 
-    // Drag and drop state
+    // dnd state
     const [activeDDay, setActiveDDay] = useState<DDay | null>(null);
     const [activeContext, setActiveContext] = useState<
         "sheet" | "grid" | undefined
@@ -113,7 +113,7 @@ export default function Calendar() {
             const targetDateStr = over.id as string;
             const originalDDay = active.data.current.dday as DDay;
 
-            // Parse target date and adjust for timezone
+            // parse target date and adjust for timezone
             const targetDate = new Date(targetDateStr);
             const userTimezoneOffset = targetDate.getTimezoneOffset() * 60000;
             const correctedDate = new Date(
@@ -124,7 +124,7 @@ export default function Calendar() {
                 date: correctedDate,
             };
 
-            // Handle multi-day events
+            // multi-day events
             if (originalDDay.date && originalDDay.endDate) {
                 const originalStartDate = new Date(originalDDay.date);
                 originalStartDate.setHours(0, 0, 0, 0);
@@ -153,7 +153,6 @@ export default function Calendar() {
         >
             <div className="h-screen flex items-center justify-center">
                 <div className="container lg:grid lg:grid-cols-[3fr_1fr] h-full">
-                    {/* Main calendar area */}
                     <div className="flex flex-col h-full container pt-12 pb-8">
                         <div className="flex items-center justify-between px-4 pt-4 md:px-8 md:pt-8">
                             <CalendarHeader
@@ -188,8 +187,7 @@ export default function Calendar() {
                         </div>
                     </div>
 
-                    {/* Sidebar */}
-                    <div className="hidden lg:flex flex-col h-full pr-4 md:pr-8 pt-20 pb-16 gap-8">
+                    <div className="hidden lg:flex flex-col h-full pr-4 md:pr-8 pt-20 pb-12 gap-4">
                         <AddDDayDialog createDDay={createDDay} />
                         <DDaySheet
                             ddays={ddays}
@@ -200,7 +198,6 @@ export default function Calendar() {
                 </div>
             </div>
 
-            {/* Drag overlay */}
             <DragOverlay>
                 {activeDDay ? (
                     <div className="h-6 w-32 rounded-full shadow-lg">

@@ -19,7 +19,6 @@ export function ShowAllEvents({
 }: ShowAllEventsProps) {
     return (
         <AlertDialog.AlertDialog>
-            {/* trigger button - shows "more events" indicator - clicked when there are 4+ events on a day */}
             <AlertDialog.AlertDialogTrigger asChild>
                 <div className="h-5 w-full flex items-center justify-center gap-1 px-1 rounded-full text-xs font-normal border border-dashed hover:cursor-pointer">
                     <MoreHorizontal className="h-4 w-4" strokeWidth={1} />
@@ -32,7 +31,6 @@ export function ShowAllEvents({
                             All Events for
                         </p>
 
-                        {/* display the date for all events - formatted date from first event */}
                         {ddays[0]?.date?.toLocaleDateString("default", {
                             month: "long",
                             day: "numeric",
@@ -58,7 +56,6 @@ export function ShowAllEvents({
                                     </Table.TableRow>
                                 </Table.TableHeader>
                                 <Table.TableBody>
-                                    {/* render each event in a table row - uses DDayIndicator for consistent display */}
                                     {ddays.map((day) => (
                                         <Table.TableRow key={day.id}>
                                             <Table.TableCell>
