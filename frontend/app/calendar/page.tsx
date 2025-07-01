@@ -36,7 +36,7 @@ import { useAuth } from "@/components/auth-provider";
 // components/calendar
 import { CalendarHeader } from "@/components/calendar/CalendarHeader";
 import { CalendarGrid } from "@/components/calendar/CalendarGrid";
-import { DDaySheet } from "@/components/calendar/DdaySheet";
+import { DDaySheet } from "@/components/calendar/DDaySheet";
 import { AddDDayDialog } from "@/components/calendar/AddDdayDialog";
 import { DDayIndicator } from "@/components/calendar/DDayIndicator";
 
