@@ -81,7 +81,7 @@ export default async function RootLayout({
                         <div className="fixed bottom-0 left-0 h-8 w-full flex justify-center z-50 border-t border-dashed px-8 backdrop-blur">
                             <div className="container flex itms-center justify-between">
                                 <div className="flex sm:px-8 py-2 container text-muted-foreground text-xs">
-                                    For J&E by Juhun &copy; 2025
+                                    For Emily by Juhun &copy; 2025
                                 </div>
                                 <div className="flex items-center justify-end gap-2 sm:px-8 py-2 container text-muted-foreground text-xs w-fit">
                                     <a

@@ -117,6 +117,19 @@ func main() {
 		api.POST("/roulette", handlers.AddIdeaRoulette)
 		api.PUT("/roulette/:id", handlers.EditIdeaRoulette)
 		api.DELETE("/roulette/:id", handlers.DeleteIdeaRoulette)
+
+		// period tracking routes
+		api.GET("/periods/days", handlers.GetPeriodDays)
+		api.POST("/periods/days", handlers.CreatePeriodDay)
+		api.DELETE("/periods/days/:date", handlers.DeletePeriodDay)
+
+		api.GET("/periods/settings", handlers.GetCycleSettings)
+		api.PUT("/periods/settings", handlers.UpdateCycleSettings)
+
+		api.GET("/periods/logs", handlers.GetPeriodLogs)
+		api.POST("/periods/logs", handlers.CreatePeriodLog)
+		api.PUT("/periods/logs", handlers.UpdatePeriodLog)
+		api.DELETE("/periods/logs/:date", handlers.DeletePeriodLog)
 	}
 
 	// run server

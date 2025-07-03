@@ -157,7 +157,7 @@ export function DDayIndicator({
                 <AlertDialog.AlertDialogContent>
                     <AlertDialog.AlertDialogHeader>
                         <AlertDialog.AlertDialogTitle>
-                            <div className="flex flex-col sm:flex-row justify-between items-baseline gap-1 sm:gap-2">
+                            <div className="flex flex-col justify-between items-baseline gap-1 sm:gap-2">
                                 <div className="truncate w-[15rem] sm:w-full">
                                     <span className="truncate block">
                                         {dday.title}
@@ -165,7 +165,7 @@ export function DDayIndicator({
                                 </div>
                                 <div className="w-full flex items-baseline justify-between gap-1 sm:gap-2">
                                     {dday.date && (
-                                        <span className="text-xs text-gray-500">
+                                        <span className="text-sm text-gray-500">
                                             [{dday.date.toLocaleDateString()}]
                                         </span>
                                     )}

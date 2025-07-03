@@ -83,7 +83,7 @@ export function DDaySheet({ ddays, updateDDay, deleteDDay }: DDaySheetProps) {
             <Table.Table>
                 <Table.TableHeader>
                     <Table.TableRow>
-                        <Table.TableHead className="w-1/2 text-xs">
+                        <Table.TableHead className="w-1/2 pl-3 text-xs">
                             Event
                         </Table.TableHead>
                         <Table.TableHead className="w-1/3 text-xs">

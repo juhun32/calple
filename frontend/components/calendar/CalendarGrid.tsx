@@ -227,7 +227,7 @@ export function CalendarGrid({
 
     return (
         <>
-            <div className="rounded-xl flex flex-col min-h-0 h-full border border-dashed sm:p-4 bg-card">
+            <div className="rounded-xl flex flex-col min-h-0 h-full border border-dashed bg-card shadow-lg">
                 <div className="grid grid-cols-7 p-2 border-b">
                     {["S", "M", "T", "W", "T", "F", "S"].map((day, i) => (
                         <div key={i} className="text-center font-medium">

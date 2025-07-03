@@ -171,7 +171,7 @@ export default function Calendar() {
                             </div>
                         </div>
 
-                        <div className="flex-1 overflow-auto p-4 md:px-8 flex flex-col h-full">
+                        <div className="flex-1 overflow-auto p-4 md:pl-8 flex flex-col h-full">
                             <CalendarGrid
                                 currentDate={currentDate}
                                 monthData={monthData}

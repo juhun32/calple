@@ -103,7 +103,6 @@ export function EditDdayDialog({
                     </AlertDialog.AlertDialogTitle>
                     <AlertDialog.AlertDialogDescription asChild>
                         <div className="space-y-4">
-                            {/* shared form component - used by both AddDdayDialog and EditDdayDialog */}
                             <DDayForm
                                 initialData={initialData}
                                 onSubmit={handleSubmit}
@@ -111,7 +110,6 @@ export function EditDdayDialog({
                                 isSubmitting={isSubmitting}
                             />
 
-                            {/* delete button section - separate from form for clear separation */}
                             <div className="flex justify-start pt-4 border-t">
                                 <Button
                                     variant="destructive"

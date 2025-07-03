@@ -62,75 +62,70 @@ func GetDDays(c *gin.Context) {
 	events := []DDay{}
 	seen := make(map[string]bool)
 
-	// To find all events that overlap with the current month, we need multiple queries.
-	// An event overlaps if its start date is before the month's end AND its end date is after the month's start.
-	// Since Firestore can only have one range filter per query, we split this into two main scenarios:
-	// 1. Events that START within the current month.
-	// 2. Events that START BEFORE the current month but END in or after it.
+	// 1. query for all events that START before the END of the viewed month.
+	// 2. manually filter out events that also END before the START of the month.
+	// reason: firestore "one range filter per query" limitation
 
-	viewMonthStart := viewDate + "01"
-	viewMonthEnd := viewDate + "31" // Using "31" is safe for YYYYMMDD string comparison.
+	year, _ := strconv.Atoi(viewDate[0:4])
+	month, _ := strconv.Atoi(viewDate[4:6])
 
-	// --- Define the queries ---
+	// first day of the viewed month ex) "20250601"
+	viewMonthStartStr := viewDate + "01"
+
+	// last day of the viewed month ex) "20250630"
+	lastDayOfMonth := time.Date(year, time.Month(month)+1, 0, 0, 0, 0, 0, time.UTC).Day()
+	viewMonthEndStr := fmt.Sprintf("%s%02d", viewDate, lastDayOfMonth)
+
 	queries := []firestore.Query{
-		// Query 1: Events created by user that START in the current month.
+		// Q1: events created by the user that start before the end of the month
 		fsClient.Collection("ddays").
 			Where("createdBy", "==", userEmail).
-			Where("date", ">=", viewMonthStart).
-			Where("date", "<=", viewMonthEnd),
+			Where("date", "<=", viewMonthEndStr),
 
-		// Query 2: Events user is connected to that START in the current month.
+		// Q2: events the user is connected to that start before the end of the month
 		fsClient.Collection("ddays").
 			Where("connectedUsers", "array-contains", userEmail).
-			Where("date", ">=", viewMonthStart).
-			Where("date", "<=", viewMonthEnd),
-
-		// Query 3: Events created by user that START BEFORE the month but are still ongoing.
-		fsClient.Collection("ddays").
-			Where("createdBy", "==", userEmail).
-			Where("date", "<", viewMonthStart).
-			Where("endDate", ">=", viewMonthStart),
-
-		// Query 4: Events user is connected to that START BEFORE the month but are still ongoing.
-		fsClient.Collection("ddays").
-			Where("connectedUsers", "array-contains", userEmail).
-			Where("date", "<", viewMonthStart).
-			Where("endDate", ">=", viewMonthStart),
+			Where("date", "<=", viewMonthEndStr),
 	}
 
-	// --- Process results from all queries ---
 	for _, q := range queries {
 		docs, err := q.Documents(ctx).GetAll()
 		if err != nil {
-			// Log the error but continue processing other results to show partial data if possible.
-			fmt.Printf("Warning: Firestore query failed: %v\n", err)
-			continue
+			fmt.Printf("ERROR: Firestore query failed: %v\n", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch events from database."})
+			return // stop execution if a query fails
 		}
 
 		for _, doc := range docs {
 			if seen[doc.Ref.ID] {
 				continue
 			}
-			seen[doc.Ref.ID] = true
 
 			data := doc.Data()
+			dateStr, _ := data["date"].(string)
+			endDateStr, _ := data["endDate"].(string)
+			if endDateStr == "" {
+				endDateStr = dateStr
+			}
+
+			// filter out events that end before our view starts.
+			// event is visible if its end date is on or after the first day of the month.
+			if endDateStr < viewMonthStartStr {
+				continue // skip this event
+			}
+
+			seen[doc.Ref.ID] = true
+
 			var isAnnual bool
 			if val, ok := data["isAnnual"].(bool); ok {
 				isAnnual = val
 			}
 
-			// For annual events, we still need to check if the month matches,
-			// as the main query doesn't handle the year-agnostic nature of these.
-			dateStr, _ := data["date"].(string)
+			// for annual events, check if the month matches.
 			if isAnnual {
 				if len(dateStr) >= 6 && dateStr[4:6] != viewDate[4:6] {
-					continue // Skip annual events that are not in the current month.
+					continue
 				}
-			}
-
-			endDateStr, _ := data["endDate"].(string)
-			if endDateStr == "" {
-				endDateStr = dateStr
 			}
 
 			title, _ := data["title"].(string)

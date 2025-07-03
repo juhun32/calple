@@ -28,6 +28,14 @@ import {
     Download,
     Home,
     Calendar,
+    BookHeart,
+    GlassWater,
+    Droplet,
+    Map,
+    SquareCheckBig,
+    SquareCheck,
+    MapPinned,
+    Droplets,
 } from "lucide-react";
 
 export function NavBar() {
@@ -76,19 +84,19 @@ export function NavBar() {
                                 <Download />
                                 <span className="flex text-xs">IPhone</span>
                             </Button>
-                            {/* <Button
+                            <Button
                                 variant="outline"
                                 size="sm"
-                                className="rounded-full px-3 w-8 h-8 sm:w-fit"
+                                className="hidden sm:flex rounded-full px-3 w-8 h-8 sm:w-fit"
                                 onClick={() => {
                                     window.location.href = "/tracker";
                                 }}
                             >
-                                <BookHeart />
+                                <Droplets />
                                 <span className="hidden md:flex text-xs">
-                                    Tracker
+                                    Period
                                 </span>
-                            </Button> */}
+                            </Button>
                             {/* <Button
                                 variant="outline"
                                 size="sm"
@@ -102,6 +110,32 @@ export function NavBar() {
                                     Roulette
                                 </span>
                             </Button> */}
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="hidden sm:flex rounded-full px-3 w-8 h-8 sm:w-fit"
+                                onClick={() => {
+                                    window.location.href = "/tracker";
+                                }}
+                            >
+                                <SquareCheckBig />
+                                <span className="hidden md:flex text-xs">
+                                    Check-In
+                                </span>
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="hidden sm:flex rounded-full px-3 w-8 h-8 sm:w-fit"
+                                onClick={() => {
+                                    window.location.href = "/map";
+                                }}
+                            >
+                                <MapPinned />
+                                <span className="hidden md:flex text-xs">
+                                    Map
+                                </span>
+                            </Button>
                         </div>
                     </div>
                     <a
@@ -171,6 +205,52 @@ export function NavBar() {
                                     <DropdownMenu.DropdownMenuLabel>
                                         {authState.user?.name}
                                     </DropdownMenu.DropdownMenuLabel>
+                                    <DropdownMenu.DropdownMenuSeparator />
+                                    <DropdownMenu.DropdownMenuGroup>
+                                        <DropdownMenu.DropdownMenuItem
+                                            onClick={() =>
+                                                (window.location.href = "/")
+                                            }
+                                        >
+                                            <Home className="h-4 w-4" />
+                                            Home
+                                        </DropdownMenu.DropdownMenuItem>
+                                        <DropdownMenu.DropdownMenuItem
+                                            onClick={() =>
+                                                (window.location.href =
+                                                    "/calendar")
+                                            }
+                                        >
+                                            <Calendar className="h-4 w-4" />
+                                            Calendar
+                                        </DropdownMenu.DropdownMenuItem>
+                                        <DropdownMenu.DropdownMenuItem
+                                            onClick={() =>
+                                                (window.location.href =
+                                                    "/tracker")
+                                            }
+                                        >
+                                            <Droplets className="h-4 w-4" />
+                                            Period
+                                        </DropdownMenu.DropdownMenuItem>
+                                        <DropdownMenu.DropdownMenuItem
+                                            onClick={() =>
+                                                (window.location.href =
+                                                    "/checkin")
+                                            }
+                                        >
+                                            <SquareCheckBig className="h-4 w-4" />
+                                            Check-In
+                                        </DropdownMenu.DropdownMenuItem>
+                                        <DropdownMenu.DropdownMenuItem
+                                            onClick={() =>
+                                                (window.location.href = "/map")
+                                            }
+                                        >
+                                            <Map className="h-4 w-4" />
+                                            Map
+                                        </DropdownMenu.DropdownMenuItem>
+                                    </DropdownMenu.DropdownMenuGroup>
                                     <DropdownMenu.DropdownMenuSeparator />
                                     <DropdownMenu.DropdownMenuGroup>
                                         <DropdownMenu.DropdownMenuItem
