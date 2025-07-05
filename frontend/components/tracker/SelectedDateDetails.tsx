@@ -2,14 +2,25 @@
 
 import * as Card from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { PeriodDay } from "@/lib/types/periods";
 
 interface SelectedDateDetailsProps {
     date: Date;
+    periodData?: PeriodDay | null;
 }
 
-export function SelectedDateDetails({ date }: SelectedDateDetailsProps) {
+export function SelectedDateDetails({
+    date,
+    periodData,
+}: SelectedDateDetailsProps) {
+    const hasData =
+        periodData &&
+        (periodData.symptoms.length > 0 ||
+            periodData.mood.length > 0 ||
+            periodData.activities.length > 0);
+
     return (
-        <Card.Card className="backdrop-blur-sm border-0">
+        <Card.Card className="h-full">
             <Card.CardHeader>
                 <Card.CardTitle>
                     {date.toLocaleDateString("en-US", {
@@ -21,45 +32,76 @@ export function SelectedDateDetails({ date }: SelectedDateDetailsProps) {
                 </Card.CardTitle>
             </Card.CardHeader>
             <Card.CardContent className="space-y-4">
-                <div>
-                    <h4 className="font-medium mb-2">Symptoms</h4>
-                    <div className="flex flex-wrap gap-4">
-                        {["Cramps", "Headache", "Fatigue"].map((symptom) => (
-                            <Badge
-                                key={symptom}
-                                variant="secondary"
-                                className="bg-rose-100 dark:bg-rose-900/20 text-rose-700 dark:text-rose-300"
-                            >
-                                {symptom}
-                            </Badge>
-                        ))}
+                {!hasData ? (
+                    <div className="text-muted-foreground py-8">
+                        <p>No data logged for this date</p>
+                        <p className="text-xs pt-4">
+                            Click on the Log tab to add data
+                        </p>
                     </div>
-                </div>
+                ) : (
+                    <>
+                        {periodData.symptoms.length > 0 && (
+                            <div>
+                                <h4 className="font-medium mb-2">Symptoms</h4>
+                                <div className="flex flex-wrap gap-2">
+                                    {periodData.symptoms.map((symptom) => (
+                                        <Badge
+                                            key={symptom}
+                                            variant="secondary"
+                                            className="bg-rose-100 dark:bg-rose-900/20 text-rose-700 dark:text-rose-300"
+                                        >
+                                            {symptom}
+                                        </Badge>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
-                <div>
-                    <h4 className="font-medium mb-2">Mood</h4>
-                    <Badge
-                        variant="secondary"
-                        className="bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300"
-                    >
-                        Happy
-                    </Badge>
-                </div>
+                        {periodData.mood.length > 0 && (
+                            <div>
+                                <h4 className="font-medium mb-2">Mood</h4>
+                                <div className="flex flex-wrap gap-2">
+                                    {periodData.mood.map((mood) => (
+                                        <Badge
+                                            key={mood}
+                                            variant="secondary"
+                                            className="bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300"
+                                        >
+                                            {mood}
+                                        </Badge>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
-                <div>
-                    <h4 className="font-medium mb-2">Activities</h4>
-                    <div className="flex flex-wrap gap-4">
-                        {["Exercise", "Meditation"].map((activity) => (
-                            <Badge
-                                key={activity}
-                                variant="secondary"
-                                className="bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300"
-                            >
-                                {activity}
-                            </Badge>
-                        ))}
-                    </div>
-                </div>
+                        {periodData.activities.length > 0 && (
+                            <div>
+                                <h4 className="font-medium mb-2">Activities</h4>
+                                <div className="flex flex-wrap gap-2">
+                                    {periodData.activities.map((activity) => (
+                                        <Badge
+                                            key={activity}
+                                            variant="secondary"
+                                            className="bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300"
+                                        >
+                                            {activity}
+                                        </Badge>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {periodData.notes && (
+                            <div>
+                                <h4 className="font-medium mb-2">Notes</h4>
+                                <p className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
+                                    {periodData.notes}
+                                </p>
+                            </div>
+                        )}
+                    </>
+                )}
             </Card.CardContent>
         </Card.Card>
     );

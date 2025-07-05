@@ -125,11 +125,6 @@ func main() {
 
 		api.GET("/periods/settings", handlers.GetCycleSettings)
 		api.PUT("/periods/settings", handlers.UpdateCycleSettings)
-
-		api.GET("/periods/logs", handlers.GetPeriodLogs)
-		api.POST("/periods/logs", handlers.CreatePeriodLog)
-		api.PUT("/periods/logs", handlers.UpdatePeriodLog)
-		api.DELETE("/periods/logs/:date", handlers.DeletePeriodLog)
 	}
 
 	// run server

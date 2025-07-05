@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { Button } from "@/components/ui/button";
 import * as Card from "@/components/ui/card";
 
@@ -11,7 +12,7 @@ interface DayButtonRowProps {
     predictedPeriodDays: Set<string>;
 }
 
-export function DayButtonRow({
+export const DayButtonRow = memo(function DayButtonRow({
     currentDate,
     onDateSelect,
     periodDays,
@@ -163,4 +164,4 @@ export function DayButtonRow({
             </Card.CardContent>
         </Card.Card>
     );
-}
+});

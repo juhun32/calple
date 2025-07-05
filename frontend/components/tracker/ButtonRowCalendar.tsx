@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { Button } from "@/components/ui/button";
 import * as Card from "@/components/ui/card";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -13,7 +13,7 @@ interface ButtonRowCalendarProps {
     predictedPeriodDays: Set<string>;
 }
 
-export function ButtonRowCalendar({
+export const ButtonRowCalendar = memo(function ButtonRowCalendar({
     currentDate,
     onDateSelect,
     periodDays,
@@ -253,4 +253,4 @@ export function ButtonRowCalendar({
             </Card.CardContent>
         </Card.Card>
     );
-}
+});

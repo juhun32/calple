@@ -2,7 +2,7 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { selectGroups } from "@/lib/constants/calendar";
 
-const BACKEND_URL =
+export const BACKEND_URL =
     process.env.NEXT_PUBLIC_BACKEND_URL || "https://api.calple.date";
 
 export function cn(...inputs: ClassValue[]) {

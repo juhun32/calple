@@ -3,8 +3,20 @@
 import { Button } from "@/components/ui/button";
 import * as Card from "@/components/ui/card";
 import { CalendarIcon, Plus } from "lucide-react";
+import { PeriodDay } from "@/lib/types/periods";
 
-export function TodaysSummary() {
+interface TodaysSummaryProps {
+    todaysData?: PeriodDay | null;
+    onLogClick?: () => void;
+}
+
+export function TodaysSummary({ todaysData, onLogClick }: TodaysSummaryProps) {
+    const symptomsCount = todaysData?.symptoms?.length || 0;
+    const moodCount = todaysData?.mood?.length || 0;
+    const activitiesCount = todaysData?.activities?.length || 0;
+
+    const primaryMood = todaysData?.mood?.[0] || "None";
+
     return (
         <Card.Card className="border-0">
             <Card.CardHeader>
@@ -20,13 +32,13 @@ export function TodaysSummary() {
                             Symptoms
                         </p>
                         <p className="font-semibold text-rose-600 dark:text-rose-400">
-                            3
+                            {symptomsCount}
                         </p>
                     </div>
                     <div className="text-center p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
                         <p className="text-xs text-muted-foreground">Mood</p>
                         <p className="font-semibold text-yellow-600 dark:text-yellow-400">
-                            Happy
+                            {primaryMood}
                         </p>
                     </div>
                     <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
@@ -34,12 +46,16 @@ export function TodaysSummary() {
                             Activities
                         </p>
                         <p className="font-semibold text-green-600 dark:text-green-400">
-                            2
+                            {activitiesCount}
                         </p>
                     </div>
                 </div>
 
-                <Button className="w-full" variant="outline">
+                <Button
+                    className="w-full"
+                    variant="outline"
+                    onClick={onLogClick}
+                >
                     <Plus className="w-4 h-4 mr-2" />
                     Log Today's Data
                 </Button>

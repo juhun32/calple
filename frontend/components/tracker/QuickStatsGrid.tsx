@@ -35,7 +35,7 @@ export function QuickStatsGrid({
 
     return (
         <div className="h-full grid grid-rows-2 gap-4">
-            <Card.Card className="border-0">
+            <Card.Card>
                 <Card.CardContent className="p-4">
                     <div className="flex items-center gap-3">
                         <Heart className="w-4 h-4" />
