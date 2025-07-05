@@ -1,49 +1,20 @@
 "use client";
 
-import { useState, useEffect, useMemo, lazy, Suspense } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-    Activity,
-    Calendar as CalendarIcon,
-    Plus,
-    TrendingUp,
-} from "lucide-react";
+import { Activity, Plus, TrendingUp } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { redirect } from "next/navigation";
 import {
     CycleStatusCard,
-    QuickStatsGrid,
     TodaysSummary,
     SelectedDateDetails,
     InsightsCard,
+    DayButtonRow,
+    LogForm,
+    ButtonRowCalendar,
 } from "@/components/tracker";
 import { usePeriods } from "@/lib/hooks/usePeriods";
-import { PeriodTest } from "@/components/tracker/PeriodTest";
-
-// Lazy load calendar components
-const DayButtonRow = lazy(() =>
-    import("@/components/tracker/DayButtonRow").then((module) => ({
-        default: module.DayButtonRow,
-    }))
-);
-const LogForm = lazy(() =>
-    import("@/components/tracker/LogForm").then((module) => ({
-        default: module.LogForm,
-    }))
-);
-
-// Import ButtonRowCalendar normally for immediate loading
-import { ButtonRowCalendar } from "@/components/tracker/ButtonRowCalendar";
-
-// Loading component for calendar
-const CalendarLoader = () => (
-    <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-        <span className="ml-2 text-sm text-muted-foreground">
-            Loading calendar...
-        </span>
-    </div>
-);
 
 // Helper function to format date consistently
 const formatDateKey = (date: Date) => {
@@ -79,7 +50,6 @@ export default function Tracker() {
 
     const [date, setDate] = useState<Date | undefined>(new Date());
     const [selectedTab, setSelectedTab] = useState("overview");
-    const [calendarLoaded, setCalendarLoaded] = useState(false);
 
     // Use cycle settings from backend or defaults
     const cycleLength = cycleSettings?.cycleLength || 28;
@@ -270,7 +240,46 @@ export default function Tracker() {
         return predicted;
     };
 
+    // Generate fertility window days (only if we have period data)
+    const generateFertilityWindowDays = () => {
+        if (!hasPeriodData || !mostRecentPeriodStart) return new Set<string>();
+
+        const fertilityDays = new Set<string>();
+
+        // Generate fertility window for current cycle
+        if (mostRecentPeriodStart) {
+            for (let day = 11; day <= 17; day++) {
+                const fertilityDay = new Date(mostRecentPeriodStart);
+                fertilityDay.setDate(mostRecentPeriodStart.getDate() + day);
+                fertilityDays.add(formatDateKey(fertilityDay));
+            }
+        }
+
+        // Generate fertility windows for future cycles
+        let currentPeriodStart = new Date(mostRecentPeriodStart);
+
+        // Add cycle length to get to the next period start
+        currentPeriodStart.setDate(
+            mostRecentPeriodStart.getDate() + cycleLength
+        );
+
+        // Generate 3 future fertility windows
+        for (let i = 0; i < 3; i++) {
+            for (let day = 11; day <= 17; day++) {
+                const fertilityDay = new Date(currentPeriodStart);
+                fertilityDay.setDate(currentPeriodStart.getDate() + day);
+                fertilityDays.add(formatDateKey(fertilityDay));
+            }
+            // Move to the next period start
+            currentPeriodStart.setDate(
+                currentPeriodStart.getDate() + cycleLength
+            );
+        }
+        return fertilityDays;
+    };
+
     const predictedPeriodDays = generatePredictedPeriodDays();
+    const fertilityWindowDays = generateFertilityWindowDays();
 
     // Handle period day toggle using backend API
     const handlePeriodToggle = async (date: Date) => {
@@ -309,47 +318,10 @@ export default function Tracker() {
         });
     };
 
-    // Handle tab change with lazy loading
-    const handleTabChange = (newTab: string) => {
-        setSelectedTab(newTab);
-        if ((newTab === "overview" || newTab === "log") && !calendarLoaded) {
-            setCalendarLoaded(true);
-        }
-    };
-
-    // Show loading state only for initial data load
-    if (loading && !calendarLoaded) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
-                    <p className="mt-4 text-lg">Loading period data...</p>
-                </div>
-            </div>
-        );
-    }
-
-    // Show error state
-    if (error) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <p className="text-red-500 text-lg mb-4">Error: {error}</p>
-                    <button
-                        onClick={() => window.location.reload()}
-                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                    >
-                        Retry
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
     return (
         <div className="min-h-screen">
             <div className="container mx-auto px-4 pt-20 pb-16">
-                <Tabs value={selectedTab} onValueChange={handleTabChange}>
+                <Tabs value={selectedTab} onValueChange={setSelectedTab}>
                     <TabsList className="w-full">
                         <TabsTrigger
                             value="overview"
@@ -365,53 +337,37 @@ export default function Tracker() {
                             <Plus className="w-4 h-4" />
                             Log
                         </TabsTrigger>
-                        <TabsTrigger
+                        {/* <TabsTrigger
                             value="insights"
                             className="flex items-center gap-2"
                         >
                             <TrendingUp className="w-4 h-4" />
                             Insights
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="test"
-                            className="flex items-center gap-2"
-                        >
-                            Test
-                        </TabsTrigger>
+                        </TabsTrigger> */}
                     </TabsList>
 
                     <TabsContent
                         value="overview"
                         className="flex flex-col gap-4"
                     >
-                        {calendarLoaded ? (
-                            <Suspense fallback={<CalendarLoader />}>
-                                <DayButtonRow
-                                    currentDate={date || new Date()}
-                                    onDateSelect={setDate}
-                                    periodDays={periodDaysSet}
-                                    onPeriodToggle={handlePeriodToggle}
-                                    predictedPeriodDays={predictedPeriodDays}
-                                />
-                            </Suspense>
-                        ) : (
-                            <div className="h-32 flex items-center justify-center">
-                                <button
-                                    onClick={() => setCalendarLoaded(true)}
-                                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                                >
-                                    Load Calendar
-                                </button>
-                            </div>
-                        )}
+                        <DayButtonRow
+                            currentDate={date || new Date()}
+                            onDateSelect={setDate}
+                            periodDays={periodDaysSet}
+                            onPeriodToggle={handlePeriodToggle}
+                            predictedPeriodDays={predictedPeriodDays}
+                            fertilityWindowDays={fertilityWindowDays}
+                        />
 
-                        <div className="grid grid-cols-[5fr_2fr_1fr] gap-4 justify-center items-center">
+                        <div className="grid grid-cols-[3fr_2fr] gap-4 justify-center items-center">
                             <CycleStatusCard
                                 currentCycleDay={currentCycleDay}
                                 cycleLength={cycleLength}
                                 daysUntilNextPeriod={daysUntilNextPeriod}
                                 nextPeriod={nextPeriod}
                                 hasPeriodData={hasPeriodData}
+                                fertileStart={fertileStart}
+                                fertileEnd={fertileEnd}
                             />
 
                             {date && (
@@ -422,65 +378,43 @@ export default function Tracker() {
                                     )}
                                 />
                             )}
-
-                            <QuickStatsGrid
-                                fertileStart={fertileStart}
-                                fertileEnd={fertileEnd}
-                                cycleLength={cycleLength}
-                                hasPeriodData={hasPeriodData}
-                            />
                         </div>
 
                         <TodaysSummary
                             todaysData={getLogForDate(
                                 formatDateKey(new Date())
                             )}
-                            onLogClick={() => handleTabChange("log")}
+                            onLogClick={() => setSelectedTab("log")}
                         />
                     </TabsContent>
 
                     <TabsContent value="log" className="space-y-4">
-                        <div className="grid grid-cols-[2fr_1fr] gap-4">
+                        <div className="grid grid-cols-[auto_auto] gap-4">
                             <ButtonRowCalendar
                                 currentDate={date || new Date()}
                                 onDateSelect={setDate}
                                 periodDays={periodDaysSet}
                                 onPeriodToggle={handlePeriodToggle}
                                 predictedPeriodDays={predictedPeriodDays}
+                                fertilityWindowDays={fertilityWindowDays}
                             />
 
-                            {calendarLoaded ? (
-                                <Suspense fallback={<CalendarLoader />}>
-                                    <LogForm
-                                        date={date || new Date()}
-                                        existingLog={
-                                            date
-                                                ? getLogForDate(
-                                                      formatDateKey(date)
-                                                  )
-                                                : null
-                                        }
-                                        onSave={handleSaveLog}
-                                        onUpdate={handleUpdateLog}
-                                    />
-                                </Suspense>
-                            ) : (
-                                <div className="h-64 flex items-center justify-center">
-                                    <p className="text-muted-foreground">
-                                        Load calendar to log data
-                                    </p>
-                                </div>
-                            )}
+                            <LogForm
+                                date={date || new Date()}
+                                existingLog={
+                                    date
+                                        ? getLogForDate(formatDateKey(date))
+                                        : null
+                                }
+                                onSave={handleSaveLog}
+                                onUpdate={handleUpdateLog}
+                            />
                         </div>
                     </TabsContent>
 
-                    <TabsContent value="insights" className="space-y-4">
+                    {/* <TabsContent value="insights" className="space-y-4">
                         <InsightsCard />
-                    </TabsContent>
-
-                    <TabsContent value="test" className="space-y-4">
-                        <PeriodTest />
-                    </TabsContent>
+                    </TabsContent> */}
                 </Tabs>
             </div>
         </div>

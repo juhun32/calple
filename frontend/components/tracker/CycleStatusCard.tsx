@@ -2,7 +2,7 @@
 
 import * as Card from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Droplets, Calendar } from "lucide-react";
+import { Droplets, Calendar, Heart, Moon } from "lucide-react";
 
 interface CycleStatusCardProps {
     currentCycleDay: number | null;
@@ -10,6 +10,8 @@ interface CycleStatusCardProps {
     daysUntilNextPeriod: number | null;
     nextPeriod: Date | null;
     hasPeriodData: boolean;
+    fertileStart: Date | null;
+    fertileEnd: Date | null;
 }
 
 export function CycleStatusCard({
@@ -18,6 +20,8 @@ export function CycleStatusCard({
     daysUntilNextPeriod,
     nextPeriod,
     hasPeriodData,
+    fertileStart,
+    fertileEnd,
 }: CycleStatusCardProps) {
     if (!hasPeriodData) {
         return (
@@ -44,7 +48,7 @@ export function CycleStatusCard({
             <Card.CardContent>
                 <div className="flex items-center justify-between mb-4">
                     <div>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                             Day {currentCycleDay}
                         </h2>
                         <p className="text-sm text-muted-foreground">
@@ -52,7 +56,7 @@ export function CycleStatusCard({
                         </p>
                     </div>
                     <div className="text-right">
-                        <div className="text-3xl font-bold text-rose-500">
+                        <div className="text-xl font-semibold">
                             {daysUntilNextPeriod}
                         </div>
                         <p className="text-sm text-muted-foreground">
@@ -77,19 +81,53 @@ export function CycleStatusCard({
                     />
                 </div>
 
-                <div className="mt-4 bg-gradient-to-r from-rose-100 to-purple-100 dark:from-rose-900/20 dark:to-purple-900/20 rounded-lg">
-                    <div className="flex items-center gap-4 px-8 py-4">
-                        <Droplets className="w-4 h-4 text-white" />
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="mt-4 border border-dashed rounded-lg">
+                        <div className="flex items-center gap-4 px-8 py-4">
+                            <Droplets className="w-4 h-4 text-white" />
+                            <div>
+                                <p className="text-sm font-medium">
+                                    Next Period Expected
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    {nextPeriod!.toLocaleDateString("en-US", {
+                                        weekday: "long",
+                                        month: "long",
+                                        day: "numeric",
+                                    })}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-4 mt-4 border border-dashed rounded-lg px-8 py-4">
+                        <Heart className="w-4 h-4" />
                         <div>
-                            <p className="font-medium">Next Period Expected</p>
-                            <p className="text-sm text-muted-foreground">
-                                {nextPeriod!.toLocaleDateString("en-US", {
-                                    weekday: "long",
-                                    month: "long",
+                            <p className="text-sm font-medium">
+                                Fertility Window
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                                {fertileStart!.toLocaleDateString("en-US", {
+                                    month: "short",
+                                    day: "numeric",
+                                })}{" "}
+                                -{" "}
+                                {fertileEnd!.toLocaleDateString("en-US", {
+                                    month: "short",
                                     day: "numeric",
                                 })}
                             </p>
                         </div>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-4 mt-4 border border-dashed rounded-lg px-8 py-4">
+                    <Moon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    <div>
+                        <p className="text-sm font-medium">Cycle Length</p>
+                        <p className="text-xs text-muted-foreground">
+                            {cycleLength} days average
+                        </p>
                     </div>
                 </div>
             </Card.CardContent>

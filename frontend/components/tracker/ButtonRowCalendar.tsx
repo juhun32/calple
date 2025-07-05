@@ -11,6 +11,7 @@ interface ButtonRowCalendarProps {
     periodDays: Set<string>;
     onPeriodToggle: (date: Date) => void;
     predictedPeriodDays: Set<string>;
+    fertilityWindowDays: Set<string>;
 }
 
 export const ButtonRowCalendar = memo(function ButtonRowCalendar({
@@ -19,6 +20,7 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
     periodDays,
     onPeriodToggle,
     predictedPeriodDays,
+    fertilityWindowDays,
 }: ButtonRowCalendarProps) {
     const [currentMonth, setCurrentMonth] = useState(
         new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
@@ -95,6 +97,15 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
         return predictedPeriodDays.has(formatDateKey(date));
     };
 
+    const isFertilityWindowDay = (day: number) => {
+        const date = new Date(
+            currentMonth.getFullYear(),
+            currentMonth.getMonth(),
+            day
+        );
+        return fertilityWindowDays.has(formatDateKey(date));
+    };
+
     const handleDayClick = (day: number) => {
         const date = new Date(
             currentMonth.getFullYear(),
@@ -154,6 +165,7 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
     for (let day = 1; day <= daysInMonth; day++) {
         const isPeriod = isPeriodDay(day);
         const isPredicted = isPredictedPeriodDay(day);
+        const isFertility = isFertilityWindowDay(day);
         const isCurrentDay = isToday(day);
         const isSelectedDay = isSelected(day);
         const isFuture = isFutureDate(day);
@@ -177,6 +189,10 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
             buttonVariant = "ghost";
             className +=
                 " text-rose-400 border-2 border-dashed border-rose-400";
+        } else if (isFertility) {
+            buttonVariant = "ghost";
+            className +=
+                " text-blue-400 border-2 border-dashed border-blue-400";
         } else if (isCurrentDay) {
             buttonVariant = "secondary";
             className += " ";
@@ -207,8 +223,8 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
                     title={`${day} - ${monthName}${
                         isPeriod ? " (Period Day)" : ""
                     }${isPredicted ? " (Predicted Period)" : ""}${
-                        isFuture ? " (Future date - cannot edit)" : ""
-                    }`}
+                        isFertility ? " (Fertility Window)" : ""
+                    }${isFuture ? " (Future date - cannot edit)" : ""}`}
                 >
                     {day}
                 </Button>

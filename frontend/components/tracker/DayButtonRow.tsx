@@ -10,6 +10,7 @@ interface DayButtonRowProps {
     periodDays: Set<string>;
     onPeriodToggle: (date: Date) => void;
     predictedPeriodDays: Set<string>;
+    fertilityWindowDays: Set<string>;
 }
 
 export const DayButtonRow = memo(function DayButtonRow({
@@ -18,6 +19,7 @@ export const DayButtonRow = memo(function DayButtonRow({
     periodDays,
     onPeriodToggle,
     predictedPeriodDays,
+    fertilityWindowDays,
 }: DayButtonRowProps) {
     const formatDateKey = (date: Date) => {
         // Use local date string to avoid timezone issues
@@ -56,6 +58,10 @@ export const DayButtonRow = memo(function DayButtonRow({
         return predictedPeriodDays.has(formatDateKey(date));
     };
 
+    const isFertilityWindowDay = (date: Date) => {
+        return fertilityWindowDays.has(formatDateKey(date));
+    };
+
     const handlePeriodToggle = (date: Date) => {
         // Don't allow editing future dates
         if (isFutureDate(date)) {
@@ -88,6 +94,7 @@ export const DayButtonRow = memo(function DayButtonRow({
                         const isSelectedDay = isSelected(date);
                         const isPeriod = isPeriodDay(date);
                         const isPredicted = isPredictedPeriodDay(date);
+                        const isFertility = isFertilityWindowDay(date);
                         const isFuture = isFutureDate(date);
 
                         let buttonVariant:
@@ -108,6 +115,10 @@ export const DayButtonRow = memo(function DayButtonRow({
                             buttonVariant = "ghost";
                             className +=
                                 " border border-dashed border-rose-400 text-rose-400";
+                        } else if (isFertility) {
+                            buttonVariant = "ghost";
+                            className +=
+                                " border border-dashed border-blue-400 text-blue-400";
                         } else if (isSelectedDay) {
                             buttonVariant = "default";
                             className += "text-white";
@@ -135,7 +146,7 @@ export const DayButtonRow = memo(function DayButtonRow({
                                     day: "numeric",
                                 })}${isPeriod ? " (Period Day)" : ""}${
                                     isPredicted ? " (Predicted Period)" : ""
-                                }${
+                                }${isFertility ? " (Fertility Window)" : ""}${
                                     isFuture
                                         ? " (Future date - cannot edit)"
                                         : ""
@@ -155,10 +166,9 @@ export const DayButtonRow = memo(function DayButtonRow({
                 </div>
 
                 {/* Instructions */}
-                <div className="text-center">
+                <div className="text-center pt-2">
                     <p className="text-xs text-muted-foreground">
-                        💡 Right-click to mark/unmark period days (past dates
-                        only)
+                        Right-click to mark/unmark period days
                     </p>
                 </div>
             </Card.CardContent>

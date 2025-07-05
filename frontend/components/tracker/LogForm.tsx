@@ -128,7 +128,7 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
     };
 
     return (
-        <Card.Card className="border-0">
+        <Card.Card className="gap-4">
             <Card.CardHeader>
                 <Card.CardTitle>
                     Log Data for {date.toLocaleDateString()}
@@ -137,11 +137,11 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                     Track your symptoms, mood, and activities
                 </Card.CardDescription>
             </Card.CardHeader>
-            <Card.CardContent className="space-y-6">
+            <Card.CardContent className="space-y-8">
                 {/* Symptoms */}
                 <div>
                     <Label className="text-base font-medium">Symptoms</Label>
-                    <div className="grid grid-cols-2 gap-4 mt-2">
+                    <div className="grid grid-cols-3 gap-4 mt-2">
                         {symptoms.map((symptom) => (
                             <div
                                 key={symptom}
@@ -165,7 +165,7 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                 {/* Mood */}
                 <div>
                     <Label className="text-base font-medium">Mood</Label>
-                    <div className="grid grid-cols-2 gap-4 mt-2">
+                    <div className="grid grid-cols-3 gap-4 mt-2">
                         {moods.map((mood) => (
                             <div
                                 key={mood}
@@ -189,7 +189,7 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                 {/* Activities */}
                 <div>
                     <Label className="text-base font-medium">Activities</Label>
-                    <div className="grid grid-cols-2 gap-4 mt-2">
+                    <div className="grid grid-cols-3 gap-4 mt-2">
                         {activities.map((activity) => (
                             <div
                                 key={activity}
