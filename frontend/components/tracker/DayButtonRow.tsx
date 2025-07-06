@@ -187,6 +187,7 @@ export const DayButtonRow = memo(function DayButtonRow({
                                 const today = new Date();
                                 return today.toLocaleDateString("en-US", {
                                     month: "long",
+                                    day: "numeric",
                                     year: "numeric",
                                 });
                             })()}
@@ -242,7 +243,7 @@ export const DayButtonRow = memo(function DayButtonRow({
                                     | "ghost"
                                     | "link" = "outline";
                                 let className =
-                                    "w-6 md:w-12 h-24 rounded-lg text-xs font-medium transition-all duration-200 flex flex-col items-center justify-center p-0 has-[>svg]:px-0";
+                                    "w-6 sm:w-10 md:w-12 h-24 rounded-lg text-xs font-medium transition-all duration-200 flex flex-col items-center justify-center p-0 has-[>svg]:px-0";
 
                                 if (isPeriod) {
                                     buttonVariant = "default";
@@ -294,12 +295,12 @@ export const DayButtonRow = memo(function DayButtonRow({
                                                 : ""
                                         }`}
                                     >
-                                        <div className="hidden md:flex text-xs font-normal">
+                                        <div className="hidden lg:flex text-xs font-normal">
                                             {date.toLocaleDateString("en-US", {
                                                 weekday: "short",
                                             })}
                                         </div>
-                                        <div className="flex md:hidden text-xs font-normal">
+                                        <div className="flex lg:hidden text-xs font-normal">
                                             {date.toLocaleDateString("en-US", {
                                                 weekday: "narrow",
                                             })}
@@ -316,7 +317,7 @@ export const DayButtonRow = memo(function DayButtonRow({
                                                     "text-transparent"
                                             )}
                                         />
-                                        <div className="text-sm md:text-lg font-semibold">
+                                        <div className="text-sm lg:text-lg font-semibold">
                                             {date.getDate()}
                                         </div>
                                     </Button>
@@ -327,10 +328,10 @@ export const DayButtonRow = memo(function DayButtonRow({
                 </div>
 
                 <div className="text-center pt-2">
-                    <p className="flex md:hidden text-xs text-muted-foreground justify-center">
+                    <p className="flex lg:hidden text-xs text-muted-foreground justify-center">
                         Tap to log period • Drag to navigate
                     </p>
-                    <div className="hidden md:flex items-center justify-center gap-2">
+                    <div className="hidden lg:flex items-center justify-center gap-2">
                         <Tooltip.Tooltip>
                             <Tooltip.TooltipTrigger asChild>
                                 <Button variant="ghost" className="h-4 w-4">

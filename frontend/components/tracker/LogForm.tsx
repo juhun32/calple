@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { PeriodDay } from "@/lib/types/periods";
+import { Separator } from "../ui/separator";
 
 const symptoms = [
     "Cramps",
@@ -133,6 +134,7 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                 <Card.CardDescription className="mt-2">
                     Track your symptoms, mood, and activities
                 </Card.CardDescription>
+                <Separator orientation="horizontal" className="my-2 lg:my-4" />
             </Card.CardHeader>
             <Card.CardContent className="flex flex-col flex-1 gap-4">
                 {/* Symptoms */}
@@ -140,7 +142,7 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                     <Label className="text-base text-muted-foreground px-0">
                         Symptoms
                     </Label>
-                    <div className="grid grid-cols-3 gap-2 mt-4">
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 mt-4">
                         {symptoms.map((symptom) => (
                             <div key={symptom} className="flex items-center">
                                 <Checkbox
@@ -163,7 +165,7 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                     <Label className="text-base text-muted-foreground px-0">
                         Mood
                     </Label>
-                    <div className="grid grid-cols-3 gap-2 mt-2">
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
                         {moods.map((mood) => (
                             <div
                                 key={mood}
@@ -189,7 +191,7 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                     <Label className="text-base text-muted-foreground px-0">
                         Activities
                     </Label>
-                    <div className="grid grid-cols-3 gap-2 mt-2">
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
                         {activities.map((activity) => (
                             <div
                                 key={activity}

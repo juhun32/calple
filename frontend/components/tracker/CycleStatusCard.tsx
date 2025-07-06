@@ -14,7 +14,6 @@ interface CycleStatusCardProps {
     hasPeriodData: boolean;
     fertileStart: Date | null;
     fertileEnd: Date | null;
-    onLogClick?: () => void;
 }
 
 export function CycleStatusCard({
@@ -25,7 +24,6 @@ export function CycleStatusCard({
     hasPeriodData,
     fertileStart,
     fertileEnd,
-    onLogClick,
 }: CycleStatusCardProps) {
     if (!hasPeriodData) {
         return (
@@ -63,8 +61,8 @@ export function CycleStatusCard({
 
                 <div>
                     <div className="flex items-baseline justify-between">
-                        <div className="flex gap-2">
-                            <span className="text-sm font-medium mb-2">
+                        <div className="flex gap-1 lg:gap-2">
+                            <span className="hidden lg:flex text-sm font-medium mb-2">
                                 Cycle Progress
                             </span>
                             <span className="text-sm text-muted-foreground">
@@ -74,7 +72,7 @@ export function CycleStatusCard({
                                 %
                             </span>
                         </div>
-                        <div className="text-right flex items-baseline gap-2">
+                        <div className="text-right flex items-baseline gap-1 lg:gap-2">
                             <div className="text-lg font-semibold">
                                 {daysUntilNextPeriod}
                             </div>
@@ -89,8 +87,8 @@ export function CycleStatusCard({
                     />
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
-                    <div className="mt-4 border border-dashed rounded-lg">
+                <div className="grid lg:grid-cols-3 lg:gap-4">
+                    <div className="mt-2 lg:mt-4 border border-dashed rounded-lg">
                         <div className="flex items-center gap-4 px-4 py-4">
                             <Droplets className="w-4 h-4 text-rose-500" />
                             <div>
@@ -108,7 +106,7 @@ export function CycleStatusCard({
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4 mt-4 border border-dashed rounded-lg px-4 py-4">
+                    <div className="flex items-center gap-4 mt-2 lg:mt-4 border border-dashed rounded-lg px-4 py-4">
                         <Heart className="w-4 h-4 text-blue-400" />
                         <div>
                             <p className="text-sm font-medium">
@@ -128,7 +126,7 @@ export function CycleStatusCard({
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4 mt-4 border border-dashed rounded-lg px-4 py-4">
+                    <div className="flex items-center gap-4 mt-2 lg:mt-4 border border-dashed rounded-lg px-4 py-4">
                         <Moon className="w-4 h-4 text-yellow-500" />
                         <div>
                             <p className="text-sm font-medium">Cycle Length</p>

@@ -216,12 +216,12 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
 
     return (
         <Card.Card>
-            <Card.CardContent className="p-4 md:px-8">
+            <Card.CardContent className="px-4 lg:px-8">
                 <div className="flex justify-between mb-4">
                     <Button variant="ghost" size="icon" onClick={prevMonth}>
                         <ChevronLeft className="w-4 h-4" />
                     </Button>
-                    <div className="hidden md:flex text-center gap-8">
+                    <div className="hidden lg:flex text-center gap-8">
                         <h3 className="font-semibold flex items-center">
                             {prevMonthDate.toLocaleDateString("en-US", {
                                 month: "long",
@@ -239,7 +239,7 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
                         </h3>
                     </div>
 
-                    <div className="flex md:hidden text-center">
+                    <div className="flex lg:hidden text-center">
                         <h3 className="text-lg font-semibold flex items-center">
                             {currentMonth.toLocaleDateString("en-US", {
                                 month: "long",
@@ -252,8 +252,8 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
                     </Button>
                 </div>
 
-                <div className="flex flex-col md:gap-8">
-                    <div className="hidden md:block flex-1">
+                <div className="flex flex-col lg:gap-8">
+                    <div className="hidden lg:block flex-1">
                         {generateMonthView(prevMonthDate)}
                     </div>
 

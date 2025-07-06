@@ -9,8 +9,11 @@ import {
     Clock,
     Droplets,
     Heart,
+    Dot,
+    CircleSmall,
 } from "lucide-react";
 import { PeriodDay } from "@/lib/types/periods";
+import { Separator } from "@/components/ui/separator";
 
 interface TodaysSummaryProps {
     todaysData?: PeriodDay | null;
@@ -252,18 +255,18 @@ export function TodaysSummary({
     const closestEvent = getClosestEvent();
 
     return (
-        <Card.Card className="h-full w-full">
-            <Card.CardHeader>
+        <Card.Card className="h-full w-full gap-4 shadow-none border border-dashed">
+            <Card.CardContent className="flex flex-col gap-4">
                 <Card.CardTitle className="flex items-center gap-2">
                     <CalendarIcon className="w-4 h-4" />
-                    Today's Summary
+                    <p className="text-lg">Today's Summary</p>
                 </Card.CardTitle>
-            </Card.CardHeader>
-            <Card.CardContent className="space-y-4">
-                {/* Closest Event */}
+
+                <Separator orientation="horizontal" className="" />
+
                 {closestEvent && (
                     <div className="border border-dashed rounded-lg p-4">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
                             <closestEvent.icon
                                 className={`w-4 h-4 ${closestEvent.color}`}
                             />
@@ -296,18 +299,18 @@ export function TodaysSummary({
 
                 {/* AI Suggestions */}
                 {suggestions.length > 0 && (
-                    <div className="space-y-3">
+                    <div className="space-y-2 lg:space-y-4">
                         <div className="flex items-center gap-2">
                             <Lightbulb className="w-4 h-4 text-yellow-500" />
                             <p className="text-sm font-medium">
                                 AI Suggestions
                             </p>
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-2 lg:space-y-4">
                             {suggestions.map((suggestion, index) => (
                                 <div
                                     key={index}
-                                    className="text-sm text-muted-foreground bg-muted/50 rounded-lg px-4"
+                                    className="text-sm text-muted-foreground bg-muted/50 rounded-lg px-2 lg:px-4"
                                 >
                                     - {suggestion}
                                 </div>

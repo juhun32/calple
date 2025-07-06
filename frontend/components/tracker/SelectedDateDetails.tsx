@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { PeriodDay } from "@/lib/types/periods";
 import { Button } from "../ui/button";
 import { Plus, Edit } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 interface SelectedDateDetailsProps {
     date: Date;
@@ -24,43 +25,35 @@ export function SelectedDateDetails({
             periodData.activities.length > 0);
 
     return (
-        <Card.Card className="h-full">
-            <Card.CardHeader>
-                <Card.CardTitle>
-                    {date.toLocaleDateString("en-US", {
-                        weekday: "long",
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                    })}
-                </Card.CardTitle>
-            </Card.CardHeader>
+        <Card.Card className="h-full gap-4">
             <Card.CardContent className="h-full flex flex-col">
+                <Card.CardTitle>
+                    <p className="text-lg font-semibold">
+                        {date.toLocaleDateString("en-US", {
+                            weekday: "long",
+                            month: "long",
+                            day: "numeric",
+                            year: "numeric",
+                        })}
+                    </p>
+                </Card.CardTitle>
+                <Separator orientation="horizontal" className="my-4" />
+
                 {!hasData ? (
                     <div className="h-full flex flex-col justify-between">
-                        <div className="pt-4 text-muted-foreground flex flex-col items-start gap-2">
+                        <div className="text-muted-foreground flex flex-col items-start gap-2">
                             <p>No data logged for this date</p>
                             <p className="text-xs">
                                 Click on the Log tab to add data
                             </p>
                         </div>
-                        <Button
-                            className="w-full text-foreground"
-                            variant="outline"
-                            onClick={onLogClick}
-                        >
-                            <Plus className="w-4 h-4" />
-                            Log Data
-                        </Button>
                     </div>
                 ) : (
                     <div className="h-full flex flex-col justify-between">
                         <div className="space-y-4">
                             {periodData.symptoms.length > 0 && (
                                 <div>
-                                    <h4 className="font-medium mb-2">
-                                        Symptoms
-                                    </h4>
+                                    <h4 className="text-sm mb-2">Symptoms</h4>
                                     <div className="flex flex-wrap gap-2">
                                         {periodData.symptoms.map((symptom) => (
                                             <Badge
@@ -77,7 +70,7 @@ export function SelectedDateDetails({
 
                             {periodData.mood.length > 0 && (
                                 <div>
-                                    <h4 className="font-medium mb-2">Mood</h4>
+                                    <h4 className="text-sm mb-2">Mood</h4>
                                     <div className="flex flex-wrap gap-2">
                                         {periodData.mood.map((mood) => (
                                             <Badge
@@ -94,9 +87,7 @@ export function SelectedDateDetails({
 
                             {periodData.activities.length > 0 && (
                                 <div>
-                                    <h4 className="font-medium mb-2">
-                                        Activities
-                                    </h4>
+                                    <h4 className="text-sm mb-2">Activities</h4>
                                     <div className="flex flex-wrap gap-2">
                                         {periodData.activities.map(
                                             (activity) => (
@@ -115,25 +106,39 @@ export function SelectedDateDetails({
 
                             {periodData.notes && (
                                 <div>
-                                    <h4 className="font-medium mb-2">Notes</h4>
+                                    <h4 className="font-medium text-sm text-muted-foreground mb-2">
+                                        Notes
+                                    </h4>
                                     <p className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
                                         {periodData.notes}
                                     </p>
                                 </div>
                             )}
                         </div>
-
-                        <Button
-                            className="w-full text-foreground"
-                            variant="outline"
-                            onClick={onLogClick}
-                        >
-                            <Edit className="w-4 h-4 mr-2" />
-                            Edit Log
-                        </Button>
                     </div>
                 )}
             </Card.CardContent>
+            <Card.CardFooter className="flex justify-end">
+                {hasData ? (
+                    <Button
+                        className="w-full text-foreground"
+                        variant="outline"
+                        onClick={onLogClick}
+                    >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit Log
+                    </Button>
+                ) : (
+                    <Button
+                        className="w-full text-foreground"
+                        variant="outline"
+                        onClick={onLogClick}
+                    >
+                        <Plus className="w-4 h-4" />
+                        Log Data
+                    </Button>
+                )}
+            </Card.CardFooter>
         </Card.Card>
     );
 }

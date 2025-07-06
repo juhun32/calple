@@ -296,7 +296,7 @@ export function ConnectionManager() {
                                             >
                                                 Email address
                                             </Label>
-                                            <div className="flex gap-4">
+                                            <div className="flex gap-2 lg:gap-4">
                                                 <Input
                                                     id="email"
                                                     placeholder="partner@example.com"

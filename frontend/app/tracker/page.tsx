@@ -100,9 +100,7 @@ export default function Tracker() {
         }
 
         // Extract start dates from each period
-        const periodStartDates = potentialPeriods.map(
-            (period) => period[0]
-        );
+        const periodStartDates = potentialPeriods.map((period) => period[0]);
 
         // Calculate average cycle length
         let avgCycleLength = cycleSettings?.cycleLength || 28;
@@ -413,7 +411,20 @@ export default function Tracker() {
                             fertilityWindowDays={fertilityWindowDays}
                         />
 
-                        <div className="grid md:grid-cols-[4fr_2fr_2fr] gap-4 flex-1">
+                        <div className="grid lg:grid-cols-[2fr_fr_2fr] gap-4 flex-1">
+                            <TodaysSummary
+                                todaysData={getLogForDate(
+                                    formatDateKey(new Date())
+                                )}
+                                daysUntilNextPeriod={daysUntilNextPeriod}
+                                daysUntilOvulation={daysUntilOvulation}
+                                currentCycleDay={currentCycleDay}
+                                cycleLength={cycleLength}
+                                hasPeriodData={hasPeriodData}
+                                periodDaysSet={periodDaysSet}
+                                mostRecentPeriodStart={mostRecentPeriodStart}
+                            />
+
                             <CycleStatusCard
                                 currentCycleDay={currentCycleDay}
                                 cycleLength={cycleLength}
@@ -433,24 +444,14 @@ export default function Tracker() {
                                     onLogClick={() => setSelectedTab("log")}
                                 />
                             )}
-
-                            <TodaysSummary
-                                todaysData={getLogForDate(
-                                    formatDateKey(new Date())
-                                )}
-                                daysUntilNextPeriod={daysUntilNextPeriod}
-                                daysUntilOvulation={daysUntilOvulation}
-                                currentCycleDay={currentCycleDay}
-                                cycleLength={cycleLength}
-                                hasPeriodData={hasPeriodData}
-                                periodDaysSet={periodDaysSet}
-                                mostRecentPeriodStart={mostRecentPeriodStart}
-                            />
                         </div>
                     </TabsContent>
 
-                    <TabsContent value="log" className="flex-1 flex flex-col mt-4">
-                        <div className="grid md:grid-cols-[auto_1fr] gap-4 flex-1">
+                    <TabsContent
+                        value="log"
+                        className="flex-1 flex flex-col mt-4"
+                    >
+                        <div className="grid lg:grid-cols-[auto_1fr] gap-4 flex-1">
                             <ButtonRowCalendar
                                 currentDate={date || new Date()}
                                 onDateSelect={setDate}

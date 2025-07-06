@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 // utils
 import { login } from "@/lib/utils";
 
@@ -10,12 +12,13 @@ import { useAuth } from "@/components/auth-provider";
 import { Button } from "@/components/ui/button";
 
 // icons
-import { Calendar } from "lucide-react";
+import { Calendar, Droplets } from "lucide-react";
 import Rectangle from "@/lib/assets/rectangle";
 import Start from "./start";
 
 export default function Home() {
     const { authState } = useAuth();
+    const router = useRouter();
 
     return (
         <div className="container w-full min-h-screen flex flex-col items-center justify-center pt-32 md:px-8 font-serif mx-auto">
@@ -70,15 +73,26 @@ export default function Home() {
                         <span>Sign in with Google</span>
                     </Button>
                 ) : (
-                    <Button
-                        variant="outline"
-                        size={"sm"}
-                        className="rounded-full px-3 w-fit"
-                        onClick={login}
-                    >
-                        <Calendar className="h-4 w-4 text-rose-500" />
-                        <span>Calendar</span>
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            size={"sm"}
+                            className="rounded-full px-3 w-fit"
+                            onClick={() => router.push("/calendar")}
+                        >
+                            <Calendar className="h-4 w-4 text-rose-500" />
+                            <span>Calendar</span>
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size={"sm"}
+                            className="rounded-full px-3 w-fit"
+                            onClick={() => router.push("/tracker")}
+                        >
+                            <Droplets className="h-4 w-4 text-rose-500" />
+                            <span>Cycle</span>
+                        </Button>
+                    </div>
                 )}
             </div>
             <Start />

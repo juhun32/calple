@@ -83,7 +83,7 @@ export function CycleSettingsForm({
     };
 
     return (
-        <Card.Card className="w-full gap-8">
+        <Card.Card className="w-full gap-4">
             <Card.CardHeader>
                 <Card.CardTitle className="flex items-center gap-2">
                     <Settings className="w-4 h-4" />
@@ -96,8 +96,8 @@ export function CycleSettingsForm({
             </Card.CardHeader>
             <Card.CardContent>
                 <form onSubmit={handleSubmit} className="space-y-8">
-                    <div className="flex flex-col gap-4">
-                        <div className="flex flex-col gap-2">
+                    <div className="flex flex-col lg:flex-row gap-4">
+                        <div className="flex flex-col gap-2 w-full">
                             <Label htmlFor="cycleLength" className="px-3">
                                 Cycle Length (days)
                             </Label>
@@ -129,7 +129,7 @@ export function CycleSettingsForm({
                             </p>
                         </div>
 
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-2 w-full">
                             <Label htmlFor="periodLength" className="px-3">
                                 Period Length (days)
                             </Label>
