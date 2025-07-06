@@ -141,36 +141,70 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
             const isSelectedDay = isSelected(day);
             const isFuture = isFutureDate(day);
 
+            // Check neighbors for styling connected days
+            const prevDayIsPeriod = isPeriodDay(day - 1);
+            const nextDayIsPeriod = isPeriodDay(day + 1);
+            const prevDayIsPredicted = isPredictedPeriodDay(day - 1);
+            const nextDayIsPredicted = isPredictedPeriodDay(day + 1);
+            const prevDayIsFertility = isFertilityWindowDay(day - 1);
+            const nextDayIsFertility = isFertilityWindowDay(day + 1);
+
             let buttonVariant:
                 | "default"
                 | "secondary"
                 | "destructive"
                 | "outline"
                 | "ghost"
-                | "link" = "outline";
-            let className = "h-9 w-9 rounded-full text-xs font-medium";
+                | "link" = "ghost";
+            let className = "h-9 w-full text-xs font-medium"; // Base classes, radius will be added below
 
             if (isPeriod) {
-                buttonVariant = "default";
+                buttonVariant = "ghost";
                 className += " bg-rose-500 text-white hover:bg-rose-500";
-            } else if (isSelectedDay) {
-                buttonVariant = "default";
-                className += "text-white";
+                if (prevDayIsPeriod && nextDayIsPeriod)
+                    className += " rounded-none";
+                else if (prevDayIsPeriod)
+                    className += " rounded-r-full rounded-l-none";
+                else if (nextDayIsPeriod)
+                    className += " rounded-l-full rounded-r-none";
+                else className += " rounded-full";
             } else if (isPredicted) {
                 buttonVariant = "ghost";
-                className +=
-                    " text-rose-400 border-2 border-dashed border-rose-400";
+                className += " text-rose-400 border-rose-400";
+                if (prevDayIsPredicted && nextDayIsPredicted)
+                    className += " border-y-2 rounded-none";
+                else if (prevDayIsPredicted)
+                    className +=
+                        " border-y-2 border-r-2 rounded-r-full rounded-l-none";
+                else if (nextDayIsPredicted)
+                    className +=
+                        " border-y-2 border-l-2 rounded-l-full rounded-r-none";
+                else className += " rounded-full";
             } else if (isFertility) {
                 buttonVariant = "ghost";
-                className +=
-                    " text-blue-400 border-2 border-dashed border-blue-400";
+                className += " text-blue-400 border-blue-400";
+                if (prevDayIsFertility && nextDayIsFertility)
+                    className += " border-y-2 rounded-none";
+                else if (prevDayIsFertility)
+                    className +=
+                        " border-y-2 border-r-2 rounded-r-full rounded-l-none";
+                else if (nextDayIsFertility)
+                    className +=
+                        " border-y-2 border-l-2 rounded-l-full rounded-r-none";
+                else className += " rounded-full";
+            } else if (isSelectedDay) {
+                buttonVariant = "default";
+                className += " text-white rounded-full";
             } else if (isCurrentDay) {
                 buttonVariant = "secondary";
+                className += " rounded-full";
+            } else {
+                className += " rounded-full";
             }
 
             dayElements.push(
                 <div
-                    className="flex justify-center items-center h-full w-full"
+                    className="flex justify-center items-center h-full w-full my-1"
                     key={day}
                 >
                     <Button
@@ -205,7 +239,7 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
 
         return (
             <div className="flex-1">
-                <div className="grid grid-cols-7 gap-1 mb-2">
+                <div className="grid grid-cols-7 mb-2">
                     {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
                         (day) => (
                             <div
@@ -217,7 +251,7 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
                         )
                     )}
                 </div>
-                <div className="grid grid-cols-7 gap-1">{dayElements}</div>
+                <div className="grid grid-cols-7">{dayElements}</div>
             </div>
         );
     };

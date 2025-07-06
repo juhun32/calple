@@ -251,8 +251,64 @@ export function TodaysSummary({
         );
     };
 
+    // Determine pregnancy chance based on cycle phase
+    const getPregnancyChance = () => {
+        if (isInPeriod) {
+            return {
+                level: "Very Low",
+                color: "text-gray-500",
+                description:
+                    "During menstruation, the chances of conception are very low.",
+            };
+        }
+
+        if (
+            daysUntilOvulation != null &&
+            daysUntilOvulation >= -3 &&
+            daysUntilOvulation <= 3
+        ) {
+            return {
+                level: "High",
+                color: "text-cyan-500",
+                description:
+                    "You are in your fertile window, the best time for conception.",
+            };
+        }
+
+        // Check for post-ovulation, pre-period phase
+        if (daysUntilOvulation != null && daysUntilOvulation < -3) {
+            return {
+                level: "Low",
+                color: "text-orange-500",
+                description:
+                    "The fertile window has passed, chances of conception are low.",
+            };
+        }
+
+        // Default case: pre-ovulation, non-fertile phase
+        return {
+            level: "Low",
+            color: "text-orange-500",
+            description:
+                "Approaching the fertile window. Chances of conception are low.",
+        };
+    };
+
     const suggestions = generateSuggestions();
     const closestEvent = getClosestEvent();
+    const pregnancyChance = getPregnancyChance();
+
+    // Helper to format text like "in 5 days" or "2 days ago"
+    const formatDaysAwayText = (days: number) => {
+        if (days > 0) {
+            return `in ${days} ${days === 1 ? "day" : "days"}`;
+        }
+        if (days === 0) {
+            return "today";
+        }
+        const daysAgo = Math.abs(days);
+        return `${daysAgo} ${daysAgo === 1 ? "day" : "days"} ago`;
+    };
 
     return (
         <Card.Card className="h-full w-full gap-4 shadow-none border border-dashed">
@@ -266,7 +322,7 @@ export function TodaysSummary({
 
                 {closestEvent && (
                     <div className="border border-dashed rounded-lg p-4">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-4">
                             <closestEvent.icon
                                 className={`w-4 h-4 ${closestEvent.color}`}
                             />
@@ -276,12 +332,13 @@ export function TodaysSummary({
                                         ? closestEvent.isFirstDay
                                             ? "Period started today"
                                             : `Day ${closestEvent.currentPeriodDay}`
-                                        : closestEvent.type === "period"
-                                        ? "Next Period"
-                                        : "Ovulation"}{" "}
-                                    {closestEvent.type === "current_period"
-                                        ? ""
-                                        : `in ${closestEvent.days} days`}
+                                        : `${
+                                              closestEvent.type === "period"
+                                                  ? "Next Period"
+                                                  : "Ovulation"
+                                          } ${formatDaysAwayText(
+                                              closestEvent.days
+                                          )}`}
                                 </p>
                                 <p className="text-xs text-muted-foreground">
                                     {closestEvent.type === "current_period"
@@ -297,20 +354,40 @@ export function TodaysSummary({
                     </div>
                 )}
 
+                {/* Pregnancy Chance */}
+                {hasPeriodData && (
+                    <div className="space-y-2">
+                        <div className="flex items-center border gap-4 border-dashed rounded-lg p-4">
+                            <Heart className="w-4 h-4 text-pink-500" />
+                            <div className="flex flex-col">
+                                <p
+                                    className={`text-sm font-semibold ${pregnancyChance.color}`}
+                                >
+                                    {pregnancyChance.level}{" "}
+                                    <span className="text-sm text-foreground">
+                                        chance of conception today
+                                    </span>
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    {pregnancyChance.description}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* AI Suggestions */}
                 {suggestions.length > 0 && (
                     <div className="space-y-2 lg:space-y-4">
                         <div className="flex items-center gap-2">
                             <Lightbulb className="w-4 h-4 text-yellow-500" />
-                            <p className="text-sm font-medium">
-                                AI Suggestions
-                            </p>
+                            <p className="text-sm font-medium">Suggestions</p>
                         </div>
-                        <div className="space-y-2 lg:space-y-4">
+                        <div className="space-y-2 border border-dashed rounded-lg px-2 py-4">
                             {suggestions.map((suggestion, index) => (
                                 <div
                                     key={index}
-                                    className="text-sm text-muted-foreground bg-muted/50 rounded-lg px-2 lg:px-4"
+                                    className="text-sm text-muted-foreground rounded-lg px-2 lg:px-4"
                                 >
                                     - {suggestion}
                                 </div>

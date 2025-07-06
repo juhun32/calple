@@ -255,7 +255,7 @@ export const DayButtonRow = memo(function DayButtonRow({
                                 if (isPeriod) {
                                     buttonVariant = "default";
                                     className +=
-                                        " bg-rose-500 text-white hover:bg-rose-600";
+                                        " bg-rose-400 text-white hover:bg-rose-600";
                                 } else if (isPredicted) {
                                     buttonVariant = "ghost";
                                     className +=

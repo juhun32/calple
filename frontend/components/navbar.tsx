@@ -110,7 +110,7 @@ export function NavBar() {
                                     Roulette
                                 </span>
                             </Button> */}
-                            <Button
+                            {/* <Button
                                 variant="outline"
                                 size="sm"
                                 className="hidden sm:flex rounded-full px-3 w-8 h-8 sm:w-fit"
@@ -135,7 +135,7 @@ export function NavBar() {
                                 <span className="hidden md:flex text-xs">
                                     Map
                                 </span>
-                            </Button>
+                            </Button> */}
                         </div>
                     </div>
                     <a
@@ -233,7 +233,7 @@ export function NavBar() {
                                             <Droplets className="h-4 w-4" />
                                             Cycle
                                         </DropdownMenu.DropdownMenuItem>
-                                        <DropdownMenu.DropdownMenuItem
+                                        {/* <DropdownMenu.DropdownMenuItem
                                             onClick={() =>
                                                 (window.location.href =
                                                     "/checkin")
@@ -249,7 +249,7 @@ export function NavBar() {
                                         >
                                             <Map className="h-4 w-4" />
                                             Map
-                                        </DropdownMenu.DropdownMenuItem>
+                                        </DropdownMenu.DropdownMenuItem> */}
                                     </DropdownMenu.DropdownMenuGroup>
                                     <DropdownMenu.DropdownMenuSeparator />
                                     <DropdownMenu.DropdownMenuGroup>
