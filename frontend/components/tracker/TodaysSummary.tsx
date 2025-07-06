@@ -311,7 +311,7 @@ export function TodaysSummary({
     };
 
     return (
-        <Card.Card className="h-full w-full gap-4 shadow-none border border-dashed">
+        <Card.Card className="h-full w-full gap-4">
             <Card.CardContent className="flex flex-col gap-4">
                 <Card.CardTitle className="flex items-center gap-2">
                     <CalendarIcon className="w-4 h-4" />
