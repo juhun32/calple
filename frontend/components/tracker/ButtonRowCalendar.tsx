@@ -4,6 +4,7 @@ import { useState, useEffect, memo } from "react";
 import { Button } from "@/components/ui/button";
 import * as Card from "@/components/ui/card";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 interface ButtonRowCalendarProps {
     currentDate: Date;
@@ -26,117 +27,11 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
         new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
     );
 
-    // Sync currentMonth with currentDate prop
     useEffect(() => {
         setCurrentMonth(
             new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
         );
     }, [currentDate]);
-
-    const getDaysInMonth = (date: Date) => {
-        return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-    };
-
-    const getFirstDayOfMonth = (date: Date) => {
-        return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-    };
-
-    const formatDateKey = (date: Date) => {
-        // Use local date string to avoid timezone issues
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const day = String(date.getDate()).padStart(2, "0");
-        return `${year}-${month}-${day}`;
-    };
-
-    const isToday = (day: number) => {
-        const today = new Date();
-        return (
-            day === today.getDate() &&
-            currentMonth.getMonth() === today.getMonth() &&
-            currentMonth.getFullYear() === today.getFullYear()
-        );
-    };
-
-    const isFutureDate = (day: number) => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // Reset time to start of day
-        const checkDate = new Date(
-            currentMonth.getFullYear(),
-            currentMonth.getMonth(),
-            day
-        );
-        checkDate.setHours(0, 0, 0, 0); // Reset time to start of day
-        return checkDate > today;
-    };
-
-    const isSelected = (day: number) => {
-        const date = new Date(
-            currentMonth.getFullYear(),
-            currentMonth.getMonth(),
-            day
-        );
-        return formatDateKey(date) === formatDateKey(currentDate);
-    };
-
-    const isPeriodDay = (day: number) => {
-        const date = new Date(
-            currentMonth.getFullYear(),
-            currentMonth.getMonth(),
-            day
-        );
-        return periodDays.has(formatDateKey(date));
-    };
-
-    const isPredictedPeriodDay = (day: number) => {
-        const date = new Date(
-            currentMonth.getFullYear(),
-            currentMonth.getMonth(),
-            day
-        );
-        return predictedPeriodDays.has(formatDateKey(date));
-    };
-
-    const isFertilityWindowDay = (day: number) => {
-        const date = new Date(
-            currentMonth.getFullYear(),
-            currentMonth.getMonth(),
-            day
-        );
-        return fertilityWindowDays.has(formatDateKey(date));
-    };
-
-    const handleDayClick = (day: number) => {
-        const date = new Date(
-            currentMonth.getFullYear(),
-            currentMonth.getMonth(),
-            day
-        );
-        onDateSelect(date);
-    };
-
-    const handlePeriodToggle = (date: Date) => {
-        // Don't allow editing future dates
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const checkDate = new Date(date);
-        checkDate.setHours(0, 0, 0, 0);
-
-        if (checkDate > today) {
-            return;
-        }
-
-        const dateKey = formatDateKey(date);
-        const newPeriodDays = new Set(periodDays);
-
-        if (newPeriodDays.has(dateKey)) {
-            newPeriodDays.delete(dateKey);
-        } else {
-            newPeriodDays.add(dateKey);
-        }
-
-        onPeriodToggle(date);
-    };
 
     const nextMonth = () => {
         setCurrentMonth(
@@ -150,102 +45,152 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
         );
     };
 
-    const daysInMonth = getDaysInMonth(currentMonth);
-    const firstDayOfMonth = getFirstDayOfMonth(currentMonth);
-    const monthName = currentMonth.toLocaleDateString("en-US", {
-        month: "long",
-        year: "numeric",
-    });
+    // This function will generate the grid for a given month
+    const generateMonthView = (monthDate: Date) => {
+        const getDaysInMonth = (date: Date) =>
+            new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+        const getFirstDayOfMonth = (date: Date) =>
+            new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+        const formatDateKey = (date: Date) =>
+            `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+                2,
+                "0"
+            )}-${String(date.getDate()).padStart(2, "0")}`;
 
-    const days = [];
-    for (let i = 0; i < firstDayOfMonth; i++) {
-        days.push(<div key={`empty-${i}`} className="w-10 h-10" />);
-    }
+        const isToday = (day: number) => {
+            const today = new Date();
+            return (
+                day === today.getDate() &&
+                monthDate.getMonth() === today.getMonth() &&
+                monthDate.getFullYear() === today.getFullYear()
+            );
+        };
 
-    for (let day = 1; day <= daysInMonth; day++) {
-        const isPeriod = isPeriodDay(day);
-        const isPredicted = isPredictedPeriodDay(day);
-        const isFertility = isFertilityWindowDay(day);
-        const isCurrentDay = isToday(day);
-        const isSelectedDay = isSelected(day);
-        const isFuture = isFutureDate(day);
+        const isFutureDate = (day: number) => {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const checkDate = new Date(
+                monthDate.getFullYear(),
+                monthDate.getMonth(),
+                day
+            );
+            checkDate.setHours(0, 0, 0, 0);
+            return checkDate > today;
+        };
 
-        let buttonVariant:
-            | "default"
-            | "secondary"
-            | "destructive"
-            | "outline"
-            | "ghost"
-            | "link" = "outline";
-        let className = "h-8 w-8 rounded-full text-xs font-medium";
+        const isSelected = (day: number) =>
+            formatDateKey(
+                new Date(monthDate.getFullYear(), monthDate.getMonth(), day)
+            ) === formatDateKey(currentDate);
+        const isPeriodDay = (day: number) =>
+            periodDays.has(
+                formatDateKey(
+                    new Date(monthDate.getFullYear(), monthDate.getMonth(), day)
+                )
+            );
+        const isPredictedPeriodDay = (day: number) =>
+            predictedPeriodDays.has(
+                formatDateKey(
+                    new Date(monthDate.getFullYear(), monthDate.getMonth(), day)
+                )
+            );
+        const isFertilityWindowDay = (day: number) =>
+            fertilityWindowDays.has(
+                formatDateKey(
+                    new Date(monthDate.getFullYear(), monthDate.getMonth(), day)
+                )
+            );
 
-        if (isPeriod) {
-            buttonVariant = "default";
-            className += " bg-rose-500 text-white hover:bg-rose-500";
-        } else if (isSelectedDay) {
-            buttonVariant = "default";
-            className += "text-white";
-        } else if (isPredicted) {
-            buttonVariant = "ghost";
-            className +=
-                " text-rose-400 border-2 border-dashed border-rose-400";
-        } else if (isFertility) {
-            buttonVariant = "ghost";
-            className +=
-                " text-blue-400 border-2 border-dashed border-blue-400";
-        } else if (isCurrentDay) {
-            buttonVariant = "secondary";
-            className += " ";
+        const handleDayClick = (day: number) =>
+            onDateSelect(
+                new Date(monthDate.getFullYear(), monthDate.getMonth(), day)
+            );
+        const handlePeriodToggle = (date: Date) => {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (date > today) return;
+            onPeriodToggle(date);
+        };
+
+        const daysInMonth = getDaysInMonth(monthDate);
+        const firstDayOfMonth = getFirstDayOfMonth(monthDate);
+        const monthName = monthDate.toLocaleDateString("en-US", {
+            month: "long",
+            year: "numeric",
+        });
+
+        const dayElements = [];
+        for (let i = 0; i < firstDayOfMonth; i++) {
+            dayElements.push(<div key={`empty-${i}`} className="w-10 h-10" />);
         }
 
-        days.push(
-            <div
-                className="flex justify-center items-center h-full w-full"
-                key={day}
-            >
-                <Button
-                    variant={buttonVariant}
-                    className={`${className} flex justify-center items-center text-base p-0 px-0 py-0`}
-                    onClick={() => handleDayClick(day)}
-                    onContextMenu={(e) => {
-                        e.preventDefault();
-                        if (!isFuture) {
+        for (let day = 1; day <= daysInMonth; day++) {
+            const isPeriod = isPeriodDay(day);
+            const isPredicted = isPredictedPeriodDay(day);
+            const isFertility = isFertilityWindowDay(day);
+            const isCurrentDay = isToday(day);
+            const isSelectedDay = isSelected(day);
+            const isFuture = isFutureDate(day);
+
+            let buttonVariant:
+                | "default"
+                | "secondary"
+                | "destructive"
+                | "outline"
+                | "ghost"
+                | "link" = "outline";
+            let className = "h-8 w-8 rounded-full text-xs font-medium";
+
+            if (isPeriod) {
+                buttonVariant = "default";
+                className += " bg-rose-500 text-white hover:bg-rose-500";
+            } else if (isSelectedDay) {
+                buttonVariant = "default";
+                className += "text-white";
+            } else if (isPredicted) {
+                buttonVariant = "ghost";
+                className +=
+                    " text-rose-400 border-2 border-dashed border-rose-400";
+            } else if (isFertility) {
+                buttonVariant = "ghost";
+                className +=
+                    " text-blue-400 border-2 border-dashed border-blue-400";
+            } else if (isCurrentDay) {
+                buttonVariant = "secondary";
+            }
+
+            dayElements.push(
+                <div
+                    className="flex justify-center items-center h-full w-full"
+                    key={day}
+                >
+                    <Button
+                        variant={buttonVariant}
+                        className={`${className} flex justify-center items-center text-base p-0`}
+                        onClick={() =>
                             handlePeriodToggle(
                                 new Date(
-                                    currentMonth.getFullYear(),
-                                    currentMonth.getMonth(),
+                                    monthDate.getFullYear(),
+                                    monthDate.getMonth(),
                                     day
                                 )
-                            );
+                            )
                         }
-                    }}
-                    disabled={isFuture}
-                    title={`${day} - ${monthName}${
-                        isPeriod ? " (Period Day)" : ""
-                    }${isPredicted ? " (Predicted Period)" : ""}${
-                        isFertility ? " (Fertility Window)" : ""
-                    }${isFuture ? " (Future date - cannot edit)" : ""}`}
-                >
-                    {day}
-                </Button>
-            </div>
-        );
-    }
-
-    return (
-        <Card.Card>
-            <Card.CardContent>
-                <div className="flex items-center justify-between mb-6">
-                    <Button variant="ghost" size="icon" onClick={prevMonth}>
-                        <ChevronLeft className="w-4 h-4" />
-                    </Button>
-                    <h3 className="text-lg font-semibold">{monthName}</h3>
-                    <Button variant="ghost" size="icon" onClick={nextMonth}>
-                        <ChevronRight className="w-4 h-4" />
+                        onContextMenu={(e) => {
+                            e.preventDefault();
+                            handleDayClick(day);
+                        }}
+                        disabled={isFuture}
+                        title={`${day} - ${monthName}`}
+                    >
+                        {day}
                     </Button>
                 </div>
+            );
+        }
 
-                {/* Day Headers */}
+        return (
+            <div className="flex-1">
                 <div className="grid grid-cols-7 gap-1 mb-2">
                     {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
                         (day) => (
@@ -258,13 +203,68 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
                         )
                     )}
                 </div>
+                <div className="grid grid-cols-7 gap-1">{dayElements}</div>
+            </div>
+        );
+    };
 
-                {/* Calendar Grid */}
-                <div className="grid grid-cols-7 gap-1 h-full">{days}</div>
+    const prevMonthDate = new Date(
+        currentMonth.getFullYear(),
+        currentMonth.getMonth() - 1,
+        1
+    );
 
-                <p className="text-xs text-muted-foreground mt-4">
-                    Right-click on any day to mark/unmark it as a period day
-                    (past dates only)
+    return (
+        <Card.Card>
+            <Card.CardContent className="p-4 md:px-8">
+                <div className="flex justify-between mb-4">
+                    <Button variant="ghost" size="icon" onClick={prevMonth}>
+                        <ChevronLeft className="w-4 h-4" />
+                    </Button>
+                    <div className="hidden md:flex text-center gap-8">
+                        <h3 className="font-semibold flex items-center">
+                            {prevMonthDate.toLocaleDateString("en-US", {
+                                month: "long",
+                                year: "numeric",
+                            })}
+                        </h3>
+
+                        <Separator orientation="vertical" />
+
+                        <h3 className="font-semibold flex items-center">
+                            {currentMonth.toLocaleDateString("en-US", {
+                                month: "long",
+                                year: "numeric",
+                            })}
+                        </h3>
+                    </div>
+
+                    <div className="flex md:hidden text-center">
+                        <h3 className="text-lg font-semibold flex items-center">
+                            {currentMonth.toLocaleDateString("en-US", {
+                                month: "long",
+                                year: "numeric",
+                            })}
+                        </h3>
+                    </div>
+                    <Button variant="ghost" size="icon" onClick={nextMonth}>
+                        <ChevronRight className="w-4 h-4" />
+                    </Button>
+                </div>
+
+                <div className="flex flex-col md:gap-8">
+                    <div className="hidden md:block flex-1">
+                        {generateMonthView(prevMonthDate)}
+                    </div>
+
+                    {/* Current Month */}
+                    <div className="flex-1">
+                        {generateMonthView(currentMonth)}
+                    </div>
+                </div>
+
+                <p className="text-xs text-muted-foreground mt-4 text-center">
+                    Click to log period • Right-click to view details
                 </p>
             </Card.CardContent>
         </Card.Card>

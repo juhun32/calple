@@ -61,22 +61,15 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
     const [selectedActivities, setSelectedActivities] = useState<string[]>(
         existingLog?.activities || []
     );
-    const [notes, setNotes] = useState(existingLog?.notes || "");
+    const [notes, setNotes] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Update form when existingLog changes
+    // Update form when the selected date or its log data changes
     useEffect(() => {
-        if (existingLog) {
-            setSelectedSymptoms(existingLog.symptoms);
-            setSelectedMoods(existingLog.mood);
-            setSelectedActivities(existingLog.activities);
-            setNotes(existingLog.notes);
-        } else {
-            setSelectedSymptoms([]);
-            setSelectedMoods([]);
-            setSelectedActivities([]);
-            setNotes("");
-        }
+        setSelectedSymptoms(existingLog?.symptoms || []);
+        setSelectedMoods(existingLog?.mood || []);
+        setSelectedActivities(existingLog?.activities || []);
+        setNotes(existingLog?.notes || "");
     }, [existingLog]);
 
     const handleSymptomToggle = (symptom: string) => {
@@ -106,7 +99,11 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
     const handleSubmit = async () => {
         setIsSubmitting(true);
         try {
-            const dateString = date.toISOString().split("T")[0]; // YYYY-MM-DD format
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            const dateString = `${year}-${month}-${day}`;
+
             const logData = {
                 date: dateString,
                 symptoms: selectedSymptoms,
@@ -128,25 +125,24 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
     };
 
     return (
-        <Card.Card className="gap-4">
+        <Card.Card className="flex flex-col h-full gap-4">
             <Card.CardHeader>
                 <Card.CardTitle>
                     Log Data for {date.toLocaleDateString()}
                 </Card.CardTitle>
-                <Card.CardDescription>
+                <Card.CardDescription className="mt-2">
                     Track your symptoms, mood, and activities
                 </Card.CardDescription>
             </Card.CardHeader>
-            <Card.CardContent className="space-y-8">
+            <Card.CardContent className="flex flex-col flex-1 gap-4">
                 {/* Symptoms */}
                 <div>
-                    <Label className="text-base font-medium">Symptoms</Label>
-                    <div className="grid grid-cols-3 gap-4 mt-2">
+                    <Label className="text-base text-muted-foreground px-0">
+                        Symptoms
+                    </Label>
+                    <div className="grid grid-cols-3 gap-2 mt-4">
                         {symptoms.map((symptom) => (
-                            <div
-                                key={symptom}
-                                className="flex items-center space-x-2"
-                            >
+                            <div key={symptom} className="flex items-center">
                                 <Checkbox
                                     id={symptom}
                                     checked={selectedSymptoms.includes(symptom)}
@@ -164,8 +160,10 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
 
                 {/* Mood */}
                 <div>
-                    <Label className="text-base font-medium">Mood</Label>
-                    <div className="grid grid-cols-3 gap-4 mt-2">
+                    <Label className="text-base text-muted-foreground px-0">
+                        Mood
+                    </Label>
+                    <div className="grid grid-cols-3 gap-2 mt-2">
                         {moods.map((mood) => (
                             <div
                                 key={mood}
@@ -188,8 +186,10 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
 
                 {/* Activities */}
                 <div>
-                    <Label className="text-base font-medium">Activities</Label>
-                    <div className="grid grid-cols-3 gap-4 mt-2">
+                    <Label className="text-base text-muted-foreground px-0">
+                        Activities
+                    </Label>
+                    <div className="grid grid-cols-3 gap-2 mt-2">
                         {activities.map((activity) => (
                             <div
                                 key={activity}
@@ -214,27 +214,31 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
 
                 {/* Notes */}
                 <div>
-                    <Label className="text-base font-medium">Notes</Label>
+                    <Label className="text-base text-muted-foreground px-0">
+                        Notes
+                    </Label>
                     <Textarea
                         placeholder="Add any additional notes..."
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
-                        className="mt-2"
+                        className="mt-2 flex-1"
                         rows={3}
                     />
                 </div>
 
-                <Button
-                    className="w-full"
-                    onClick={handleSubmit}
-                    disabled={isSubmitting}
-                >
-                    {isSubmitting
-                        ? "Saving..."
-                        : existingLog
-                        ? "Update Entry"
-                        : "Save Entry"}
-                </Button>
+                <div className="mt-auto pt-4">
+                    <Button
+                        className="w-full"
+                        onClick={handleSubmit}
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting
+                            ? "Saving..."
+                            : existingLog
+                            ? "Update Entry"
+                            : "Save Entry"}
+                    </Button>
+                </div>
             </Card.CardContent>
         </Card.Card>
     );

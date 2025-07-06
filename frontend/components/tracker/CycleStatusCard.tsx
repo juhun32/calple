@@ -2,7 +2,9 @@
 
 import * as Card from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Droplets, Calendar, Heart, Moon } from "lucide-react";
+import { Droplets, Calendar, Heart, Moon, Plus } from "lucide-react";
+import { Separator } from "../ui/separator";
+import { Button } from "../ui/button";
 
 interface CycleStatusCardProps {
     currentCycleDay: number | null;
@@ -12,6 +14,7 @@ interface CycleStatusCardProps {
     hasPeriodData: boolean;
     fertileStart: Date | null;
     fertileEnd: Date | null;
+    onLogClick?: () => void;
 }
 
 export function CycleStatusCard({
@@ -22,6 +25,7 @@ export function CycleStatusCard({
     hasPeriodData,
     fertileStart,
     fertileEnd,
+    onLogClick,
 }: CycleStatusCardProps) {
     if (!hasPeriodData) {
         return (
@@ -46,34 +50,38 @@ export function CycleStatusCard({
     return (
         <Card.Card className="w-full h-full">
             <Card.CardContent>
-                <div className="flex items-center justify-between mb-4">
-                    <div>
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                            Day {currentCycleDay}
-                        </h2>
-                        <p className="text-sm text-muted-foreground">
-                            of your cycle
-                        </p>
-                    </div>
-                    <div className="text-right">
-                        <div className="text-xl font-semibold">
-                            {daysUntilNextPeriod}
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                            days until next period
-                        </p>
-                    </div>
+                <div className="flex items-baseline gap-2">
+                    <p className="text-xl font-semibold text-gray-900 dark:text-white">
+                        Day {currentCycleDay}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                        of your cycle
+                    </p>
                 </div>
 
+                <Separator orientation="horizontal" className="my-4" />
+
                 <div>
-                    <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium mb-2">
-                            Cycle Progress
-                        </span>
-                        <span className="text-sm text-muted-foreground">
-                            {Math.round((currentCycleDay! / cycleLength) * 100)}
-                            %
-                        </span>
+                    <div className="flex items-baseline justify-between">
+                        <div className="flex gap-2">
+                            <span className="text-sm font-medium mb-2">
+                                Cycle Progress
+                            </span>
+                            <span className="text-sm text-muted-foreground">
+                                {Math.round(
+                                    (currentCycleDay! / cycleLength) * 100
+                                )}
+                                %
+                            </span>
+                        </div>
+                        <div className="text-right flex items-baseline gap-2">
+                            <div className="text-lg font-semibold">
+                                {daysUntilNextPeriod}
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                                days until next period
+                            </p>
+                        </div>
                     </div>
                     <Progress
                         value={(currentCycleDay! / cycleLength) * 100}
@@ -81,10 +89,10 @@ export function CycleStatusCard({
                     />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                     <div className="mt-4 border border-dashed rounded-lg">
-                        <div className="flex items-center gap-4 px-8 py-4">
-                            <Droplets className="w-4 h-4 text-white" />
+                        <div className="flex items-center gap-4 px-4 py-4">
+                            <Droplets className="w-4 h-4 text-rose-500" />
                             <div>
                                 <p className="text-sm font-medium">
                                     Next Period Expected
@@ -100,8 +108,8 @@ export function CycleStatusCard({
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4 mt-4 border border-dashed rounded-lg px-8 py-4">
-                        <Heart className="w-4 h-4" />
+                    <div className="flex items-center gap-4 mt-4 border border-dashed rounded-lg px-4 py-4">
+                        <Heart className="w-4 h-4 text-blue-400" />
                         <div>
                             <p className="text-sm font-medium">
                                 Fertility Window
@@ -119,15 +127,15 @@ export function CycleStatusCard({
                             </p>
                         </div>
                     </div>
-                </div>
 
-                <div className="flex items-center gap-4 mt-4 border border-dashed rounded-lg px-8 py-4">
-                    <Moon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    <div>
-                        <p className="text-sm font-medium">Cycle Length</p>
-                        <p className="text-xs text-muted-foreground">
-                            {cycleLength} days average
-                        </p>
+                    <div className="flex items-center gap-4 mt-4 border border-dashed rounded-lg px-4 py-4">
+                        <Moon className="w-4 h-4 text-yellow-500" />
+                        <div>
+                            <p className="text-sm font-medium">Cycle Length</p>
+                            <p className="text-xs text-muted-foreground">
+                                {cycleLength} days average
+                            </p>
+                        </div>
                     </div>
                 </div>
             </Card.CardContent>

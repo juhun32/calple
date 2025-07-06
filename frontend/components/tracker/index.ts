@@ -5,3 +5,4 @@ export { TodaysSummary } from "./TodaysSummary";
 export { SelectedDateDetails } from "./SelectedDateDetails";
 export { LogForm } from "./LogForm";
 export { InsightsCard } from "./InsightsCard";
+export { CycleSettingsForm } from "./CycleSettingsForm";

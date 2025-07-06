@@ -22,7 +22,6 @@ export function usePeriods() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Load initial data
     useEffect(() => {
         loadData();
     }, []);
@@ -32,11 +31,11 @@ export function usePeriods() {
             setLoading(true);
             setError(null);
 
-            // Load period days
+            // load period days
             const periodDaysResponse = await getPeriodDays();
             setPeriodDays(periodDaysResponse.periodDays);
 
-            // Load cycle settings
+            // load cycle settings
             const settingsResponse = await getCycleSettings();
             setCycleSettings(settingsResponse.cycleSettings);
         } catch (err) {
@@ -51,14 +50,19 @@ export function usePeriods() {
         }
     }, []);
 
-    // Get period days as a Set for easy lookup
+    // get period days as a Set for easy lookup (only for period tracking)
     const periodDaysSet = useMemo(() => {
         return new Set(
             periodDays.filter((pd) => pd.isPeriod).map((pd) => pd.date)
         );
     }, [periodDays]);
 
-    // Period Days operations
+    // get all log data as a Set for easy lookup (for all tracking data)
+    const allLogDataSet = useMemo(() => {
+        return new Set(periodDays.map((pd) => pd.date));
+    }, [periodDays]);
+
+    // period days operations
     const addPeriodDay = useCallback(
         async (date: string, isPeriod: boolean = true) => {
             try {
@@ -108,21 +112,21 @@ export function usePeriods() {
             const existingDay = periodDays.find((pd) => pd.date === date);
             if (existingDay) {
                 if (existingDay.isPeriod) {
-                    // If it's a period day, remove it
+                    // if it's a period day, remove it
                     await removePeriodDay(date);
                 } else {
-                    // If it's not a period day, make it one
+                    // if it's not a period day, make it one
                     await addPeriodDay(date, true);
                 }
             } else {
-                // If no day exists, create a new period day
+                // if no day exists, create a new period day
                 await addPeriodDay(date, true);
             }
         },
         [periodDays, addPeriodDay, removePeriodDay]
     );
 
-    // Update period day data (symptoms, mood, activities, notes)
+    // update period day data (symptoms, mood, activities, notes)
     const updatePeriodDay = useCallback(
         async (
             date: string,
@@ -155,7 +159,7 @@ export function usePeriods() {
         [periodDays, loadData]
     );
 
-    // Cycle Settings operations
+    // cycle settings operations
     const updateSettings = useCallback(
         async (settings: UpdateCycleSettingsRequest) => {
             try {
@@ -182,14 +186,12 @@ export function usePeriods() {
     );
 
     return {
-        // State
         periodDays,
         periodDaysSet,
+        allLogDataSet,
         cycleSettings,
         loading,
         error,
-
-        // Actions
         loadData,
         addPeriodDay,
         removePeriodDay,

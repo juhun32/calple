@@ -94,7 +94,7 @@ export function NavBar() {
                             >
                                 <Droplets />
                                 <span className="hidden md:flex text-xs">
-                                    Period
+                                    Cycle
                                 </span>
                             </Button>
                             {/* <Button
@@ -231,7 +231,7 @@ export function NavBar() {
                                             }
                                         >
                                             <Droplets className="h-4 w-4" />
-                                            Period
+                                            Cycle
                                         </DropdownMenu.DropdownMenuItem>
                                         <DropdownMenu.DropdownMenuItem
                                             onClick={() =>
