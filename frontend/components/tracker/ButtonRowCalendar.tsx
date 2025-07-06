@@ -13,6 +13,7 @@ interface ButtonRowCalendarProps {
     onPeriodToggle: (date: Date) => void;
     predictedPeriodDays: Set<string>;
     fertilityWindowDays: Set<string>;
+    sexualActivityDays: Set<string>;
 }
 
 export const ButtonRowCalendar = memo(function ButtonRowCalendar({
@@ -22,6 +23,7 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
     onPeriodToggle,
     predictedPeriodDays,
     fertilityWindowDays,
+    sexualActivityDays,
 }: ButtonRowCalendarProps) {
     const [currentMonth, setCurrentMonth] = useState(
         new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
@@ -100,6 +102,12 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
                     new Date(monthDate.getFullYear(), monthDate.getMonth(), day)
                 )
             );
+        const isSexualActivityDay = (day: number) =>
+            sexualActivityDays.has(
+                formatDateKey(
+                    new Date(monthDate.getFullYear(), monthDate.getMonth(), day)
+                )
+            );
 
         const handleDayClick = (day: number) =>
             onDateSelect(
@@ -128,6 +136,7 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
             const isPeriod = isPeriodDay(day);
             const isPredicted = isPredictedPeriodDay(day);
             const isFertility = isFertilityWindowDay(day);
+            const isSexual = isSexualActivityDay(day);
             const isCurrentDay = isToday(day);
             const isSelectedDay = isSelected(day);
             const isFuture = isFutureDate(day);
@@ -139,7 +148,7 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
                 | "outline"
                 | "ghost"
                 | "link" = "outline";
-            let className = "h-8 w-8 rounded-full text-xs font-medium";
+            let className = "h-9 w-9 rounded-full text-xs font-medium";
 
             if (isPeriod) {
                 buttonVariant = "default";
@@ -183,7 +192,12 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
                         disabled={isFuture}
                         title={`${day} - ${monthName}`}
                     >
-                        {day}
+                        <div className="flex flex-col items-center justify-center">
+                            <span>{day}</span>
+                            {isSexual && (
+                                <div className="h-1 w-1 rounded-full bg-purple-500"></div>
+                            )}
+                        </div>
                     </Button>
                 </div>
             );

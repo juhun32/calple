@@ -23,15 +23,17 @@ const symptoms = [
 const moods = [
     "Happy",
     "Calm",
+    "Energetic",
     "Anxious",
     "Irritable",
     "Sad",
-    "Energetic",
     "Tired",
     "Stressed",
 ];
 
-const activities = ["Exercise", "Sex", "Meditation", "Social", "Work", "Rest"];
+const activities = ["Exercise", "Meditation", "Social", "Work", "Rest"];
+
+const sexualActivities = ["Used Protection", "Unprotected"];
 
 interface LogFormProps {
     date: Date;
@@ -193,6 +195,34 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                     </Label>
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
                         {activities.map((activity) => (
+                            <div
+                                key={activity}
+                                className="flex items-center space-x-2"
+                            >
+                                <Checkbox
+                                    id={activity}
+                                    checked={selectedActivities.includes(
+                                        activity
+                                    )}
+                                    onCheckedChange={() =>
+                                        handleActivityToggle(activity)
+                                    }
+                                />
+                                <Label htmlFor={activity} className="text-sm">
+                                    {activity}
+                                </Label>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Sexual Activity */}
+                <div>
+                    <Label className="text-base text-muted-foreground px-0">
+                        Sexual Activity
+                    </Label>
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
+                        {sexualActivities.map((activity) => (
                             <div
                                 key={activity}
                                 className="flex items-center space-x-2"

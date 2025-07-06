@@ -50,6 +50,22 @@ export default function Tracker() {
     const [selectedTab, setSelectedTab] = useState("overview");
     const [isSavingSettings, setIsSavingSettings] = useState(false);
 
+    const sexualActivityDays = useMemo(() => {
+        const activityDays = new Set<string>();
+        const sexualActivityKeywords = ["Used Protection", "Unprotected"];
+        for (const day of allLogDataSet.values()) {
+            if (
+                day.activities &&
+                day.activities.some((activity) =>
+                    sexualActivityKeywords.includes(activity)
+                )
+            ) {
+                activityDays.add(day.date);
+            }
+        }
+        return activityDays;
+    }, [allLogDataSet]);
+
     const periodLength = cycleSettings?.periodLength || 5;
 
     // calculate most recent period start/end dates and average cycle length
@@ -409,9 +425,10 @@ export default function Tracker() {
                             onPeriodToggle={handlePeriodToggle}
                             predictedPeriodDays={predictedPeriodDays}
                             fertilityWindowDays={fertilityWindowDays}
+                            sexualActivityDays={sexualActivityDays}
                         />
 
-                        <div className="grid lg:grid-cols-[2fr_fr_2fr] gap-4 flex-1">
+                        <div className="grid md:grid-cols-[4fr_2fr_2fr] gap-4 flex-1">
                             <TodaysSummary
                                 todaysData={getLogForDate(
                                     formatDateKey(new Date())
@@ -451,7 +468,7 @@ export default function Tracker() {
                         value="log"
                         className="flex-1 flex flex-col mt-4"
                     >
-                        <div className="grid lg:grid-cols-[auto_1fr] gap-4 flex-1">
+                        <div className="grid md:grid-cols-[auto_1fr] gap-4 flex-1">
                             <ButtonRowCalendar
                                 currentDate={date || new Date()}
                                 onDateSelect={setDate}
@@ -459,6 +476,7 @@ export default function Tracker() {
                                 onPeriodToggle={handlePeriodToggle}
                                 predictedPeriodDays={predictedPeriodDays}
                                 fertilityWindowDays={fertilityWindowDays}
+                                sexualActivityDays={sexualActivityDays}
                             />
 
                             <LogForm

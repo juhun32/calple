@@ -62,9 +62,6 @@ export function CycleStatusCard({
                 <div>
                     <div className="flex items-baseline justify-between">
                         <div className="flex gap-1 lg:gap-2">
-                            <span className="hidden lg:flex text-sm font-medium mb-2">
-                                Cycle Progress
-                            </span>
                             <span className="text-sm text-muted-foreground">
                                 {Math.round(
                                     (currentCycleDay! / cycleLength) * 100
@@ -87,7 +84,7 @@ export function CycleStatusCard({
                     />
                 </div>
 
-                <div className="grid lg:grid-cols-3 lg:gap-4">
+                <div className="grid">
                     <div className="mt-2 lg:mt-4 border border-dashed rounded-lg">
                         <div className="flex items-center gap-4 px-4 py-4">
                             <Droplets className="w-4 h-4 text-rose-500" />

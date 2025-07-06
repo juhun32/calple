@@ -59,7 +59,7 @@ export function usePeriods() {
 
     // get all log data as a Set for easy lookup (for all tracking data)
     const allLogDataSet = useMemo(() => {
-        return new Set(periodDays.map((pd) => pd.date));
+        return new Set(periodDays);
     }, [periodDays]);
 
     // period days operations

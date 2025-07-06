@@ -21,6 +21,7 @@ interface DayButtonRowProps {
     onPeriodToggle: (date: Date) => void;
     predictedPeriodDays: Set<string>;
     fertilityWindowDays: Set<string>;
+    sexualActivityDays: Set<string>;
 }
 
 export const DayButtonRow = memo(function DayButtonRow({
@@ -30,6 +31,7 @@ export const DayButtonRow = memo(function DayButtonRow({
     onPeriodToggle,
     predictedPeriodDays,
     fertilityWindowDays,
+    sexualActivityDays,
 }: DayButtonRowProps) {
     const [currentPage, setCurrentPage] = useState(0);
     const [direction, setDirection] = useState(0);
@@ -72,6 +74,10 @@ export const DayButtonRow = memo(function DayButtonRow({
 
     const isFertilityWindowDay = (date: Date) => {
         return fertilityWindowDays.has(formatDateKey(date));
+    };
+
+    const isSexualActivityDay = (date: Date) => {
+        return sexualActivityDays.has(formatDateKey(date));
     };
 
     const handlePeriodToggle = (date: Date) => {
@@ -233,6 +239,7 @@ export const DayButtonRow = memo(function DayButtonRow({
                                 const isPeriod = isPeriodDay(date);
                                 const isPredicted = isPredictedPeriodDay(date);
                                 const isFertility = isFertilityWindowDay(date);
+                                const isSexual = isSexualActivityDay(date);
                                 const isFuture = isFutureDate(date);
 
                                 let buttonVariant:
@@ -259,6 +266,7 @@ export const DayButtonRow = memo(function DayButtonRow({
                                         " border border-dashed border-blue-400 text-blue-400";
                                 } else if (isSelectedDay) {
                                     buttonVariant = "default";
+                                    className += " bg-secondary text-primary";
                                 } else if (isCurrentDay) {
                                     buttonVariant = "secondary";
                                 }
@@ -308,13 +316,9 @@ export const DayButtonRow = memo(function DayButtonRow({
                                         <CircleSmall
                                             className={cn(
                                                 "h-2 w-2",
-                                                isPeriod && "text-rose-200",
-                                                isPredicted && "text-rose-400",
-                                                isFertility && "text-blue-400",
-                                                !isPeriod &&
-                                                    !isPredicted &&
-                                                    !isFertility &&
-                                                    "text-transparent"
+                                                isSexual &&
+                                                    "text-purple-500 fill-current",
+                                                !isSexual && "text-transparent"
                                             )}
                                         />
                                         <div className="text-sm lg:text-lg font-semibold">
