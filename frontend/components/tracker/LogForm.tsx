@@ -128,7 +128,7 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
     };
 
     return (
-        <Card.Card className="flex flex-col h-full gap-4">
+        <Card.Card className="flex flex-col h-full">
             <Card.CardHeader>
                 <Card.CardTitle>
                     Log Data for {date.toLocaleDateString()}

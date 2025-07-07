@@ -377,7 +377,7 @@ export default function Tracker() {
 
     return (
         <div className="min-h-screen">
-            <div className="min-h-screen container mx-auto px-4 pt-20 pb-16 flex flex-col">
+            <div className="min-h-screen container mx-auto px-8 pt-20 pb-16 flex flex-col">
                 <Tabs
                     value={selectedTab}
                     onValueChange={setSelectedTab}
@@ -464,10 +464,7 @@ export default function Tracker() {
                         </div>
                     </TabsContent>
 
-                    <TabsContent
-                        value="log"
-                        className="flex-1 flex flex-col mt-4"
-                    >
+                    <TabsContent value="log" className="flex-1 flex flex-col">
                         <div className="grid md:grid-cols-[auto_1fr] gap-4 flex-1">
                             <ButtonRowCalendar
                                 currentDate={date || new Date()}
@@ -494,7 +491,7 @@ export default function Tracker() {
 
                     <TabsContent
                         value="settings"
-                        className="flex-1 flex flex-col mt-4"
+                        className="flex-1 flex flex-col"
                     >
                         <div className="flex-1 flex justify-center items-start">
                             <CycleSettingsForm
