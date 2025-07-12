@@ -97,48 +97,7 @@ const energyOptions = [
     { value: "low", label: "Low Energy", icon: Moon, color: "text-blue-500" },
 ];
 
-const periodOptions = [
-    {
-        value: "on",
-        label: "On Period",
-        color: "text-rose-500",
-        bgColor: "bg-rose-50 dark:bg-rose-950/20",
-    },
-    {
-        value: "starting",
-        label: "Starting",
-        color: "text-pink-500",
-        bgColor: "bg-pink-50 dark:bg-pink-950/20",
-    },
-    {
-        value: "ending",
-        label: "Ending",
-        color: "text-purple-500",
-        bgColor: "bg-purple-50 dark:bg-purple-950/20",
-    },
-    {
-        value: "off",
-        label: "Not on Period",
-        color: "text-gray-500",
-        bgColor: "bg-gray-50 dark:bg-gray-950/20",
-    },
-];
-
 const sexualMoodOptions = [
-    {
-        value: "very_horny",
-        label: "Very Horny",
-        icon: Heart,
-        color: "text-red-500",
-        bgColor: "bg-red-50 dark:bg-red-950/20",
-    },
-    {
-        value: "horny",
-        label: "Horny",
-        icon: Heart,
-        color: "text-pink-500",
-        bgColor: "bg-pink-50 dark:bg-pink-950/20",
-    },
     {
         value: "interested",
         label: "Interested",
@@ -346,7 +305,7 @@ export default function Checkin() {
     const showPartialPartnerData = false;
 
     return (
-        <div className="container mx-auto flex flex-col pt-20 pb-12 lg:pb-16 px-4 lg:px-8 gap-6 max-w-2xl">
+        <div className="container mx-auto flex flex-col pt-20 pb-12 lg:pb-16 px-4 lg:px-8 gap-6">
             {/* Header */}
             <div className="flex flex-col items-center text-center">
                 <h1 className="text-3xl font-bold mb-2">Daily Check-in</h1>
@@ -366,415 +325,44 @@ export default function Checkin() {
                 </div>
             </div>
 
-            {/* Your Check-in */}
-            <Card.Card>
-                <Card.CardHeader>
-                    <Card.CardTitle className="flex items-center gap-2">
-                        <User className="w-5 h-5" />
-                        Your Check-in
-                    </Card.CardTitle>
-                </Card.CardHeader>
-                <Card.CardContent className="space-y-6">
-                    {todayCheckin ? (
-                        // Show existing checkin
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-3">
-                                <Avatar className="w-12 h-12">
-                                    <AvatarImage
-                                        src=""
-                                        alt={authState.user?.name || "You"}
-                                    />
-                                    <AvatarFallback className="text-lg font-semibold">
-                                        {getInitials(authState.user?.name)}
-                                    </AvatarFallback>
-                                </Avatar>
-                                <div>
-                                    <div className="font-medium">
-                                        {authState.user?.name || "You"}
-                                    </div>
-                                    <div className="text-sm text-muted-foreground">
-                                        Checked in at{" "}
-                                        {formatTime(todayCheckin.createdAt)}
-                                    </div>
-                                </div>
-                                <Badge variant="outline" className="ml-auto">
-                                    <CheckCircle className="w-4 h-4 mr-1" />
-                                    Completed
-                                </Badge>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="text-center p-4 rounded-lg bg-card border">
-                                    <div className="text-2xl mb-2">
-                                        {(() => {
-                                            const moodOption = moodOptions.find(
-                                                (m) =>
-                                                    m.value ===
-                                                    todayCheckin.mood
-                                            );
-                                            const IconComponent =
-                                                moodOption?.icon;
-                                            return IconComponent ? (
-                                                <IconComponent className="mx-auto w-8 h-8 text-muted-foreground" />
-                                            ) : null;
-                                        })()}
-                                    </div>
-                                    <div className="font-medium text-sm">
-                                        {
-                                            moodOptions.find(
-                                                (m) =>
-                                                    m.value ===
-                                                    todayCheckin.mood
-                                            )?.label
-                                        }
-                                    </div>
-                                </div>
-                                <div className="text-center p-4 rounded-lg bg-card border">
-                                    <div className="text-2xl mb-2">
-                                        {(() => {
-                                            const energyOption =
-                                                energyOptions.find(
-                                                    (e) =>
-                                                        e.value ===
-                                                        todayCheckin.energy
-                                                );
-                                            const IconComponent =
-                                                energyOption?.icon;
-                                            return IconComponent ? (
-                                                <IconComponent className="mx-auto w-8 h-8 text-muted-foreground" />
-                                            ) : null;
-                                        })()}
-                                    </div>
-                                    <div className="font-medium text-sm">
-                                        {
-                                            energyOptions.find(
-                                                (e) =>
-                                                    e.value ===
-                                                    todayCheckin.energy
-                                            )?.label
-                                        }
-                                    </div>
-                                </div>
-                                {canSeePeriodData &&
-                                    todayCheckin.periodStatus && (
-                                        <div className="text-center p-4 rounded-lg bg-card border">
-                                            <div className="text-2xl mb-2">
-                                                <Heart className="mx-auto w-8 h-8 text-muted-foreground" />
-                                            </div>
-                                            <div className="font-medium text-sm">
-                                                {
-                                                    periodOptions.find(
-                                                        (p) =>
-                                                            p.value ===
-                                                            todayCheckin.periodStatus
-                                                    )?.label
-                                                }
-                                            </div>
-                                        </div>
-                                    )}
-                                {todayCheckin.sexualMood && (
-                                    <div className="text-center p-4 rounded-lg bg-card border">
-                                        <div className="text-2xl mb-2">
-                                            {(() => {
-                                                const sexualMoodOption =
-                                                    sexualMoodOptions.find(
-                                                        (s) =>
-                                                            s.value ===
-                                                            todayCheckin.sexualMood
-                                                    );
-                                                const IconComponent =
-                                                    sexualMoodOption?.icon;
-                                                return IconComponent ? (
-                                                    <IconComponent className="mx-auto w-8 h-8 text-muted-foreground" />
-                                                ) : null;
-                                            })()}
-                                        </div>
-                                        <div className="font-medium text-sm">
-                                            {
-                                                sexualMoodOptions.find(
-                                                    (s) =>
-                                                        s.value ===
-                                                        todayCheckin.sexualMood
-                                                )?.label
-                                            }
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {todayCheckin.note && (
-                                <div className="p-4 rounded-lg bg-muted/50">
-                                    <div className="font-medium text-sm mb-1">
-                                        Note:
-                                    </div>
-                                    <div className="text-sm">
-                                        {todayCheckin.note}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    ) : (
-                        // Show checkin form
-                        <div className="space-y-6">
-                            {/* Mood Selection */}
-                            <div>
-                                <h3 className="font-medium mb-3">
-                                    How are you feeling today?
-                                </h3>
-                                <div className="grid grid-cols-5 gap-2">
-                                    {moodOptions.map((mood) => (
-                                        <Button
-                                            key={mood.value}
-                                            variant={
-                                                currentMood === mood.value
-                                                    ? "default"
-                                                    : "outline"
-                                            }
-                                            className={cn(
-                                                "flex flex-col items-center gap-1 h-auto p-3",
-                                                currentMood === mood.value &&
-                                                    mood.bgColor
-                                            )}
-                                            onClick={() =>
-                                                setCurrentMood(
-                                                    mood.value as any
-                                                )
-                                            }
-                                        >
-                                            <mood.icon
-                                                className={cn(
-                                                    "w-6 h-6",
-                                                    mood.color
-                                                )}
-                                            />
-                                            <span className="text-xs">
-                                                {mood.label}
-                                            </span>
-                                        </Button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Energy Level */}
-                            <div>
-                                <h3 className="font-medium mb-3">
-                                    Energy Level
-                                </h3>
-                                <div className="grid grid-cols-3 gap-2">
-                                    {energyOptions.map((energy) => (
-                                        <Button
-                                            key={energy.value}
-                                            variant={
-                                                currentEnergy === energy.value
-                                                    ? "default"
-                                                    : "outline"
-                                            }
-                                            className="flex flex-col items-center gap-1 h-auto p-3"
-                                            onClick={() =>
-                                                setCurrentEnergy(
-                                                    energy.value as any
-                                                )
-                                            }
-                                        >
-                                            <energy.icon
-                                                className={cn(
-                                                    "w-6 h-6",
-                                                    energy.color
-                                                )}
-                                            />
-                                            <span className="text-xs">
-                                                {energy.label}
-                                            </span>
-                                        </Button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Period Status */}
-                            <div>
-                                <h3 className="font-medium mb-3">
-                                    Period Status (Optional)
-                                </h3>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                    {periodOptions.map((period) => (
-                                        <Button
-                                            key={period.value}
-                                            variant={
-                                                currentPeriod === period.value
-                                                    ? "default"
-                                                    : "outline"
-                                            }
-                                            className={cn(
-                                                "flex flex-col items-center gap-1 h-auto p-3",
-                                                currentPeriod ===
-                                                    period.value &&
-                                                    period.bgColor
-                                            )}
-                                            onClick={() =>
-                                                setCurrentPeriod(
-                                                    period.value as any
-                                                )
-                                            }
-                                        >
-                                            <Heart
-                                                className={cn(
-                                                    "w-5 h-5",
-                                                    period.color
-                                                )}
-                                            />
-                                            <span className="text-xs">
-                                                {period.label}
-                                            </span>
-                                        </Button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Sexual Mood */}
-                            <div>
-                                <h3 className="font-medium mb-3">
-                                    Sexual Mood (Optional)
-                                </h3>
-                                <div className="grid grid-cols-5 gap-2">
-                                    {sexualMoodOptions.map((sexualMood) => (
-                                        <Button
-                                            key={sexualMood.value}
-                                            variant={
-                                                currentSexualMood ===
-                                                sexualMood.value
-                                                    ? "default"
-                                                    : "outline"
-                                            }
-                                            className={cn(
-                                                "flex flex-col items-center gap-1 h-auto p-3",
-                                                currentSexualMood ===
-                                                    sexualMood.value &&
-                                                    sexualMood.bgColor
-                                            )}
-                                            onClick={() =>
-                                                setCurrentSexualMood(
-                                                    sexualMood.value as any
-                                                )
-                                            }
-                                        >
-                                            <sexualMood.icon
-                                                className={cn(
-                                                    "w-5 h-5",
-                                                    sexualMood.color
-                                                )}
-                                            />
-                                            <span className="text-xs">
-                                                {sexualMood.label}
-                                            </span>
-                                        </Button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Note */}
-                            <div>
-                                <h3 className="font-medium mb-3">
-                                    Add a note (Optional)
-                                </h3>
-                                <Textarea
-                                    placeholder="Share something about your day..."
-                                    value={note}
-                                    onChange={(e) => setNote(e.target.value)}
-                                    className="min-h-[100px]"
-                                    maxLength={500}
-                                />
-                                <div className="text-xs text-muted-foreground mt-1 text-right">
-                                    {note.length}/500
-                                </div>
-                            </div>
-
-                            {/* Submit Button */}
-                            <Button
-                                onClick={handleSubmit}
-                                disabled={
-                                    !currentMood ||
-                                    !currentEnergy ||
-                                    isSubmitting
-                                }
-                                className="w-full"
-                                size="lg"
-                            >
-                                {isSubmitting ? (
-                                    <>
-                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                        Submitting...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Send className="w-4 h-4 mr-2" />
-                                        Share with Partner
-                                    </>
-                                )}
-                            </Button>
-                        </div>
-                    )}
-                </Card.CardContent>
-            </Card.Card>
-
-            {/* Partner's Check-in */}
-            {hasPartner && partnerCheckin && (
-                <Card.Card>
+            <div className="flex items-center justify-center lg:items-stretch gap-4 flex-col lg:flex-row">
+                <Card.Card className="w-full h-full flex flex-col">
                     <Card.CardHeader>
                         <Card.CardTitle className="flex items-center gap-2">
-                            <MessageCircle className="w-5 h-5" />
-                            Partner's Check-in
-                            <div className="ml-auto flex gap-2">
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={testConnection}
-                                    className="text-xs"
-                                >
-                                    Debug
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={loadPartnerData}
-                                    disabled={isRefreshingPartner}
-                                >
-                                    <RefreshCw
-                                        className={cn(
-                                            "w-4 h-4",
-                                            isRefreshingPartner &&
-                                                "animate-spin"
-                                        )}
-                                    />
-                                </Button>
-                            </div>
+                            <User className="w-5 h-5" />
+                            Your Check-in
                         </Card.CardTitle>
                     </Card.CardHeader>
-                    <Card.CardContent>
-                        {partnerCheckin ? (
+                    <Card.CardContent className="space-y-6 flex-1">
+                        {todayCheckin ? (
+                            // Show existing checkin
                             <div className="space-y-4">
                                 <div className="flex items-center gap-3">
                                     <Avatar className="w-12 h-12">
                                         <AvatarImage
                                             src=""
-                                            alt={partnerCheckin.userName}
+                                            alt={authState.user?.name || "You"}
                                         />
                                         <AvatarFallback className="text-lg font-semibold">
-                                            {getInitials(
-                                                partnerCheckin.userName
-                                            )}
+                                            {getInitials(authState.user?.name)}
                                         </AvatarFallback>
                                     </Avatar>
                                     <div>
                                         <div className="font-medium">
-                                            {partnerCheckin.userName}
+                                            {authState.user?.name || "You"}
                                         </div>
                                         <div className="text-sm text-muted-foreground">
                                             Checked in at{" "}
-                                            {formatTime(
-                                                partnerCheckin.createdAt
-                                            )}
+                                            {formatTime(todayCheckin.createdAt)}
                                         </div>
                                     </div>
+                                    <Badge
+                                        variant="outline"
+                                        className="ml-auto"
+                                    >
+                                        <CheckCircle className="w-4 h-4 mr-1" />
+                                        Completed
+                                    </Badge>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -785,7 +373,7 @@ export default function Checkin() {
                                                     moodOptions.find(
                                                         (m) =>
                                                             m.value ===
-                                                            partnerCheckin.mood
+                                                            todayCheckin.mood
                                                     );
                                                 const IconComponent =
                                                     moodOption?.icon;
@@ -799,7 +387,7 @@ export default function Checkin() {
                                                 moodOptions.find(
                                                     (m) =>
                                                         m.value ===
-                                                        partnerCheckin.mood
+                                                        todayCheckin.mood
                                                 )?.label
                                             }
                                         </div>
@@ -811,7 +399,7 @@ export default function Checkin() {
                                                     energyOptions.find(
                                                         (e) =>
                                                             e.value ===
-                                                            partnerCheckin.energy
+                                                            todayCheckin.energy
                                                     );
                                                 const IconComponent =
                                                     energyOption?.icon;
@@ -825,30 +413,12 @@ export default function Checkin() {
                                                 energyOptions.find(
                                                     (e) =>
                                                         e.value ===
-                                                        partnerCheckin.energy
+                                                        todayCheckin.energy
                                                 )?.label
                                             }
                                         </div>
                                     </div>
-                                    {/* Period status */}
-                                    {partnerCheckin.periodStatus && (
-                                        <div className="text-center p-4 rounded-lg bg-card border">
-                                            <div className="text-2xl mb-2">
-                                                <Heart className="mx-auto w-8 h-8 text-muted-foreground" />
-                                            </div>
-                                            <div className="font-medium text-sm">
-                                                {
-                                                    periodOptions.find(
-                                                        (p) =>
-                                                            p.value ===
-                                                            partnerCheckin.periodStatus
-                                                    )?.label
-                                                }
-                                            </div>
-                                        </div>
-                                    )}
-                                    {/* Sexual mood */}
-                                    {partnerCheckin.sexualMood && (
+                                    {todayCheckin.sexualMood && (
                                         <div className="text-center p-4 rounded-lg bg-card border">
                                             <div className="text-2xl mb-2">
                                                 {(() => {
@@ -856,7 +426,7 @@ export default function Checkin() {
                                                         sexualMoodOptions.find(
                                                             (s) =>
                                                                 s.value ===
-                                                                partnerCheckin.sexualMood
+                                                                todayCheckin.sexualMood
                                                         );
                                                     const IconComponent =
                                                         sexualMoodOption?.icon;
@@ -870,7 +440,7 @@ export default function Checkin() {
                                                     sexualMoodOptions.find(
                                                         (s) =>
                                                             s.value ===
-                                                            partnerCheckin.sexualMood
+                                                            todayCheckin.sexualMood
                                                     )?.label
                                                 }
                                             </div>
@@ -878,19 +448,397 @@ export default function Checkin() {
                                     )}
                                 </div>
 
-                                {/* Note */}
-                                {partnerCheckin.note && (
+                                {todayCheckin.note && (
                                     <div className="p-4 rounded-lg bg-muted/50">
                                         <div className="font-medium text-sm mb-1">
                                             Note:
                                         </div>
                                         <div className="text-sm">
-                                            {partnerCheckin.note}
+                                            {todayCheckin.note}
                                         </div>
                                     </div>
                                 )}
                             </div>
                         ) : (
+                            // Show checkin form
+                            <div className="space-y-6">
+                                {/* Mood Selection */}
+                                <div>
+                                    <h3 className="font-medium mb-3">
+                                        How are you feeling today?
+                                    </h3>
+                                    <div className="grid grid-cols-5 gap-2">
+                                        {moodOptions.map((mood) => (
+                                            <Button
+                                                key={mood.value}
+                                                variant={
+                                                    currentMood === mood.value
+                                                        ? "default"
+                                                        : "outline"
+                                                }
+                                                className={cn(
+                                                    "flex flex-col items-center gap-1 h-auto p-3",
+                                                    currentMood ===
+                                                        mood.value &&
+                                                        mood.bgColor
+                                                )}
+                                                onClick={() =>
+                                                    setCurrentMood(
+                                                        mood.value as any
+                                                    )
+                                                }
+                                            >
+                                                <mood.icon
+                                                    className={cn(
+                                                        "w-6 h-6",
+                                                        mood.color
+                                                    )}
+                                                />
+                                                <span className="text-xs">
+                                                    {mood.label}
+                                                </span>
+                                            </Button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Energy Level */}
+                                <div>
+                                    <h3 className="font-medium mb-3">
+                                        How's your energy level today?
+                                    </h3>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {energyOptions.map((energy) => (
+                                            <Button
+                                                key={energy.value}
+                                                variant={
+                                                    currentEnergy ===
+                                                    energy.value
+                                                        ? "default"
+                                                        : "outline"
+                                                }
+                                                className="flex flex-col items-center gap-1 h-auto p-3"
+                                                onClick={() =>
+                                                    setCurrentEnergy(
+                                                        energy.value as any
+                                                    )
+                                                }
+                                            >
+                                                <energy.icon
+                                                    className={cn(
+                                                        "w-6 h-6",
+                                                        energy.color
+                                                    )}
+                                                />
+                                                <span className="text-xs">
+                                                    {energy.label}
+                                                </span>
+                                            </Button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Sexual Mood */}
+                                <div>
+                                    <h3 className="font-medium mb-3">
+                                        Are you in the mood today? (Optional)
+                                    </h3>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {sexualMoodOptions.map((sexualMood) => (
+                                            <Button
+                                                key={sexualMood.value}
+                                                variant={
+                                                    currentSexualMood ===
+                                                    sexualMood.value
+                                                        ? "default"
+                                                        : "outline"
+                                                }
+                                                className={cn(
+                                                    "flex flex-col items-center gap-1 h-auto p-3",
+                                                    currentSexualMood ===
+                                                        sexualMood.value &&
+                                                        sexualMood.bgColor
+                                                )}
+                                                onClick={() =>
+                                                    setCurrentSexualMood(
+                                                        sexualMood.value as any
+                                                    )
+                                                }
+                                            >
+                                                <sexualMood.icon
+                                                    className={cn(
+                                                        "w-5 h-5",
+                                                        sexualMood.color
+                                                    )}
+                                                />
+                                                <span className="text-xs">
+                                                    {sexualMood.label}
+                                                </span>
+                                            </Button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Note */}
+                                <div>
+                                    <h3 className="font-medium mb-3">
+                                        Add a note (Optional)
+                                    </h3>
+                                    <Textarea
+                                        placeholder="Share something about your day..."
+                                        value={note}
+                                        onChange={(e) =>
+                                            setNote(e.target.value)
+                                        }
+                                        className="min-h-[100px]"
+                                        maxLength={500}
+                                    />
+                                    <div className="text-xs text-muted-foreground mt-1 text-right">
+                                        {note.length}/500
+                                    </div>
+                                </div>
+
+                                {/* Submit Button */}
+                                <Button
+                                    onClick={handleSubmit}
+                                    disabled={
+                                        !currentMood ||
+                                        !currentEnergy ||
+                                        isSubmitting
+                                    }
+                                    className="w-full"
+                                    size="lg"
+                                >
+                                    {isSubmitting ? (
+                                        <>
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                            Submitting...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Send className="w-4 h-4 mr-2" />
+                                            Share with Partner
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                        )}
+                    </Card.CardContent>
+                </Card.Card>
+
+                {hasPartner && partnerCheckin && (
+                    <Card.Card className="w-full h-full flex flex-col">
+                        <Card.CardHeader>
+                            <Card.CardTitle className="flex items-center gap-2">
+                                <MessageCircle className="w-5 h-5" />
+                                Partner's Check-in
+                                <div className="ml-auto flex gap-2">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={testConnection}
+                                        className="text-xs"
+                                    >
+                                        Debug
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={loadPartnerData}
+                                        disabled={isRefreshingPartner}
+                                    >
+                                        <RefreshCw
+                                            className={cn(
+                                                "w-4 h-4",
+                                                isRefreshingPartner &&
+                                                    "animate-spin"
+                                            )}
+                                        />
+                                    </Button>
+                                </div>
+                            </Card.CardTitle>
+                        </Card.CardHeader>
+                        <Card.CardContent className="flex-1">
+                            {partnerCheckin ? (
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-3">
+                                        <Avatar className="w-12 h-12">
+                                            <AvatarImage
+                                                src=""
+                                                alt={partnerCheckin.userName}
+                                            />
+                                            <AvatarFallback className="text-lg font-semibold">
+                                                {getInitials(
+                                                    partnerCheckin.userName
+                                                )}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <div>
+                                            <div className="font-medium">
+                                                {partnerCheckin.userName}
+                                            </div>
+                                            <div className="text-sm text-muted-foreground">
+                                                Checked in at{" "}
+                                                {formatTime(
+                                                    partnerCheckin.createdAt
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="text-center p-4 rounded-lg bg-card border">
+                                            <div className="text-2xl mb-2">
+                                                {(() => {
+                                                    const moodOption =
+                                                        moodOptions.find(
+                                                            (m) =>
+                                                                m.value ===
+                                                                partnerCheckin.mood
+                                                        );
+                                                    const IconComponent =
+                                                        moodOption?.icon;
+                                                    return IconComponent ? (
+                                                        <IconComponent className="mx-auto w-8 h-8 text-muted-foreground" />
+                                                    ) : null;
+                                                })()}
+                                            </div>
+                                            <div className="font-medium text-sm">
+                                                {
+                                                    moodOptions.find(
+                                                        (m) =>
+                                                            m.value ===
+                                                            partnerCheckin.mood
+                                                    )?.label
+                                                }
+                                            </div>
+                                        </div>
+                                        <div className="text-center p-4 rounded-lg bg-card border">
+                                            <div className="text-2xl mb-2">
+                                                {(() => {
+                                                    const energyOption =
+                                                        energyOptions.find(
+                                                            (e) =>
+                                                                e.value ===
+                                                                partnerCheckin.energy
+                                                        );
+                                                    const IconComponent =
+                                                        energyOption?.icon;
+                                                    return IconComponent ? (
+                                                        <IconComponent className="mx-auto w-8 h-8 text-muted-foreground" />
+                                                    ) : null;
+                                                })()}
+                                            </div>
+                                            <div className="font-medium text-sm">
+                                                {
+                                                    energyOptions.find(
+                                                        (e) =>
+                                                            e.value ===
+                                                            partnerCheckin.energy
+                                                    )?.label
+                                                }
+                                            </div>
+                                        </div>
+                                        {/* Sexual mood */}
+                                        {partnerCheckin.sexualMood && (
+                                            <div className="text-center p-4 rounded-lg bg-card border">
+                                                <div className="text-2xl mb-2">
+                                                    {(() => {
+                                                        const sexualMoodOption =
+                                                            sexualMoodOptions.find(
+                                                                (s) =>
+                                                                    s.value ===
+                                                                    partnerCheckin.sexualMood
+                                                            );
+                                                        const IconComponent =
+                                                            sexualMoodOption?.icon;
+                                                        return IconComponent ? (
+                                                            <IconComponent className="mx-auto w-8 h-8 text-muted-foreground" />
+                                                        ) : null;
+                                                    })()}
+                                                </div>
+                                                <div className="font-medium text-sm">
+                                                    {
+                                                        sexualMoodOptions.find(
+                                                            (s) =>
+                                                                s.value ===
+                                                                partnerCheckin.sexualMood
+                                                        )?.label
+                                                    }
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Note */}
+                                    {partnerCheckin.note && (
+                                        <div className="p-4 rounded-lg bg-muted/50">
+                                            <div className="font-medium text-sm mb-1">
+                                                Note:
+                                            </div>
+                                            <div className="text-sm">
+                                                {partnerCheckin.note}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="text-center py-8 text-muted-foreground">
+                                    <Clock className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                                    <p>
+                                        Your partner hasn't checked in yet today
+                                    </p>
+                                    <p className="text-sm">
+                                        They'll appear here once they share
+                                        their mood
+                                    </p>
+                                </div>
+                            )}
+                        </Card.CardContent>
+                    </Card.Card>
+                )}
+
+                {!hasPartner && (
+                    <Card.Card className="w-full h-full flex flex-col">
+                        <Card.CardHeader>
+                            <Card.CardTitle className="flex items-center gap-2">
+                                <MessageCircle className="w-5 h-5" />
+                                Partner Connection
+                            </Card.CardTitle>
+                        </Card.CardHeader>
+                        <Card.CardContent className="flex-1 flex flex-col items-center justify-center">
+                            <div className="text-center py-8 text-muted-foreground">
+                                <User className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                                <p>
+                                    Connect with a partner to share daily
+                                    check-ins
+                                </p>
+                                <p className="text-sm">
+                                    Go to your profile to manage connections
+                                </p>
+                                <Button
+                                    variant="outline"
+                                    className="mt-4"
+                                    onClick={() =>
+                                        (window.location.href = "/profile")
+                                    }
+                                >
+                                    Go to Profile
+                                </Button>
+                            </div>
+                        </Card.CardContent>
+                    </Card.Card>
+                )}
+
+                {hasPartner && !partnerCheckin && (
+                    <Card.Card className="w-full h-full flex flex-col">
+                        <Card.CardHeader>
+                            <Card.CardTitle className="flex items-center gap-2">
+                                <MessageCircle className="w-5 h-5" />
+                                Partner's Check-in
+                            </Card.CardTitle>
+                        </Card.CardHeader>
+                        <Card.CardContent className="flex-1 flex flex-col items-center justify-center">
                             <div className="text-center py-8 text-muted-foreground">
                                 <Clock className="w-12 h-12 mx-auto mb-3 opacity-50" />
                                 <p>Your partner hasn't checked in yet today</p>
@@ -898,79 +846,27 @@ export default function Checkin() {
                                     They'll appear here once they share their
                                     mood
                                 </p>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={loadPartnerData}
+                                    disabled={isRefreshingPartner}
+                                    className="mt-4"
+                                >
+                                    <RefreshCw
+                                        className={cn(
+                                            "w-4 h-4 mr-2",
+                                            isRefreshingPartner &&
+                                                "animate-spin"
+                                        )}
+                                    />
+                                    Refresh
+                                </Button>
                             </div>
-                        )}
-                    </Card.CardContent>
-                </Card.Card>
-            )}
-
-            {/* No Partner Message */}
-            {!hasPartner && (
-                <Card.Card>
-                    <Card.CardHeader>
-                        <Card.CardTitle className="flex items-center gap-2">
-                            <MessageCircle className="w-5 h-5" />
-                            Partner Connection
-                        </Card.CardTitle>
-                    </Card.CardHeader>
-                    <Card.CardContent>
-                        <div className="text-center py-8 text-muted-foreground">
-                            <User className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                            <p>
-                                Connect with a partner to share daily check-ins
-                            </p>
-                            <p className="text-sm">
-                                Go to your profile to manage connections
-                            </p>
-                            <Button
-                                variant="outline"
-                                className="mt-4"
-                                onClick={() =>
-                                    (window.location.href = "/profile")
-                                }
-                            >
-                                Go to Profile
-                            </Button>
-                        </div>
-                    </Card.CardContent>
-                </Card.Card>
-            )}
-
-            {/* Partner hasn't checked in message */}
-            {hasPartner && !partnerCheckin && (
-                <Card.Card>
-                    <Card.CardHeader>
-                        <Card.CardTitle className="flex items-center gap-2">
-                            <MessageCircle className="w-5 h-5" />
-                            Partner's Check-in
-                        </Card.CardTitle>
-                    </Card.CardHeader>
-                    <Card.CardContent>
-                        <div className="text-center py-8 text-muted-foreground">
-                            <Clock className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                            <p>Your partner hasn't checked in yet today</p>
-                            <p className="text-sm">
-                                They'll appear here once they share their mood
-                            </p>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={loadPartnerData}
-                                disabled={isRefreshingPartner}
-                                className="mt-4"
-                            >
-                                <RefreshCw
-                                    className={cn(
-                                        "w-4 h-4 mr-2",
-                                        isRefreshingPartner && "animate-spin"
-                                    )}
-                                />
-                                Refresh
-                            </Button>
-                        </div>
-                    </Card.CardContent>
-                </Card.Card>
-            )}
+                        </Card.CardContent>
+                    </Card.Card>
+                )}
+            </div>
         </div>
     );
 }
