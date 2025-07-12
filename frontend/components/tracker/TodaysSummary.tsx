@@ -18,17 +18,18 @@ import { Separator } from "@/components/ui/separator";
 interface TodaysSummaryProps {
     todaysData?: PeriodDay | null;
     // New props for enhanced features
-    daysUntilNextPeriod?: number | null;
-    daysUntilOvulation?: number | null;
-    currentCycleDay?: number | null;
+    daysUntilNextPeriod?: number | null | undefined;
+    daysUntilOvulation?: number | null | undefined;
+    currentCycleDay?: number | null | undefined;
     cycleLength?: number;
     hasPeriodData?: boolean;
     // New props for period status
     isTodayPeriodDay?: boolean;
     isFirstDayOfPeriod?: boolean;
     periodDaysSet?: Set<string>;
-    mostRecentPeriodStart?: Date | null;
+    mostRecentPeriodStart?: Date | null | undefined;
     periodDays?: string[]; // Array of period day dates for cycle calculation
+    isPartnerData?: boolean; // Whether this is showing partner's data
 }
 
 export function TodaysSummary({
@@ -43,6 +44,7 @@ export function TodaysSummary({
     periodDaysSet,
     mostRecentPeriodStart,
     periodDays,
+    isPartnerData = false,
 }: TodaysSummaryProps) {
     const symptomsCount = todaysData?.symptoms?.length || 0;
     const moodCount = todaysData?.mood?.length || 0;
@@ -130,12 +132,21 @@ export function TodaysSummary({
         const suggestions: string[] = [];
 
         if (!hasPeriodData) {
-            suggestions.push(
-                "Start tracking your period to get personalized insights"
-            );
-            suggestions.push(
-                "Log your first period day to begin cycle predictions"
-            );
+            if (isPartnerData) {
+                suggestions.push(
+                    "Your partner hasn't started tracking their period yet"
+                );
+                suggestions.push(
+                    "Once they begin tracking, you'll see their cycle insights here"
+                );
+            } else {
+                suggestions.push(
+                    "Start tracking your period to get personalized insights"
+                );
+                suggestions.push(
+                    "Log your first period day to begin cycle predictions"
+                );
+            }
             return suggestions;
         }
 
@@ -315,13 +326,17 @@ export function TodaysSummary({
             <Card.CardContent className="flex flex-col gap-4">
                 <Card.CardTitle className="flex items-center gap-2">
                     <CalendarIcon className="w-4 h-4" />
-                    <p className="text-lg">Today's Summary</p>
+                    <p className="text-lg">
+                        {isPartnerData
+                            ? "Partner's Summary"
+                            : "Today's Summary"}
+                    </p>
                 </Card.CardTitle>
 
                 <Separator orientation="horizontal" className="" />
 
                 {closestEvent && (
-                    <div className="border border-dashed rounded-lg p-4">
+                    <div className="inset-shadow-sm rounded-lg p-4">
                         <div className="flex items-center gap-4">
                             <closestEvent.icon
                                 className={`w-4 h-4 ${closestEvent.color}`}
@@ -357,7 +372,7 @@ export function TodaysSummary({
                 {/* Pregnancy Chance */}
                 {hasPeriodData && (
                     <div className="space-y-2">
-                        <div className="flex items-center border gap-4 border-dashed rounded-lg p-4">
+                        <div className="flex items-center gap-4 inset-shadow-sm rounded-lg p-4">
                             <Heart className="w-4 h-4 text-pink-500" />
                             <div className="flex flex-col">
                                 <p
@@ -376,14 +391,13 @@ export function TodaysSummary({
                     </div>
                 )}
 
-                {/* AI Suggestions */}
                 {suggestions.length > 0 && (
                     <div className="space-y-2 lg:space-y-4">
                         <div className="flex items-center gap-2">
                             <Lightbulb className="w-4 h-4 text-yellow-500" />
                             <p className="text-sm font-medium">Suggestions</p>
                         </div>
-                        <div className="space-y-2 border border-dashed rounded-lg px-2 py-4">
+                        <div className="space-y-2 inset-shadow-sm rounded-lg px-2 py-4">
                             {suggestions.map((suggestion, index) => (
                                 <div
                                     key={index}

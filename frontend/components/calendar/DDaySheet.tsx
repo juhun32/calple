@@ -79,7 +79,7 @@ export function DDaySheet({ ddays, updateDDay, deleteDDay }: DDaySheetProps) {
     });
 
     const renderTable = () => (
-        <div className="overflow-y-auto border rounded-lg">
+        <div className="overflow-y-auto shadow-sm rounded-lg bg-card">
             <Table.Table>
                 <Table.TableHeader>
                     <Table.TableRow>

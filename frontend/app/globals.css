@@ -178,9 +178,6 @@
   --sidebar-accent-foreground: oklch(0.4426 0.1653 352.3762);
   --sidebar-border: oklch(0.9311 0.0448 343.3135);
   --sidebar-ring: oklch(0.6002 0.2414 0.1348);
-  --font-sans: Poppins, sans-serif;
-  --font-serif: Playfair Display, serif;
-  --font-mono: Space Mono, monospace;
   --radius: 0.5rem;
   --shadow-2xs: 0px 3px 0px 0px hsl(330 70% 30% / 0.09);
   --shadow-xs: 0px 3px 0px 0px hsl(330 70% 30% / 0.09);

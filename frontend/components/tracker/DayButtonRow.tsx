@@ -85,6 +85,35 @@ export const DayButtonRow = memo(function DayButtonRow({
         onPeriodToggle(date);
     };
 
+    // Get the number of days to show based on screen size
+    const getDaysPerPage = () => {
+        if (typeof window !== "undefined") {
+            return window.innerWidth < 768 ? 7 : 11; // 7 days for mobile, 11 for desktop
+        }
+        return 11; // Default for SSR
+    };
+
+    const [daysPerPage, setDaysPerPage] = useState(11); // Always start with 11 for SSR consistency
+    const [isClient, setIsClient] = useState(false);
+
+    // Set client flag and initial days per page after hydration
+    useEffect(() => {
+        setIsClient(true);
+        setDaysPerPage(getDaysPerPage());
+    }, []);
+
+    // Update days per page when window resizes
+    useEffect(() => {
+        if (!isClient) return; // Only run on client
+
+        const handleResize = () => {
+            setDaysPerPage(getDaysPerPage());
+        };
+
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, [isClient]);
+
     const allDates = useMemo(() => {
         const today = new Date();
         const dates = [];
@@ -102,19 +131,19 @@ export const DayButtonRow = memo(function DayButtonRow({
 
     useEffect(() => {
         const todayIndex = 38;
-        const pageForToday = Math.floor(todayIndex / 11);
+        const pageForToday = Math.floor(todayIndex / daysPerPage);
         setCurrentPage(pageForToday);
-    }, [allDates]);
+    }, [allDates, daysPerPage]);
 
     const getCurrentPageDates = () => {
-        const startIndex = currentPage * 11;
-        return allDates.slice(startIndex, startIndex + 11);
+        const startIndex = currentPage * daysPerPage;
+        return allDates.slice(startIndex, startIndex + daysPerPage);
     };
 
     const currentPageDates = getCurrentPageDates();
 
     const paginate = (newDirection: number) => {
-        const maxPage = Math.floor(allDates.length / 11) - 1;
+        const maxPage = Math.floor(allDates.length / daysPerPage) - 1;
         const newPageIndex = currentPage + newDirection;
 
         if (newPageIndex >= 0 && newPageIndex <= maxPage) {
@@ -132,10 +161,6 @@ export const DayButtonRow = memo(function DayButtonRow({
                     date.getMonth() === today.getMonth() &&
                     date.getFullYear() === today.getFullYear()
             );
-
-            // if (todayInPage && !isSelected(todayInPage)) {
-            //     onDateSelect(todayInPage);
-            // }
         }
     }, [currentPage, currentPageDates, onDateSelect]);
 
@@ -168,9 +193,9 @@ export const DayButtonRow = memo(function DayButtonRow({
         const swipe = swipePower(offset.x, velocity.x);
 
         if (swipe < -swipeConfidenceThreshold) {
-            paginate(1); // Swipe left, go to next page
+            paginate(1);
         } else if (swipe > swipeConfidenceThreshold) {
-            paginate(-1); // Swipe right, go to previous page
+            paginate(-1);
         }
     };
 
@@ -188,10 +213,16 @@ export const DayButtonRow = memo(function DayButtonRow({
                         >
                             <ChevronLeft className="w-4 h-4" />
                         </Button>
-                        <span className="text-center">
+                        <span className="flex items-center justify-center text-center rounded w-40 h-7 inset-shadow-sm bg-background">
                             {(() => {
-                                const today = new Date();
-                                return today.toLocaleDateString("en-US", {
+                                // Calculate middle day index based on days per page
+                                const middleDayIndex = Math.floor(
+                                    daysPerPage / 2
+                                );
+                                const middleDate =
+                                    currentPageDates[middleDayIndex] ||
+                                    new Date();
+                                return middleDate.toLocaleDateString("en-US", {
                                     month: "long",
                                     day: "numeric",
                                     year: "numeric",
@@ -204,7 +235,7 @@ export const DayButtonRow = memo(function DayButtonRow({
                             onClick={() => paginate(1)}
                             disabled={
                                 currentPage >=
-                                Math.floor(allDates.length / 11) - 1
+                                Math.floor(allDates.length / daysPerPage) - 1
                             }
                             className="p-1"
                         >
@@ -250,7 +281,7 @@ export const DayButtonRow = memo(function DayButtonRow({
                                     | "ghost"
                                     | "link" = "outline";
                                 let className =
-                                    "w-6 sm:w-10 md:w-12 h-24 rounded-lg text-xs font-medium transition-all duration-200 flex flex-col items-center justify-center p-0 has-[>svg]:px-0";
+                                    "w-7 sm:w-10 md:w-12 h-24 rounded-lg text-xs font-medium flex flex-col items-center justify-center p-0 has-[>svg]:px-0";
 
                                 if (isPeriod) {
                                     buttonVariant = "default";
@@ -333,19 +364,22 @@ export const DayButtonRow = memo(function DayButtonRow({
 
                 <div className="text-center pt-2">
                     <p className="flex lg:hidden text-xs text-muted-foreground justify-center">
-                        Tap to log period • Drag to navigate
+                        Tap to log period - Drag to navigate
                     </p>
                     <div className="hidden lg:flex items-center justify-center gap-2">
                         <Tooltip.Tooltip>
                             <Tooltip.TooltipTrigger asChild>
-                                <Button variant="ghost" className="h-4 w-4">
+                                <Button
+                                    variant="ghost"
+                                    className="h-fit w-fit has-[>svg]:px-1 has-[>svg]:py-1"
+                                >
                                     <Info />
                                 </Button>
                             </Tooltip.TooltipTrigger>
                             <Tooltip.TooltipContent>
                                 <p>
-                                    Left-click to log period • Right-click to
-                                    view details • Drag to navigate
+                                    Left click to log period - Right click to
+                                    view details - Drag to navigate
                                 </p>
                             </Tooltip.TooltipContent>
                         </Tooltip.Tooltip>

@@ -85,14 +85,16 @@ export function CycleSettingsForm({
     return (
         <Card.Card className="w-full gap-4">
             <Card.CardHeader>
-                <Card.CardTitle className="flex items-center gap-2">
-                    <Settings className="w-4 h-4" />
-                    Cycle Settings
-                </Card.CardTitle>
-                <Card.CardDescription className="pt-2">
-                    Configure your cycle and period length for accurate
-                    predictions
-                </Card.CardDescription>
+                <div className="p-4 inset-shadow-sm rounded-lg bg-card">
+                    <Card.CardTitle className="flex items-center gap-2">
+                        <Settings className="w-4 h-4" />
+                        Cycle Settings
+                    </Card.CardTitle>
+                    <Card.CardDescription className="pt-2">
+                        Configure your cycle and period length for accurate
+                        predictions
+                    </Card.CardDescription>
+                </div>
             </Card.CardHeader>
             <Card.CardContent>
                 <form onSubmit={handleSubmit} className="space-y-8">
@@ -164,6 +166,7 @@ export function CycleSettingsForm({
                     <div className="w-full flex justify-end">
                         <Button
                             type="submit"
+                            size={"sm"}
                             className="w-fit flex items-center gap-2 px-4"
                             disabled={isLoading}
                         >

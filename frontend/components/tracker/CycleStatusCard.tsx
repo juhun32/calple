@@ -7,13 +7,14 @@ import { Separator } from "../ui/separator";
 import { Button } from "../ui/button";
 
 interface CycleStatusCardProps {
-    currentCycleDay: number | null;
+    currentCycleDay: number | null | undefined;
     cycleLength: number;
-    daysUntilNextPeriod: number | null;
-    nextPeriod: Date | null;
+    daysUntilNextPeriod: number | null | undefined;
+    nextPeriod: Date | null | undefined;
     hasPeriodData: boolean;
-    fertileStart: Date | null;
-    fertileEnd: Date | null;
+    fertileStart: Date | null | undefined;
+    fertileEnd: Date | null | undefined;
+    isPartnerData?: boolean;
 }
 
 export function CycleStatusCard({
@@ -24,6 +25,7 @@ export function CycleStatusCard({
     hasPeriodData,
     fertileStart,
     fertileEnd,
+    isPartnerData = false,
 }: CycleStatusCardProps) {
     if (!hasPeriodData) {
         return (
@@ -32,12 +34,14 @@ export function CycleStatusCard({
                     <Calendar className="w-8 h-8 text-muted-foreground" />
                     <div className="mt-4">
                         <h2 className="text-sm font-semibold">
-                            No Period Data Yet
+                            {isPartnerData
+                                ? "No Partner Data Yet"
+                                : "No Period Data Yet"}
                         </h2>
                         <p className="text-sm text-muted-foreground">
-                            Start tracking your period by right-clicking on
-                            dates in the overview or calendar to mark them as
-                            period days.
+                            {isPartnerData
+                                ? "Your partner hasn't started tracking their period yet. Once they begin tracking, you'll see their cycle information here."
+                                : "Start tracking your period by right-clicking on dates in the overview or calendar to mark them as period days."}
                         </p>
                     </div>
                 </Card.CardContent>
@@ -49,11 +53,11 @@ export function CycleStatusCard({
         <Card.Card className="w-full h-full">
             <Card.CardContent>
                 <div className="flex items-baseline gap-2">
-                    <p className="text-xl font-semibold text-gray-900 dark:text-white">
-                        Day {currentCycleDay}
+                    <p className="text-lg font-semibold text-gray-900 dark:text-white h-7 px-2 inset-shadow-sm bg-background rounded">
+                        Day {currentCycleDay ?? "—"}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                        of your cycle
+                        of {isPartnerData ? "partner's" : "your"} cycle
                     </p>
                 </div>
 
@@ -63,70 +67,90 @@ export function CycleStatusCard({
                     <div className="flex items-baseline justify-between">
                         <div className="flex gap-1 lg:gap-2">
                             <span className="text-sm text-muted-foreground">
-                                {Math.round(
-                                    (currentCycleDay! / cycleLength) * 100
-                                )}
+                                {currentCycleDay
+                                    ? Math.round(
+                                          (currentCycleDay / cycleLength) * 100
+                                      )
+                                    : "—"}
                                 %
                             </span>
                         </div>
-                        <div className="text-right flex items-baseline gap-1 lg:gap-2">
-                            <div className="text-lg font-semibold">
-                                {daysUntilNextPeriod}
+                        <div className="flex items-baseline gap-1 text-center">
+                            <div className="text-lg font-semibold bg-background p-0 px-0 py-0 rounded h-7 w-7 inset-shadow-sm">
+                                {daysUntilNextPeriod ?? "—"}
                             </div>
                             <p className="text-sm text-muted-foreground">
-                                days until next period
+                                days until{" "}
+                                {isPartnerData ? "partner's" : "next"} period
                             </p>
                         </div>
                     </div>
                     <Progress
-                        value={(currentCycleDay! / cycleLength) * 100}
-                        className="h-3"
+                        value={
+                            currentCycleDay
+                                ? (currentCycleDay / cycleLength) * 100
+                                : 0
+                        }
+                        className="mt-1"
                     />
                 </div>
 
                 <div className="grid">
-                    <div className="mt-2 lg:mt-4 border border-dashed rounded-lg">
+                    <div className="mt-2 lg:mt-4 inset-shadow-sm rounded-lg">
                         <div className="flex items-center gap-4 px-4 py-4">
                             <Droplets className="w-4 h-4 text-rose-500" />
                             <div>
                                 <p className="text-sm font-medium">
-                                    Next Period Expected
+                                    {isPartnerData ? "Partner's" : "Next"}{" "}
+                                    Period Expected
                                 </p>
                                 <p className="text-xs text-muted-foreground">
-                                    {nextPeriod!.toLocaleDateString("en-US", {
-                                        weekday: "long",
-                                        month: "long",
-                                        day: "numeric",
-                                    })}
+                                    {nextPeriod
+                                        ? nextPeriod.toLocaleDateString(
+                                              "en-US",
+                                              {
+                                                  weekday: "long",
+                                                  month: "long",
+                                                  day: "numeric",
+                                              }
+                                          )
+                                        : "N/A"}
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4 mt-2 lg:mt-4 border border-dashed rounded-lg px-4 py-4">
+                    <div className="flex items-center gap-4 mt-2 lg:mt-4 inset-shadow-sm rounded-lg px-4 py-4">
                         <Heart className="w-4 h-4 text-blue-400" />
                         <div>
                             <p className="text-sm font-medium">
-                                Fertility Window
+                                {isPartnerData ? "Partner's" : ""} Fertility
+                                Window
                             </p>
                             <p className="text-xs text-muted-foreground">
-                                {fertileStart!.toLocaleDateString("en-US", {
-                                    month: "short",
-                                    day: "numeric",
-                                })}{" "}
+                                {fertileStart
+                                    ? fertileStart.toLocaleDateString("en-US", {
+                                          month: "short",
+                                          day: "numeric",
+                                      })
+                                    : "—"}{" "}
                                 -{" "}
-                                {fertileEnd!.toLocaleDateString("en-US", {
-                                    month: "short",
-                                    day: "numeric",
-                                })}
+                                {fertileEnd
+                                    ? fertileEnd.toLocaleDateString("en-US", {
+                                          month: "short",
+                                          day: "numeric",
+                                      })
+                                    : "—"}
                             </p>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4 mt-2 lg:mt-4 border border-dashed rounded-lg px-4 py-4">
+                    <div className="flex items-center gap-4 mt-2 lg:mt-4 inset-shadow-sm rounded-lg px-4 py-4">
                         <Moon className="w-4 h-4 text-yellow-500" />
                         <div>
-                            <p className="text-sm font-medium">Cycle Length</p>
+                            <p className="text-sm font-medium">
+                                {isPartnerData ? "Partner's" : ""} Cycle Length
+                            </p>
                             <p className="text-xs text-muted-foreground">
                                 {cycleLength} days average
                             </p>

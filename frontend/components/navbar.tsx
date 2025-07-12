@@ -28,13 +28,7 @@ import {
     Download,
     Home,
     Calendar,
-    BookHeart,
-    GlassWater,
-    Droplet,
-    Map,
     SquareCheckBig,
-    SquareCheck,
-    MapPinned,
     Droplets,
 } from "lucide-react";
 
@@ -44,8 +38,8 @@ export function NavBar() {
 
     return (
         <>
-            <div className="fixed h-12 w-full border-b border-dashed flex justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                <div className="container flex justify-between sm:grid sm:grid-cols-[1fr_auto] w-full px-8 py-2">
+            <div className="fixed h-12 w-full border-b flex justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                <div className="container flex justify-between sm:grid sm:grid-cols-[1fr_auto] w-full px-4 md:px-8 py-2">
                     <div className="flex items-center">
                         <a href="/" className="hidden sm:flex mr-4 sm:mr-8">
                             <Calple />
@@ -54,12 +48,25 @@ export function NavBar() {
                             <Button
                                 variant="outline"
                                 size="sm"
-                                className="hidden sm:flex rounded-full px- w-8 h-8"
+                                className="hidden sm:flex rounded-full px-3 w-8 h-8"
                                 onClick={() => {
                                     window.location.href = "/";
                                 }}
                             >
-                                <Home />
+                                <Home strokeWidth={1.7} />
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="hidden sm:flex rounded-full px-3 w-8 h-8 sm:w-fit"
+                                onClick={() => {
+                                    window.location.href = "/checkin";
+                                }}
+                            >
+                                <SquareCheckBig strokeWidth={1.7} />
+                                <span className="hidden md:flex text-xs">
+                                    Check-In
+                                </span>
                             </Button>
                             <Button
                                 variant="outline"
@@ -69,19 +76,19 @@ export function NavBar() {
                                     window.location.href = "/calendar";
                                 }}
                             >
-                                <Calendar />
+                                <Calendar strokeWidth={1.7} />
                                 <span className="flex text-xs">Calendar</span>
                             </Button>
                             <Button
                                 variant="outline"
                                 size="sm"
-                                className="flex sm:hidden rounded-full px-3 w-8 h-8 w-fit bg-card h-6"
+                                className="flex sm:hidden rounded-full px-3 w-8 h-8 w-fit h-6"
                                 onClick={() => {
                                     window.location.href = "/calendar";
                                 }}
                                 disabled
                             >
-                                <Download />
+                                <Download strokeWidth={1.7} />
                                 <span className="flex text-xs">IPhone</span>
                             </Button>
                             <Button
@@ -92,7 +99,7 @@ export function NavBar() {
                                     window.location.href = "/tracker";
                                 }}
                             >
-                                <Droplets />
+                                <Droplets strokeWidth={1.7} />
                                 <span className="hidden md:flex text-xs">
                                     Cycle
                                 </span>
@@ -110,20 +117,8 @@ export function NavBar() {
                                     Roulette
                                 </span>
                             </Button> */}
+
                             {/* <Button
-                                variant="outline"
-                                size="sm"
-                                className="hidden sm:flex rounded-full px-3 w-8 h-8 sm:w-fit"
-                                onClick={() => {
-                                    window.location.href = "/tracker";
-                                }}
-                            >
-                                <SquareCheckBig />
-                                <span className="hidden md:flex text-xs">
-                                    Check-In
-                                </span>
-                            </Button>
-                            <Button
                                 variant="outline"
                                 size="sm"
                                 className="hidden sm:flex rounded-full px-3 w-8 h-8 sm:w-fit"
@@ -149,7 +144,7 @@ export function NavBar() {
                         <Button
                             variant="outline"
                             size="sm"
-                            className="hidden sm:flex rounded-full px-3 w-8 h-8 w-fit bg-card"
+                            className="hidden sm:flex rounded-full px-3 w-8 h-8 w-fit"
                             onClick={() => {
                                 window.location.href = "/calendar";
                             }}
@@ -218,6 +213,15 @@ export function NavBar() {
                                         <DropdownMenu.DropdownMenuItem
                                             onClick={() =>
                                                 (window.location.href =
+                                                    "/checkin")
+                                            }
+                                        >
+                                            <SquareCheckBig className="h-4 w-4" />
+                                            Check-In
+                                        </DropdownMenu.DropdownMenuItem>
+                                        <DropdownMenu.DropdownMenuItem
+                                            onClick={() =>
+                                                (window.location.href =
                                                     "/calendar")
                                             }
                                         >
@@ -233,16 +237,8 @@ export function NavBar() {
                                             <Droplets className="h-4 w-4" />
                                             Cycle
                                         </DropdownMenu.DropdownMenuItem>
+
                                         {/* <DropdownMenu.DropdownMenuItem
-                                            onClick={() =>
-                                                (window.location.href =
-                                                    "/checkin")
-                                            }
-                                        >
-                                            <SquareCheckBig className="h-4 w-4" />
-                                            Check-In
-                                        </DropdownMenu.DropdownMenuItem>
-                                        <DropdownMenu.DropdownMenuItem
                                             onClick={() =>
                                                 (window.location.href = "/map")
                                             }

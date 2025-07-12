@@ -3,6 +3,7 @@ package handlers
 import (
 	"calple/util"
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -33,6 +34,15 @@ type CycleSettings struct {
 	PeriodLength int       `json:"periodLength"` // Average period length in days
 	CreatedAt    time.Time `json:"createdAt"`
 	UpdatedAt    time.Time `json:"updatedAt"`
+}
+
+// UserMetadata represents user's personal metadata including sex
+type UserMetadata struct {
+	ID        string    `json:"id"`
+	UserID    string    `json:"userId"`
+	Sex       string    `json:"sex"` // "male" or "female"
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 // GetPeriodDays fetches all period days for the current user
@@ -74,6 +84,124 @@ func GetPeriodDays(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"periodDays": periodDays})
+}
+
+// GetPartnerPeriodDays fetches period days for the connected partner
+func GetPartnerPeriodDays(c *gin.Context) {
+	session := sessions.Default(c)
+	uid := session.Get("user_id")
+	if uid == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	fsClient := c.MustGet("firestore").(*firestore.Client)
+	ctx := context.Background()
+
+	// Get user email
+	userDoc, err := fsClient.Collection("users").Doc(uid.(string)).Get(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve user"})
+		return
+	}
+	userEmail := userDoc.Data()["email"].(string)
+
+	// Find active connection
+	connectionDocs, err := fsClient.Collection("connections").
+		Where("status", "==", "active").
+		Where("user1", "==", userEmail).
+		Documents(ctx).GetAll()
+
+	if err == nil && len(connectionDocs) == 0 {
+		connectionDocs, err = fsClient.Collection("connections").
+			Where("status", "==", "active").
+			Where("user2", "==", userEmail).
+			Documents(ctx).GetAll()
+	}
+
+	if err != nil || len(connectionDocs) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "No active connection found"})
+		return
+	}
+
+	// Get partner email
+	connectionData := connectionDocs[0].Data()
+	var partnerEmail string
+	if connectionData["user1"] == userEmail {
+		partnerEmail = connectionData["user2"].(string)
+	} else {
+		partnerEmail = connectionData["user1"].(string)
+	}
+
+	// Find partner's user ID
+	partnerDocs, err := fsClient.Collection("users").
+		Where("email", "==", partnerEmail).
+		Documents(ctx).GetAll()
+
+	if err != nil || len(partnerDocs) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Partner not found"})
+		return
+	}
+
+	partnerUID := partnerDocs[0].Ref.ID
+	fmt.Printf("DEBUG: GetPartnerPeriodDays - userEmail: %s, partnerEmail: %s, partnerUID: %s\n", userEmail, partnerEmail, partnerUID)
+
+	// Get user's sex to determine what data to show
+	var userSex string
+	userDoc, userErr := fsClient.Collection("users").Doc(uid.(string)).Get(ctx)
+	if userErr == nil {
+		if sex, ok := userDoc.Data()["sex"].(string); ok {
+			userSex = sex
+		}
+	}
+
+	// Get partner's sex
+	var partnerSex string
+	partnerDoc, partnerErr := fsClient.Collection("users").Doc(partnerUID).Get(ctx)
+	if partnerErr == nil {
+		if sex, ok := partnerDoc.Data()["sex"].(string); ok {
+			partnerSex = sex
+		}
+	}
+
+	fmt.Printf("DEBUG: User sex: %s, Partner sex: %s\n", userSex, partnerSex)
+
+	// Query partner's period days
+	docs, err := fsClient.Collection("users").Doc(partnerUID).Collection("periodDays").
+		Documents(ctx).GetAll()
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch partner period days"})
+		return
+	}
+
+	fmt.Printf("DEBUG: Found %d partner period days\n", len(docs))
+
+	periodDays := []PeriodDay{}
+	for _, doc := range docs {
+		data := doc.Data()
+
+		// Show all partner data regardless of user sex
+		periodDays = append(periodDays, PeriodDay{
+			ID:         doc.Ref.ID,
+			UserID:     partnerUID,
+			Date:       data["date"].(string),
+			IsPeriod:   data["isPeriod"].(bool),
+			Symptoms:   util.ToStringSlice(data["symptoms"]),
+			Mood:       util.ToStringSlice(data["mood"]),
+			Activities: util.ToStringSlice(data["activities"]),
+			Notes:      data["notes"].(string),
+			CreatedAt:  data["createdAt"].(time.Time),
+			UpdatedAt:  data["updatedAt"].(time.Time),
+		})
+	}
+
+	fmt.Printf("DEBUG: Returning %d period days\n", len(periodDays))
+
+	c.JSON(http.StatusOK, gin.H{
+		"periodDays": periodDays,
+		"partnerSex": partnerSex,
+	})
 }
 
 // CreatePeriodDay creates a new period day entry
@@ -334,4 +462,591 @@ func UpdateCycleSettings(c *gin.Context) {
 	settings.UpdatedAt = now
 
 	c.JSON(http.StatusOK, gin.H{"cycleSettings": settings})
+}
+
+// GetUserMetadata fetches user metadata including sex for the current user
+func GetUserMetadata(c *gin.Context) {
+	session := sessions.Default(c)
+	uid := session.Get("user_id")
+	if uid == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	fsClient := c.MustGet("firestore").(*firestore.Client)
+	ctx := context.Background()
+
+	// Get user document directly
+	userDoc, err := fsClient.Collection("users").Doc(uid.(string)).Get(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user data"})
+		return
+	}
+
+	userData := userDoc.Data()
+	sex := ""
+	if userData["sex"] != nil {
+		sex = userData["sex"].(string)
+	}
+
+	metadata := UserMetadata{
+		ID:        userDoc.Ref.ID,
+		UserID:    uid.(string),
+		Sex:       sex,
+		CreatedAt: userData["created_at"].(time.Time),
+		UpdatedAt: userData["last_login_at"].(time.Time),
+	}
+
+	c.JSON(http.StatusOK, gin.H{"userMetadata": metadata})
+}
+
+// UpdateUserMetadata updates user sex in the users collection
+func UpdateUserMetadata(c *gin.Context) {
+	session := sessions.Default(c)
+	uid := session.Get("user_id")
+	if uid == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	fsClient := c.MustGet("firestore").(*firestore.Client)
+	ctx := context.Background()
+
+	// Parse request body
+	var metadata UserMetadata
+	if err := c.ShouldBindJSON(&metadata); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	// Validate sex value
+	if metadata.Sex != "male" && metadata.Sex != "female" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Sex must be either 'male' or 'female'"})
+		return
+	}
+
+	// Update user document directly
+	_, err := fsClient.Collection("users").Doc(uid.(string)).Update(ctx, []firestore.Update{
+		{Path: "sex", Value: metadata.Sex},
+		{Path: "last_login_at", Value: time.Now()},
+	})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user metadata"})
+		return
+	}
+
+	// Get updated user data
+	userDoc, err := fsClient.Collection("users").Doc(uid.(string)).Get(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch updated user data"})
+		return
+	}
+
+	userData := userDoc.Data()
+	metadata.ID = userDoc.Ref.ID
+	metadata.UserID = uid.(string)
+	metadata.UpdatedAt = userData["last_login_at"].(time.Time)
+
+	c.JSON(http.StatusOK, gin.H{"userMetadata": metadata})
+}
+
+// GetPartnerMetadata fetches partner's metadata for connected users
+func GetPartnerMetadata(c *gin.Context) {
+	session := sessions.Default(c)
+	uid := session.Get("user_id")
+	if uid == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	fsClient := c.MustGet("firestore").(*firestore.Client)
+	ctx := context.Background()
+
+	// Get current user's email
+	userDoc, err := fsClient.Collection("users").Doc(uid.(string)).Get(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user data"})
+		return
+	}
+	userEmail := userDoc.Data()["email"].(string)
+
+	// First, get the user's connection to find their partner
+	connectionDocs, err := fsClient.Collection("connections").
+		Where("status", "==", "active").
+		Where("user1", "==", userEmail).
+		Documents(ctx).GetAll()
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch connection"})
+		return
+	}
+
+	// If no connection found as user1, check as user2
+	if len(connectionDocs) == 0 {
+		connectionDocs, err = fsClient.Collection("connections").
+			Where("status", "==", "active").
+			Where("user2", "==", userEmail).
+			Documents(ctx).GetAll()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch connection"})
+			return
+		}
+	}
+
+	if len(connectionDocs) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "No partner connection found"})
+		return
+	}
+
+	// Determine partner's email
+	connectionData := connectionDocs[0].Data()
+	var partnerEmail string
+	if connectionData["user1"] == userEmail {
+		partnerEmail = connectionData["user2"].(string)
+	} else {
+		partnerEmail = connectionData["user1"].(string)
+	}
+
+	// Get partner's user document by email
+	partnerUserDocs, err := fsClient.Collection("users").
+		Where("email", "==", partnerEmail).
+		Documents(ctx).GetAll()
+
+	if err != nil || len(partnerUserDocs) == 0 {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch partner data"})
+		return
+	}
+
+	partnerUserData := partnerUserDocs[0].Data()
+	partnerSex := ""
+	if partnerUserData["sex"] != nil {
+		partnerSex = partnerUserData["sex"].(string)
+	}
+
+	metadata := UserMetadata{
+		ID:        partnerUserDocs[0].Ref.ID,
+		UserID:    partnerUserDocs[0].Ref.ID,
+		Sex:       partnerSex,
+		CreatedAt: partnerUserData["created_at"].(time.Time),
+		UpdatedAt: partnerUserData["last_login_at"].(time.Time),
+	}
+
+	c.JSON(http.StatusOK, gin.H{"partnerMetadata": metadata})
+}
+
+// CheckinData represents a daily checkin entry
+type CheckinData struct {
+	ID           string    `json:"id"`
+	UserID       string    `json:"userId"`
+	Date         string    `json:"date"`         // Format: YYYY-MM-DD
+	Mood         string    `json:"mood"`         // "great", "good", "okay", "bad", "terrible"
+	Energy       string    `json:"energy"`       // "high", "medium", "low"
+	PeriodStatus string    `json:"periodStatus"` // "on", "off", "starting", "ending"
+	SexualMood   string    `json:"sexualMood"`   // "very_horny", "horny", "interested", "neutral", "not_interested"
+	Note         string    `json:"note"`
+	CreatedAt    time.Time `json:"createdAt"`
+	UpdatedAt    time.Time `json:"updatedAt"`
+}
+
+// PartnerCheckin represents partner's checkin data with user info
+type PartnerCheckin struct {
+	ID           string    `json:"id"`
+	UserID       string    `json:"userId"`
+	UserName     string    `json:"userName"`
+	UserEmail    string    `json:"userEmail"`
+	UserSex      string    `json:"userSex"`
+	Date         string    `json:"date"`
+	Mood         string    `json:"mood"`
+	Energy       string    `json:"energy"`
+	PeriodStatus string    `json:"periodStatus"`
+	SexualMood   string    `json:"sexualMood"`
+	Note         string    `json:"note"`
+	CreatedAt    time.Time `json:"createdAt"`
+}
+
+// CreateCheckin creates or updates a daily checkin
+func CreateCheckin(c *gin.Context) {
+	session := sessions.Default(c)
+	uid := session.Get("user_id")
+	if uid == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	fsClient := c.MustGet("firestore").(*firestore.Client)
+	ctx := context.Background()
+
+	// Parse request body
+	var checkin CheckinData
+	if err := c.ShouldBindJSON(&checkin); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	// Validate date format (YYYY-MM-DD)
+	if len(checkin.Date) != 10 || checkin.Date[4] != '-' || checkin.Date[7] != '-' {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Use YYYY-MM-DD"})
+		return
+	}
+
+	// Validate mood
+	validMoods := []string{"great", "good", "okay", "bad", "terrible"}
+	moodValid := false
+	for _, mood := range validMoods {
+		if checkin.Mood == mood {
+			moodValid = true
+			break
+		}
+	}
+	if !moodValid {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid mood value"})
+		return
+	}
+
+	// Validate energy
+	validEnergies := []string{"high", "medium", "low"}
+	energyValid := false
+	for _, energy := range validEnergies {
+		if checkin.Energy == energy {
+			energyValid = true
+			break
+		}
+	}
+	if !energyValid {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid energy value"})
+		return
+	}
+
+	// Validate period status if provided
+	if checkin.PeriodStatus != "" {
+		validPeriodStatuses := []string{"on", "off", "starting", "ending"}
+		periodStatusValid := false
+		for _, status := range validPeriodStatuses {
+			if checkin.PeriodStatus == status {
+				periodStatusValid = true
+				break
+			}
+		}
+		if !periodStatusValid {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid period status value"})
+			return
+		}
+	}
+
+	// Validate sexual mood if provided
+	if checkin.SexualMood != "" {
+		validSexualMoods := []string{"very_horny", "horny", "interested", "neutral", "not_interested"}
+		sexualMoodValid := false
+		for _, mood := range validSexualMoods {
+			if checkin.SexualMood == mood {
+				sexualMoodValid = true
+				break
+			}
+		}
+		if !sexualMoodValid {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid sexual mood value"})
+			return
+		}
+	}
+
+	// Check if checkin already exists for this date
+	existingDocs, err := fsClient.Collection("users").Doc(uid.(string)).Collection("checkins").
+		Where("date", "==", checkin.Date).
+		Documents(ctx).GetAll()
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check existing checkin"})
+		return
+	}
+
+	now := time.Now()
+	if len(existingDocs) > 0 {
+		// Update existing checkin
+		_, err = existingDocs[0].Ref.Update(ctx, []firestore.Update{
+			{Path: "mood", Value: checkin.Mood},
+			{Path: "energy", Value: checkin.Energy},
+			{Path: "periodStatus", Value: checkin.PeriodStatus},
+			{Path: "sexualMood", Value: checkin.SexualMood},
+			{Path: "note", Value: checkin.Note},
+			{Path: "updatedAt", Value: now},
+		})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update checkin"})
+			return
+		}
+
+		// Return updated checkin
+		updatedData := existingDocs[0].Data()
+		c.JSON(http.StatusOK, gin.H{"checkin": CheckinData{
+			ID:           existingDocs[0].Ref.ID,
+			UserID:       uid.(string),
+			Date:         checkin.Date,
+			Mood:         checkin.Mood,
+			Energy:       checkin.Energy,
+			PeriodStatus: checkin.PeriodStatus,
+			SexualMood:   checkin.SexualMood,
+			Note:         checkin.Note,
+			CreatedAt:    updatedData["createdAt"].(time.Time),
+			UpdatedAt:    now,
+		}})
+		return
+	}
+
+	// Create new checkin
+	docRef, _, err := fsClient.Collection("users").Doc(uid.(string)).Collection("checkins").Add(ctx, map[string]interface{}{
+		"date":         checkin.Date,
+		"mood":         checkin.Mood,
+		"energy":       checkin.Energy,
+		"periodStatus": checkin.PeriodStatus,
+		"sexualMood":   checkin.SexualMood,
+		"note":         checkin.Note,
+		"createdAt":    now,
+		"updatedAt":    now,
+	})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create checkin"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"checkin": CheckinData{
+		ID:           docRef.ID,
+		UserID:       uid.(string),
+		Date:         checkin.Date,
+		Mood:         checkin.Mood,
+		Energy:       checkin.Energy,
+		PeriodStatus: checkin.PeriodStatus,
+		SexualMood:   checkin.SexualMood,
+		Note:         checkin.Note,
+		CreatedAt:    now,
+		UpdatedAt:    now,
+	}})
+}
+
+// GetTodayCheckin fetches today's checkin for the current user
+func GetTodayCheckin(c *gin.Context) {
+	session := sessions.Default(c)
+	uid := session.Get("user_id")
+	if uid == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	fsClient := c.MustGet("firestore").(*firestore.Client)
+	ctx := context.Background()
+
+	date := c.Param("date")
+	if date == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Date parameter is required"})
+		return
+	}
+
+	// Query checkin for the specific date
+	docs, err := fsClient.Collection("users").Doc(uid.(string)).Collection("checkins").
+		Where("date", "==", date).
+		Documents(ctx).GetAll()
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch checkin"})
+		return
+	}
+
+	if len(docs) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Checkin not found"})
+		return
+	}
+
+	// Return the checkin
+	data := docs[0].Data()
+	checkin := CheckinData{
+		ID:           docs[0].Ref.ID,
+		UserID:       uid.(string),
+		Date:         data["date"].(string),
+		Mood:         data["mood"].(string),
+		Energy:       data["energy"].(string),
+		PeriodStatus: util.GetStringValue(data, "periodStatus"),
+		SexualMood:   util.GetStringValue(data, "sexualMood"),
+		Note:         util.GetStringValue(data, "note"),
+		CreatedAt:    data["createdAt"].(time.Time),
+		UpdatedAt:    data["updatedAt"].(time.Time),
+	}
+
+	c.JSON(http.StatusOK, gin.H{"checkin": checkin})
+}
+
+// GetPartnerCheckin fetches partner's checkin for a specific date
+func GetPartnerCheckin(c *gin.Context) {
+	session := sessions.Default(c)
+	uid := session.Get("user_id")
+	if uid == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	fsClient := c.MustGet("firestore").(*firestore.Client)
+	ctx := context.Background()
+
+	date := c.Param("date")
+	if date == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Date parameter is required"})
+		return
+	}
+
+	// Get current user's email
+	userDoc, err := fsClient.Collection("users").Doc(uid.(string)).Get(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user data"})
+		return
+	}
+	userEmail := userDoc.Data()["email"].(string)
+
+	// First, get the user's connection to find their partner
+	connectionDocs, err := fsClient.Collection("connections").
+		Where("status", "==", "active").
+		Where("user1", "==", userEmail).
+		Documents(ctx).GetAll()
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch connection"})
+		return
+	}
+
+	// If no connection found as user1, check as user2
+	if len(connectionDocs) == 0 {
+		connectionDocs, err = fsClient.Collection("connections").
+			Where("status", "==", "active").
+			Where("user2", "==", userEmail).
+			Documents(ctx).GetAll()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch connection"})
+			return
+		}
+	}
+
+	if len(connectionDocs) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "No partner connection found"})
+		return
+	}
+
+	// Determine partner's email
+	connectionData := connectionDocs[0].Data()
+	var partnerEmail string
+	if connectionData["user1"] == userEmail {
+		partnerEmail = connectionData["user2"].(string)
+	} else {
+		partnerEmail = connectionData["user1"].(string)
+	}
+
+	// Get partner's user info by email
+	partnerUserDocs, err := fsClient.Collection("users").
+		Where("email", "==", partnerEmail).
+		Documents(ctx).GetAll()
+
+	if err != nil || len(partnerUserDocs) == 0 {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch partner user info"})
+		return
+	}
+
+	partnerUserData := partnerUserDocs[0].Data()
+	partnerName := partnerUserData["name"].(string)
+	partnerID := partnerUserDocs[0].Ref.ID
+
+	// Get partner's sex from user document
+	partnerSex := ""
+	if partnerUserData["sex"] != nil {
+		partnerSex = partnerUserData["sex"].(string)
+	}
+
+	// Get partner's checkin for the date
+	checkinDocs, err := fsClient.Collection("users").Doc(partnerID).Collection("checkins").
+		Where("date", "==", date).
+		Documents(ctx).GetAll()
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch partner checkin"})
+		return
+	}
+
+	if len(checkinDocs) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Partner checkin not found"})
+		return
+	}
+
+	// Return partner's checkin
+	data := checkinDocs[0].Data()
+	partnerCheckin := PartnerCheckin{
+		ID:           checkinDocs[0].Ref.ID,
+		UserID:       partnerID,
+		UserName:     partnerName,
+		UserEmail:    partnerEmail,
+		UserSex:      partnerSex,
+		Date:         data["date"].(string),
+		Mood:         data["mood"].(string),
+		Energy:       data["energy"].(string),
+		PeriodStatus: util.GetStringValue(data, "periodStatus"),
+		SexualMood:   util.GetStringValue(data, "sexualMood"),
+		Note:         util.GetStringValue(data, "note"),
+		CreatedAt:    data["createdAt"].(time.Time),
+	}
+
+	c.JSON(http.StatusOK, gin.H{"partnerCheckin": partnerCheckin})
+}
+
+// DebugConnection is a test endpoint to verify connection status
+func DebugConnection(c *gin.Context) {
+	session := sessions.Default(c)
+	uid := session.Get("user_id")
+	if uid == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	fsClient := c.MustGet("firestore").(*firestore.Client)
+	ctx := context.Background()
+
+	// Get current user's email
+	userDoc, err := fsClient.Collection("users").Doc(uid.(string)).Get(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user data"})
+		return
+	}
+	userEmail := userDoc.Data()["email"].(string)
+
+	// Check for active connections
+	connectionDocs, err := fsClient.Collection("connections").
+		Where("status", "==", "active").
+		Where("user1", "==", userEmail).
+		Documents(ctx).GetAll()
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch connections"})
+		return
+	}
+
+	// If no connection found as user1, check as user2
+	if len(connectionDocs) == 0 {
+		connectionDocs, err = fsClient.Collection("connections").
+			Where("status", "==", "active").
+			Where("user2", "==", userEmail).
+			Documents(ctx).GetAll()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch connections"})
+			return
+		}
+	}
+
+	debugInfo := map[string]interface{}{
+		"userId":        uid.(string),
+		"userEmail":     userEmail,
+		"hasConnection": len(connectionDocs) > 0,
+	}
+
+	if len(connectionDocs) > 0 {
+		connectionData := connectionDocs[0].Data()
+		debugInfo["connection"] = connectionData
+		debugInfo["connectionId"] = connectionDocs[0].Ref.ID
+	}
+
+	c.JSON(http.StatusOK, debugInfo)
 }

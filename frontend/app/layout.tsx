@@ -67,7 +67,7 @@ export default async function RootLayout({
     const authState = await getAuthStatus();
 
     return (
-        <html lang="en" suppressHydrationWarning className="h-full">
+        <html lang="en" suppressHydrationWarning className="h-full font-serif">
             <body className={`${lora.variable} font-sans h-full flex flex-col`}>
                 <ThemeProvider
                     attribute="class"
@@ -78,7 +78,7 @@ export default async function RootLayout({
                         <NavBar />
                         <div className="h-full">{children}</div>
                         <Analytics />
-                        <div className="fixed bottom-0 left-0 h-8 w-full flex justify-center z-50 border-t border-dashed px-8 backdrop-blur">
+                        <div className="fixed bottom-0 left-0 h-8 w-full flex justify-center z-50 border-t px-4 md:px-8 backdrop-blur">
                             <div className="container flex itms-center justify-between">
                                 <div className="flex sm:px-8 py-2 container text-muted-foreground text-xs">
                                     For Emily by Juhun &copy; 2025

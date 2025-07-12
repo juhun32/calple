@@ -76,6 +76,34 @@ func GetDDays(c *gin.Context) {
 	lastDayOfMonth := time.Date(year, time.Month(month)+1, 0, 0, 0, 0, 0, time.UTC).Day()
 	viewMonthEndStr := fmt.Sprintf("%s%02d", viewDate, lastDayOfMonth)
 
+	fmt.Printf("DEBUG: GetDDays - userEmail: %s, viewMonthStartStr: %s, viewMonthEndStr: %s\n", userEmail, viewMonthStartStr, viewMonthEndStr)
+
+	// Debug: Check if user has any active connections
+	connectionDocs, err := fsClient.Collection("connections").
+		Where("status", "==", "active").
+		Where("user1", "==", userEmail).
+		Documents(ctx).GetAll()
+
+	if err == nil && len(connectionDocs) == 0 {
+		connectionDocs, err = fsClient.Collection("connections").
+			Where("status", "==", "active").
+			Where("user2", "==", userEmail).
+			Documents(ctx).GetAll()
+	}
+
+	if err == nil && len(connectionDocs) > 0 {
+		connectionData := connectionDocs[0].Data()
+		var partnerEmail string
+		if connectionData["user1"] == userEmail {
+			partnerEmail = connectionData["user2"].(string)
+		} else {
+			partnerEmail = connectionData["user1"].(string)
+		}
+		fmt.Printf("DEBUG: User %s has active connection with %s\n", userEmail, partnerEmail)
+	} else {
+		fmt.Printf("DEBUG: User %s has no active connections\n", userEmail)
+	}
+
 	queries := []firestore.Query{
 		// Q1: events created by the user that start before the end of the month
 		fsClient.Collection("ddays").
@@ -88,12 +116,22 @@ func GetDDays(c *gin.Context) {
 			Where("date", "<=", viewMonthEndStr),
 	}
 
-	for _, q := range queries {
+	for i, q := range queries {
 		docs, err := q.Documents(ctx).GetAll()
 		if err != nil {
 			fmt.Printf("ERROR: Firestore query failed: %v\n", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch events from database."})
 			return // stop execution if a query fails
+		}
+		fmt.Printf("DEBUG: Query %d found %d documents\n", i+1, len(docs))
+
+		// Debug: Show details of each event found
+		for _, doc := range docs {
+			data := doc.Data()
+			title, _ := data["title"].(string)
+			createdBy, _ := data["createdBy"].(string)
+			connectedUsers := util.ToStringSlice(data["connectedUsers"])
+			fmt.Printf("DEBUG: Event '%s' - createdBy: %s, connectedUsers: %v\n", title, createdBy, connectedUsers)
 		}
 
 		for _, doc := range docs {
@@ -140,6 +178,9 @@ func GetDDays(c *gin.Context) {
 				updatedAt = ut
 			}
 
+			connectedUsers := util.ToStringSlice(data["connectedUsers"])
+			fmt.Printf("DEBUG: Event '%s' - createdBy: %s, connectedUsers: %v\n", title, createdBy, connectedUsers)
+
 			events = append(events, DDay{
 				ID:             doc.Ref.ID,
 				Title:          title,
@@ -149,7 +190,7 @@ func GetDDays(c *gin.Context) {
 				EndDate:        endDateStr,
 				IsAnnual:       isAnnual,
 				CreatedBy:      createdBy,
-				ConnectedUsers: util.ToStringSlice(data["connectedUsers"]),
+				ConnectedUsers: connectedUsers,
 				CreatedAt:      createdAt,
 				UpdatedAt:      updatedAt,
 			})
@@ -212,8 +253,48 @@ func CreateDDay(c *gin.Context) {
 		return
 	}
 
+	fmt.Printf("DEBUG: CreateDDay - userEmail: %s, original connectedUsers: %v\n", userEmail, dday.ConnectedUsers)
+
+	// Get connected user's email
+	connectedUsers := dday.ConnectedUsers
+	connectionDocs, err := fsClient.Collection("connections").
+		Where("status", "==", "active").
+		Where("user1", "==", userEmail).
+		Documents(context.Background()).GetAll()
+
+	if err == nil && len(connectionDocs) == 0 {
+		connectionDocs, err = fsClient.Collection("connections").
+			Where("status", "==", "active").
+			Where("user2", "==", userEmail).
+			Documents(context.Background()).GetAll()
+	}
+
+	if err == nil && len(connectionDocs) > 0 {
+		connectionData := connectionDocs[0].Data()
+		var partnerEmail string
+		if connectionData["user1"] == userEmail {
+			partnerEmail = connectionData["user2"].(string)
+		} else {
+			partnerEmail = connectionData["user1"].(string)
+		}
+
+		fmt.Printf("DEBUG: CreateDDay - found partner: %s\n", partnerEmail)
+
+		// Add partner to connectedUsers if not already present
+		if !util.Contains(connectedUsers, partnerEmail) {
+			connectedUsers = append(connectedUsers, partnerEmail)
+			fmt.Printf("DEBUG: CreateDDay - added partner to connectedUsers: %v\n", connectedUsers)
+		} else {
+			fmt.Printf("DEBUG: CreateDDay - partner already in connectedUsers\n")
+		}
+	} else {
+		fmt.Printf("DEBUG: CreateDDay - no active connection found\n")
+	}
+
 	// set current time for timestamps
 	now := time.Now()
+
+	fmt.Printf("DEBUG: CreateDDay - final connectedUsers: %v\n", connectedUsers)
 
 	// create a new document in the ddays collection
 	newDDay := map[string]interface{}{
@@ -224,7 +305,7 @@ func CreateDDay(c *gin.Context) {
 		"endDate":        dday.EndDate,
 		"isAnnual":       dday.IsAnnual,
 		"createdBy":      userEmail,
-		"connectedUsers": dday.ConnectedUsers,
+		"connectedUsers": connectedUsers,
 		"createdAt":      now,
 		"updatedAt":      now,
 	}

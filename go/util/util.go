@@ -63,3 +63,13 @@ func IsValidEmail(email string) bool {
 	// no valid domain part found
 	return false
 }
+
+// getStringValue safely extracts a string value from a map, returning empty string if not found or nil
+func GetStringValue(data map[string]interface{}, key string) string {
+	if val, exists := data[key]; exists && val != nil {
+		if str, ok := val.(string); ok {
+			return str
+		}
+	}
+	return ""
+}

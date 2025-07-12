@@ -29,7 +29,7 @@ import {
 // types
 import { DDay, DDayFormData, DDayFormProps } from "@/lib/types/calendar";
 
-// shared form component for creating and editing calendar events - used by AddDdayDialog and EditDdayDialog
+// shared form component for creating and editing calendar events
 export function DDayForm({
     initialData,
     onSubmit,
@@ -38,23 +38,16 @@ export function DDayForm({
     cancelLabel = "Cancel",
     isSubmitting = false,
 }: DDayFormProps) {
-    // form state for event title - required field for validation
     const [title, setTitle] = useState(initialData?.title || "");
-    // form state for event category/group - used for color coding and filtering
     const [group, setGroup] = useState(initialData?.group || "");
-    // form state for event description - optional field for additional details
     const [description, setDescription] = useState(
         initialData?.description || ""
     );
-    // form state for annual event flag - used by useDDays hook for date filtering
     const [isAnnual, setIsAnnual] = useState(initialData?.isAnnual || false);
-    // form state for connected user email - used for user connections
     const [connectedEmail, setConnectedEmail] = useState(
         initialData?.connectedUsers?.[0] || ""
     );
-    // form state for multi-day event flag - affects date picker mode
     const [isMultiDay, setIsMultiDay] = useState(false);
-    // form state for date range (start and end dates) - used by calendar grid and layout system
     const [dateRange, setDateRange] = useState<DateRange | undefined>(
         initialData?.date
             ? {
@@ -159,7 +152,6 @@ export function DDayForm({
     return (
         <div className="flex flex-col gap-2">
             <div className="grid grid-cols-[1fr_4fr] gap-2 items-center">
-                {/* title input field - required field for event creation */}
                 <Label
                     className={cn(
                         "text-sm font-medium",
@@ -174,13 +166,12 @@ export function DDayForm({
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     className={cn(
-                        "border rounded-md text-sm w-full focus:text-foreground rounded-full px-4",
+                        "rounded-md text-sm w-full focus:text-foreground rounded-full px-4",
                         !title ? "text-muted-foreground" : "text-foreground"
                     )}
                     placeholder="Title"
                 />
 
-                {/* group/category selection - used for color coding and filtering */}
                 <Label
                     className={cn(
                         "text-sm font-medium",
@@ -194,7 +185,7 @@ export function DDayForm({
                     value={group || "others"}
                     onValueChange={setGroup}
                 >
-                    <Select.SelectTrigger className="w-full text-sm rounded-full px-4">
+                    <Select.SelectTrigger className="border-none inset-shadow-sm w-full text-sm rounded-full px-4">
                         <Select.SelectValue placeholder="Others" />
                     </Select.SelectTrigger>
                     <Select.SelectContent className="w-full">
@@ -217,7 +208,6 @@ export function DDayForm({
                     </Select.SelectContent>
                 </Select.Select>
 
-                {/* description input field - optional field for additional details */}
                 <Label
                     className={cn(
                         "text-sm font-medium",
@@ -234,7 +224,7 @@ export function DDayForm({
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     className={cn(
-                        "border rounded-md text-sm w-full focus:text-foreground rounded-full px-4",
+                        "rounded-md text-sm w-full focus:text-foreground rounded-full px-4",
                         !description
                             ? "text-muted-foreground"
                             : "text-foreground"
@@ -242,7 +232,6 @@ export function DDayForm({
                     placeholder="(Optional)"
                 />
 
-                {/* date picker - used by calendar grid and date calculations */}
                 <Label
                     className={cn(
                         "text-sm font-medium",
@@ -259,7 +248,7 @@ export function DDayForm({
                         <Button
                             variant="outline"
                             className={cn(
-                                "justify-start text-left font-normal w-full text-foreground rounded-full px-4",
+                                "border-none inset-shadow-sm justify-start text-left font-normal w-full text-foreground rounded-full px-4",
                                 !dateRange?.from && "text-muted-foreground"
                             )}
                         >
@@ -296,13 +285,11 @@ export function DDayForm({
                     </Popover.PopoverContent>
                 </Popover.Popover>
 
-                {/* options section - controls for multi-day and annual events */}
                 <Label className="text-sm font-medium text-foreground">
                     <Settings className="h-4 w-4" />
                     Options:
                 </Label>
                 <div className="flex items-center gap-4 p-2">
-                    {/* multi-day event checkbox - affects date picker mode and layout system */}
                     <div className="flex items-center gap-2">
                         <Checkbox
                             id="isMultiDay"
@@ -333,7 +320,6 @@ export function DDayForm({
                         </Label>
                     </div>
 
-                    {/* annual event checkbox - used by useDDays hook for date filtering */}
                     <div className="flex items-center gap-2">
                         <Checkbox
                             id="isAnnual"
@@ -356,7 +342,6 @@ export function DDayForm({
                 </div>
             </div>
 
-            {/* action buttons - submit and cancel buttons */}
             <div className="flex justify-end gap-2 pt-4">
                 {onCancel && (
                     <Button

@@ -2,7 +2,14 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Activity, Plus, TrendingUp, Settings } from "lucide-react";
+import {
+    Activity,
+    Plus,
+    TrendingUp,
+    Settings,
+    Users,
+    RefreshCw,
+} from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { redirect } from "next/navigation";
 import {
@@ -15,6 +22,9 @@ import {
     CycleSettingsForm,
 } from "@/components/tracker";
 import { usePeriods } from "@/lib/hooks/usePeriods";
+import { getUserMetadata, getPartnerMetadata } from "@/lib/api/checkin";
+import { getPartnerPeriodDays } from "@/lib/api/periods";
+import { toast } from "sonner";
 
 // Helper function to format date consistently
 const formatDateKey = (date: Date) => {
@@ -49,6 +59,233 @@ export default function Tracker() {
     const [date, setDate] = useState<Date | undefined>(new Date());
     const [selectedTab, setSelectedTab] = useState("overview");
     const [isSavingSettings, setIsSavingSettings] = useState(false);
+    const [userSex, setUserSex] = useState<"male" | "female" | null>(null);
+    const [partnerSex, setPartnerSex] = useState<"male" | "female" | null>(
+        null
+    );
+    const [hasPartner, setHasPartner] = useState(false);
+    const [partnerPeriodDays, setPartnerPeriodDays] = useState<Set<string>>(
+        new Set()
+    );
+    const [isLoadingPartnerData, setIsLoadingPartnerData] = useState(false);
+    const [lastPartnerDataRefresh, setLastPartnerDataRefresh] =
+        useState<Date | null>(null);
+    const [partnerCycleData, setPartnerCycleData] = useState<{
+        mostRecentPeriodStart: Date | null;
+        cycleLength: number;
+        nextPeriod: Date | null;
+        daysUntilNextPeriod: number | null;
+        currentCycleDay: number | null;
+        fertileStart: Date | null;
+        fertileEnd: Date | null;
+        daysUntilOvulation: number | null;
+    } | null>(null);
+
+    // Load user and partner metadata
+    useEffect(() => {
+        const loadMetadata = async () => {
+            try {
+                // Get user metadata
+                const userMeta = await getUserMetadata();
+                setUserSex(userMeta.sex as "male" | "female");
+
+                // Try to get partner metadata
+                try {
+                    const partnerMeta = await getPartnerMetadata();
+                    setPartnerSex(partnerMeta.sex as "male" | "female");
+                    setHasPartner(true);
+                } catch (error) {
+                    // No partner connection found
+                    setHasPartner(false);
+                }
+            } catch (error) {
+                console.error("Failed to load metadata:", error);
+                toast("Failed to load user settings");
+            }
+        };
+
+        loadMetadata();
+    }, []);
+
+    // Calculate partner cycle data from period days
+    const calculatePartnerCycleData = (periodDays: Set<string>) => {
+        if (periodDays.size === 0) {
+            setPartnerCycleData(null);
+            return;
+        }
+
+        const sortedDates = Array.from(periodDays)
+            .map(parseDateKey)
+            .sort((a, b) => a.getTime() - b.getTime());
+
+        // Group dates into potential periods (dates within 3 days of each other)
+        const potentialPeriods: Date[][] = [];
+        let currentPeriod: Date[] = [];
+
+        for (let i = 0; i < sortedDates.length; i++) {
+            const currentDate = sortedDates[i];
+            if (currentPeriod.length === 0) {
+                currentPeriod.push(currentDate);
+            } else {
+                const lastDate = currentPeriod[currentPeriod.length - 1];
+                const daysDiff = Math.ceil(
+                    (currentDate.getTime() - lastDate.getTime()) /
+                        (1000 * 60 * 60 * 24)
+                );
+
+                if (daysDiff <= 3) {
+                    currentPeriod.push(currentDate);
+                } else {
+                    if (currentPeriod.length > 0) {
+                        potentialPeriods.push([...currentPeriod]);
+                    }
+                    currentPeriod = [currentDate];
+                }
+            }
+        }
+        if (currentPeriod.length > 0) {
+            potentialPeriods.push(currentPeriod);
+        }
+
+        // Extract start dates from each period
+        const periodStartDates = potentialPeriods.map((period) => period[0]);
+
+        // Calculate average cycle length
+        let avgCycleLength = 28; // Default
+        if (periodStartDates.length > 1) {
+            let totalCycleDays = 0;
+            for (let i = 1; i < periodStartDates.length; i++) {
+                const diff = Math.ceil(
+                    (periodStartDates[i].getTime() -
+                        periodStartDates[i - 1].getTime()) /
+                        (1000 * 60 * 60 * 24)
+                );
+                totalCycleDays += diff;
+            }
+            avgCycleLength = Math.round(
+                totalCycleDays / (periodStartDates.length - 1)
+            );
+        }
+
+        let periodStart: Date | null = null;
+        if (potentialPeriods.length > 0) {
+            const mostRecentPeriod =
+                potentialPeriods[potentialPeriods.length - 1];
+            periodStart = mostRecentPeriod[0];
+        }
+
+        // Calculate next period date
+        const nextPeriod = periodStart
+            ? (() => {
+                  const next = new Date(periodStart);
+                  next.setDate(periodStart.getDate() + avgCycleLength);
+                  return next;
+              })()
+            : null;
+
+        // Calculate days until next period
+        const today = new Date();
+        const daysUntilNextPeriod = nextPeriod
+            ? Math.ceil(
+                  (nextPeriod.getTime() - today.getTime()) /
+                      (1000 * 60 * 60 * 24)
+              )
+            : null;
+
+        // Calculate current cycle day
+        const currentCycleDay = periodStart
+            ? (() => {
+                  const daysSinceLastPeriod = Math.ceil(
+                      (today.getTime() - periodStart.getTime()) /
+                          (1000 * 60 * 60 * 24)
+                  );
+                  const cycleDay = daysSinceLastPeriod % avgCycleLength;
+                  return cycleDay === 0 ? avgCycleLength : cycleDay;
+              })()
+            : null;
+
+        // Calculate fertility window
+        const fertileStart = periodStart
+            ? (() => {
+                  const start = new Date(periodStart);
+                  start.setDate(periodStart.getDate() + 11);
+                  return start;
+              })()
+            : null;
+
+        const fertileEnd = periodStart
+            ? (() => {
+                  const end = new Date(periodStart);
+                  end.setDate(periodStart.getDate() + 17);
+                  return end;
+              })()
+            : null;
+
+        // Calculate days until ovulation
+        const daysUntilOvulation = periodStart
+            ? (() => {
+                  const ovulationDate = new Date(periodStart);
+                  ovulationDate.setDate(periodStart.getDate() + 14);
+                  const daysDiff = Math.ceil(
+                      (ovulationDate.getTime() - today.getTime()) /
+                          (1000 * 60 * 60 * 24)
+                  );
+                  return daysDiff;
+              })()
+            : null;
+
+        setPartnerCycleData({
+            mostRecentPeriodStart: periodStart,
+            cycleLength: avgCycleLength,
+            nextPeriod,
+            daysUntilNextPeriod,
+            currentCycleDay,
+            fertileStart,
+            fertileEnd,
+            daysUntilOvulation,
+        });
+    };
+
+    // Load partner period data when we have a partner
+    const loadPartnerData = async () => {
+        if (!hasPartner) return;
+
+        setIsLoadingPartnerData(true);
+        try {
+            const response = await getPartnerPeriodDays();
+            const partnerDays = new Set<string>();
+
+            response.periodDays.forEach((day) => {
+                if (day.isPeriod) {
+                    partnerDays.add(day.date);
+                }
+            });
+
+            setPartnerPeriodDays(partnerDays);
+            calculatePartnerCycleData(partnerDays);
+            setLastPartnerDataRefresh(new Date());
+        } catch (error) {
+            console.error("Failed to load partner period data:", error);
+            // Don't show toast for partner data loading errors
+        } finally {
+            setIsLoadingPartnerData(false);
+        }
+    };
+
+    useEffect(() => {
+        loadPartnerData();
+    }, [hasPartner]);
+
+    // Auto-refresh partner data every 30 seconds
+    useEffect(() => {
+        if (!hasPartner) return;
+
+        const interval = setInterval(() => {
+            loadPartnerData();
+        }, 30000); // 30 seconds
+
+        return () => clearInterval(interval);
+    }, [hasPartner]);
 
     const sexualActivityDays = useMemo(() => {
         const activityDays = new Set<string>();
@@ -377,96 +614,51 @@ export default function Tracker() {
 
     return (
         <div className="min-h-screen">
-            <div className="min-h-screen container mx-auto px-8 pt-20 pb-16 flex flex-col">
+            <div className="min-h-screen container mx-auto px-4 md:px-8 pt-16 md:pt-20 pb-12 md:pb-16 flex flex-col">
                 <Tabs
                     value={selectedTab}
                     onValueChange={setSelectedTab}
                     className="flex flex-col flex-1"
                 >
-                    <TabsList className="w-full">
-                        <TabsTrigger
-                            value="overview"
-                            className="flex items-center gap-2"
-                        >
-                            <Activity className="w-4 h-4" />
-                            Overview
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="log"
-                            className="flex items-center gap-2"
-                        >
-                            <Plus className="w-4 h-4" />
-                            Log
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="settings"
-                            className="flex items-center gap-2"
-                        >
-                            <Settings className="w-4 h-4" />
-                            Settings
-                        </TabsTrigger>
-                        {/* <TabsTrigger
+                    {userSex !== "male" && (
+                        <TabsList className="w-full">
+                            <TabsTrigger
+                                value="overview"
+                                className="flex items-center gap-2"
+                            >
+                                <Activity className="w-4 h-4" />
+                                Overview
+                            </TabsTrigger>
+                            <TabsTrigger
+                                value="log"
+                                className="flex items-center gap-2"
+                            >
+                                <Plus className="w-4 h-4" />
+                                Log
+                            </TabsTrigger>
+                            <TabsTrigger
+                                value="settings"
+                                className="flex items-center gap-2"
+                            >
+                                <Settings className="w-4 h-4" />
+                                Settings
+                            </TabsTrigger>
+                        </TabsList>
+                    )}
+                    {/* <TabsTrigger
                             value="insights"
                             className="flex items-center gap-2"
                         >
                             <TrendingUp className="w-4 h-4" />
                             Insights
                         </TabsTrigger> */}
-                    </TabsList>
 
                     <TabsContent
                         value="overview"
                         className="flex-1 flex flex-col gap-4"
                     >
-                        <DayButtonRow
-                            currentDate={date || new Date()}
-                            onDateSelect={setDate}
-                            periodDays={periodDaysSet}
-                            onPeriodToggle={handlePeriodToggle}
-                            predictedPeriodDays={predictedPeriodDays}
-                            fertilityWindowDays={fertilityWindowDays}
-                            sexualActivityDays={sexualActivityDays}
-                        />
-
-                        <div className="grid md:grid-cols-[4fr_2fr_2fr] gap-4 flex-1">
-                            <TodaysSummary
-                                todaysData={getLogForDate(
-                                    formatDateKey(new Date())
-                                )}
-                                daysUntilNextPeriod={daysUntilNextPeriod}
-                                daysUntilOvulation={daysUntilOvulation}
-                                currentCycleDay={currentCycleDay}
-                                cycleLength={cycleLength}
-                                hasPeriodData={hasPeriodData}
-                                periodDaysSet={periodDaysSet}
-                                mostRecentPeriodStart={mostRecentPeriodStart}
-                            />
-
-                            <CycleStatusCard
-                                currentCycleDay={currentCycleDay}
-                                cycleLength={cycleLength}
-                                daysUntilNextPeriod={daysUntilNextPeriod}
-                                nextPeriod={nextPeriod}
-                                hasPeriodData={hasPeriodData}
-                                fertileStart={fertileStart}
-                                fertileEnd={fertileEnd}
-                            />
-
-                            {date && (
-                                <SelectedDateDetails
-                                    date={date}
-                                    periodData={getLogForDate(
-                                        formatDateKey(date)
-                                    )}
-                                    onLogClick={() => setSelectedTab("log")}
-                                />
-                            )}
-                        </div>
-                    </TabsContent>
-
-                    <TabsContent value="log" className="flex-1 flex flex-col">
-                        <div className="grid md:grid-cols-[auto_1fr] gap-4 flex-1">
-                            <ButtonRowCalendar
+                        {userSex !== "male" && (
+                            <DayButtonRow
                                 currentDate={date || new Date()}
                                 onDateSelect={setDate}
                                 periodDays={periodDaysSet}
@@ -475,33 +667,217 @@ export default function Tracker() {
                                 fertilityWindowDays={fertilityWindowDays}
                                 sexualActivityDays={sexualActivityDays}
                             />
+                        )}
 
-                            <LogForm
-                                date={date || new Date()}
-                                existingLog={
-                                    date
-                                        ? getLogForDate(formatDateKey(date))
-                                        : null
-                                }
-                                onSave={handleSaveLog}
-                                onUpdate={handleUpdateLog}
-                            />
-                        </div>
+                        {userSex !== "female" ? (
+                            // For non-female users, show partner's cycle data if available
+                            <div className="grid md:grid-cols-[1fr_1fr] gap-4 flex-1">
+                                <TodaysSummary
+                                    todaysData={getLogForDate(
+                                        formatDateKey(new Date())
+                                    )}
+                                    daysUntilNextPeriod={
+                                        hasPartner
+                                            ? partnerCycleData?.daysUntilNextPeriod ??
+                                              undefined
+                                            : daysUntilNextPeriod
+                                    }
+                                    daysUntilOvulation={
+                                        hasPartner
+                                            ? partnerCycleData?.daysUntilOvulation ??
+                                              undefined
+                                            : daysUntilOvulation
+                                    }
+                                    currentCycleDay={
+                                        hasPartner
+                                            ? partnerCycleData?.currentCycleDay ??
+                                              undefined
+                                            : currentCycleDay
+                                    }
+                                    cycleLength={
+                                        hasPartner
+                                            ? partnerCycleData?.cycleLength ??
+                                              cycleLength
+                                            : cycleLength
+                                    }
+                                    hasPeriodData={
+                                        hasPartner
+                                            ? partnerPeriodDays.size > 0
+                                            : hasPeriodData
+                                    }
+                                    periodDaysSet={
+                                        hasPartner
+                                            ? partnerPeriodDays
+                                            : periodDaysSet
+                                    }
+                                    mostRecentPeriodStart={
+                                        hasPartner
+                                            ? partnerCycleData?.mostRecentPeriodStart ??
+                                              undefined
+                                            : mostRecentPeriodStart
+                                    }
+                                    isPartnerData={hasPartner}
+                                />
+
+                                <CycleStatusCard
+                                    currentCycleDay={
+                                        hasPartner
+                                            ? partnerCycleData?.currentCycleDay ??
+                                              undefined
+                                            : currentCycleDay
+                                    }
+                                    cycleLength={
+                                        hasPartner
+                                            ? partnerCycleData?.cycleLength ??
+                                              cycleLength
+                                            : cycleLength
+                                    }
+                                    daysUntilNextPeriod={
+                                        hasPartner
+                                            ? partnerCycleData?.daysUntilNextPeriod ??
+                                              undefined
+                                            : daysUntilNextPeriod
+                                    }
+                                    nextPeriod={
+                                        hasPartner
+                                            ? partnerCycleData?.nextPeriod ??
+                                              undefined
+                                            : nextPeriod
+                                    }
+                                    hasPeriodData={
+                                        hasPartner
+                                            ? partnerPeriodDays.size > 0
+                                            : hasPeriodData
+                                    }
+                                    fertileStart={
+                                        hasPartner
+                                            ? partnerCycleData?.fertileStart ??
+                                              undefined
+                                            : fertileStart
+                                    }
+                                    fertileEnd={
+                                        hasPartner
+                                            ? partnerCycleData?.fertileEnd ??
+                                              undefined
+                                            : fertileEnd
+                                    }
+                                    isPartnerData={hasPartner}
+                                />
+                            </div>
+                        ) : (
+                            // For female users, show full interface
+                            <div className="grid md:grid-cols-[4fr_2fr_2fr] gap-4 flex-1">
+                                <TodaysSummary
+                                    todaysData={getLogForDate(
+                                        formatDateKey(new Date())
+                                    )}
+                                    daysUntilNextPeriod={daysUntilNextPeriod}
+                                    daysUntilOvulation={daysUntilOvulation}
+                                    currentCycleDay={currentCycleDay}
+                                    cycleLength={cycleLength}
+                                    hasPeriodData={hasPeriodData}
+                                    periodDaysSet={periodDaysSet}
+                                    mostRecentPeriodStart={
+                                        mostRecentPeriodStart
+                                    }
+                                />
+
+                                <CycleStatusCard
+                                    currentCycleDay={currentCycleDay}
+                                    cycleLength={cycleLength}
+                                    daysUntilNextPeriod={daysUntilNextPeriod}
+                                    nextPeriod={nextPeriod}
+                                    hasPeriodData={hasPeriodData}
+                                    fertileStart={fertileStart}
+                                    fertileEnd={fertileEnd}
+                                />
+
+                                {date && (
+                                    <SelectedDateDetails
+                                        date={date}
+                                        periodData={getLogForDate(
+                                            formatDateKey(date)
+                                        )}
+                                        onLogClick={() => setSelectedTab("log")}
+                                    />
+                                )}
+                            </div>
+                        )}
+
+                        {/* Message for non-female users explaining limited access */}
+                        {userSex !== "female" && (
+                            <div className="bg-muted/50 border rounded-lg p-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Users className="w-5 h-5 text-muted-foreground" />
+                                    <h3 className="font-medium text-sm">
+                                        Limited Access
+                                    </h3>
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                    <p>
+                                        You can view your partner's cycle
+                                        information but cannot edit period data.
+                                    </p>
+                                    <p className="mt-1">
+                                        Only your partner can track and manage
+                                        their period information.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
                     </TabsContent>
 
-                    <TabsContent
-                        value="settings"
-                        className="flex-1 flex flex-col"
-                    >
-                        <div className="flex-1 flex justify-center items-start">
-                            <CycleSettingsForm
-                                cycleLength={cycleLength}
-                                periodLength={periodLength}
-                                onSave={handleSaveSettings}
-                                isLoading={isSavingSettings}
-                            />
-                        </div>
-                    </TabsContent>
+                    {userSex !== "male" && (
+                        <>
+                            <TabsContent
+                                value="log"
+                                className="flex-1 flex flex-col"
+                            >
+                                <div className="grid md:grid-cols-[auto_1fr] gap-4 flex-1">
+                                    <ButtonRowCalendar
+                                        currentDate={date || new Date()}
+                                        onDateSelect={setDate}
+                                        periodDays={periodDaysSet}
+                                        onPeriodToggle={handlePeriodToggle}
+                                        predictedPeriodDays={
+                                            predictedPeriodDays
+                                        }
+                                        fertilityWindowDays={
+                                            fertilityWindowDays
+                                        }
+                                        sexualActivityDays={sexualActivityDays}
+                                    />
+
+                                    <LogForm
+                                        date={date || new Date()}
+                                        existingLog={
+                                            date
+                                                ? getLogForDate(
+                                                      formatDateKey(date)
+                                                  )
+                                                : null
+                                        }
+                                        onSave={handleSaveLog}
+                                        onUpdate={handleUpdateLog}
+                                    />
+                                </div>
+                            </TabsContent>
+
+                            <TabsContent
+                                value="settings"
+                                className="flex-1 flex flex-col"
+                            >
+                                <div className="flex-1 flex justify-center items-start">
+                                    <CycleSettingsForm
+                                        cycleLength={cycleLength}
+                                        periodLength={periodLength}
+                                        onSave={handleSaveSettings}
+                                        isLoading={isSavingSettings}
+                                    />
+                                </div>
+                            </TabsContent>
+                        </>
+                    )}
 
                     {/* <TabsContent value="insights" className="space-y-4">
                         <InsightsCard />

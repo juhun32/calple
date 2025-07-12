@@ -269,31 +269,31 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
                     <Button variant="ghost" size="icon" onClick={prevMonth}>
                         <ChevronLeft className="w-4 h-4" />
                     </Button>
-                    <div className="hidden lg:flex text-center gap-8">
-                        <h3 className="font-semibold flex items-center">
+                    <div className="hidden lg:flex text-center gap-4">
+                        <span className="font-semibold flex items-center rounded px-2 inset-shadow-sm bg-background">
                             {prevMonthDate.toLocaleDateString("en-US", {
                                 month: "long",
                                 year: "numeric",
                             })}
-                        </h3>
+                        </span>
 
                         <Separator orientation="vertical" />
 
-                        <h3 className="font-semibold flex items-center">
+                        <span className="font-semibold flex items-center rounded px-2 inset-shadow-sm bg-background">
                             {currentMonth.toLocaleDateString("en-US", {
                                 month: "long",
                                 year: "numeric",
                             })}
-                        </h3>
+                        </span>
                     </div>
 
-                    <div className="flex lg:hidden text-center">
-                        <h3 className="text-lg font-semibold flex items-center">
+                    <div className="flex lg:hidden text-center justify-center items-center">
+                        <span className="font-semibold flex items-center justify-center rounded w-40 h-7 inset-shadow-sm bg-background">
                             {currentMonth.toLocaleDateString("en-US", {
                                 month: "long",
                                 year: "numeric",
                             })}
-                        </h3>
+                        </span>
                     </div>
                     <Button variant="ghost" size="icon" onClick={nextMonth}>
                         <ChevronRight className="w-4 h-4" />

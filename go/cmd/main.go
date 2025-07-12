@@ -120,11 +120,25 @@ func main() {
 
 		// period tracking routes
 		api.GET("/periods/days", handlers.GetPeriodDays)
+		api.GET("/periods/partner/days", handlers.GetPartnerPeriodDays)
 		api.POST("/periods/days", handlers.CreatePeriodDay)
 		api.DELETE("/periods/days/:date", handlers.DeletePeriodDay)
 
 		api.GET("/periods/settings", handlers.GetCycleSettings)
 		api.PUT("/periods/settings", handlers.UpdateCycleSettings)
+
+		// user metadata routes
+		api.GET("/periods/metadata", handlers.GetUserMetadata)
+		api.PUT("/periods/metadata", handlers.UpdateUserMetadata)
+		api.GET("/periods/partner/metadata", handlers.GetPartnerMetadata)
+
+		// checkin routes
+		api.POST("/periods/checkin", handlers.CreateCheckin)
+		api.GET("/periods/checkin/:date", handlers.GetTodayCheckin)
+		api.GET("/periods/partner/checkin/:date", handlers.GetPartnerCheckin)
+
+		// debug route
+		api.GET("/debug/connection", handlers.DebugConnection)
 	}
 
 	// run server

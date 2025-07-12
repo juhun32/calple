@@ -37,6 +37,7 @@ import {
 
 // types
 import { Connection, Invitation } from "@/lib/types/connection";
+import { Blend } from "lucide-react";
 
 export function ConnectionManager() {
     const [open, setOpen] = useState(false);
@@ -210,8 +211,9 @@ export function ConnectionManager() {
                 <DialogTrigger asChild>
                     <Button
                         variant="outline"
-                        className="w-full sm:w-auto rounded-full"
+                        className="w-fit sm:w-auto rounded-full"
                     >
+                        <Blend className="w-4 h-4" />
                         Manage Connection
                     </Button>
                 </DialogTrigger>

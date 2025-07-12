@@ -16,24 +16,32 @@ const symptoms = [
     "Bloating",
     "Mood Swings",
     "Back Pain",
-    "Breast Tenderness",
+    "Tender Breasts",
     "Acne",
 ];
 
-const moods = [
+const moodsPositive = [
     "Happy",
     "Calm",
     "Energetic",
-    "Anxious",
-    "Irritable",
-    "Sad",
-    "Tired",
-    "Stressed",
+    "Content",
+    "Relaxed",
+    "Motivated",
+];
+
+const moodsNegative = [
+    "Angry",
+    "Frustrated",
+    "Overwhelmed",
+    "Disappointed",
+    "Lonely",
+    "Bored",
+    "Nervous",
 ];
 
 const activities = ["Exercise", "Meditation", "Social", "Work", "Rest"];
 
-const sexualActivities = ["Used Protection", "Unprotected"];
+const sexualActivities = ["Used", "Not Used"];
 
 interface LogFormProps {
     date: Date;
@@ -130,8 +138,11 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
     return (
         <Card.Card className="flex flex-col h-full">
             <Card.CardHeader>
-                <Card.CardTitle>
-                    Log Data for {date.toLocaleDateString()}
+                <Card.CardTitle className="flex items-center gap-2">
+                    Log Data for{" "}
+                    <p className="px-2 py-1 inset-shadow-sm bg-background rounded">
+                        {date.toLocaleDateString()}
+                    </p>
                 </Card.CardTitle>
                 <Card.CardDescription className="mt-2">
                     Track your symptoms, mood, and activities
@@ -146,7 +157,10 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                     </Label>
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 mt-4">
                         {symptoms.map((symptom) => (
-                            <div key={symptom} className="flex items-center">
+                            <div
+                                key={symptom}
+                                className="flex items-center space-x-2"
+                            >
                                 <Checkbox
                                     id={symptom}
                                     checked={selectedSymptoms.includes(symptom)}
@@ -154,7 +168,10 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                                         handleSymptomToggle(symptom)
                                     }
                                 />
-                                <Label htmlFor={symptom} className="text-sm">
+                                <Label
+                                    htmlFor={symptom}
+                                    className="text-sm px-1"
+                                >
                                     {symptom}
                                 </Label>
                             </div>
@@ -167,11 +184,15 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                     <Label className="text-base text-muted-foreground px-0">
                         Mood
                     </Label>
+                    <div className="text-xs flex items-center gap-2">
+                        <p className="text-emerald-700">Positive</p> -{" "}
+                        <p className="text-orange-700">Negative</p>
+                    </div>
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
-                        {moods.map((mood) => (
+                        {moodsPositive.map((mood) => (
                             <div
                                 key={mood}
-                                className="flex items-center space-x-2"
+                                className="flex items-center space-x-2 text-emerald-700"
                             >
                                 <Checkbox
                                     id={mood}
@@ -180,7 +201,24 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                                         handleMoodToggle(mood)
                                     }
                                 />
-                                <Label htmlFor={mood} className="text-sm">
+                                <Label htmlFor={mood} className="text-sm px-1">
+                                    {mood}
+                                </Label>
+                            </div>
+                        ))}
+                        {moodsNegative.map((mood) => (
+                            <div
+                                key={mood}
+                                className="flex items-center space-x-2 text-orange-700"
+                            >
+                                <Checkbox
+                                    id={mood}
+                                    checked={selectedMoods.includes(mood)}
+                                    onCheckedChange={() =>
+                                        handleMoodToggle(mood)
+                                    }
+                                />
+                                <Label htmlFor={mood} className="text-sm px-1">
                                     {mood}
                                 </Label>
                             </div>
@@ -208,7 +246,10 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                                         handleActivityToggle(activity)
                                     }
                                 />
-                                <Label htmlFor={activity} className="text-sm">
+                                <Label
+                                    htmlFor={activity}
+                                    className="text-sm px-1"
+                                >
                                     {activity}
                                 </Label>
                             </div>
@@ -221,6 +262,7 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                     <Label className="text-base text-muted-foreground px-0">
                         Sexual Activity
                     </Label>
+                    <p className="text-xs text-muted-foreground">Protection</p>
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
                         {sexualActivities.map((activity) => (
                             <div
@@ -236,7 +278,10 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                                         handleActivityToggle(activity)
                                     }
                                 />
-                                <Label htmlFor={activity} className="text-sm">
+                                <Label
+                                    htmlFor={activity}
+                                    className="text-sm px-1"
+                                >
                                     {activity}
                                 </Label>
                             </div>
@@ -250,7 +295,7 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                         Notes
                     </Label>
                     <Textarea
-                        placeholder="Add any additional notes..."
+                        placeholder="Additional notes..."
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
                         className="mt-2 flex-1"
@@ -258,9 +303,11 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                     />
                 </div>
 
-                <div className="mt-auto pt-4">
+                <div className="mt-auto md:pt-4">
                     <Button
                         className="w-full"
+                        variant="default"
+                        size={"sm"}
                         onClick={handleSubmit}
                         disabled={isSubmitting}
                     >

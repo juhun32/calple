@@ -24,6 +24,8 @@ export function AddDDayDialog({
 }: AddDDayDialogProps) {
     // loading state during form submission - passed to DDayForm for button state
     const [isSubmitting, setIsSubmitting] = useState(false);
+    // internal open state for uncontrolled mode
+    const [internalOpen, setInternalOpen] = useState(false);
 
     // handle form submission from the shared DDayForm component - called when user submits form
     const handleSubmit = async (formData: DDayFormData) => {
@@ -39,20 +41,40 @@ export function AddDDayDialog({
         const success = await createDDay(ddayData);
         setIsSubmitting(false);
 
-        // close dialog on successful creation - calls CalendarGrid state setter
-        if (success && onOpenChange) {
-            onOpenChange(false);
+        // close dialog on successful creation
+        if (success) {
+            if (onOpenChange) {
+                onOpenChange(false);
+            } else {
+                setInternalOpen(false);
+            }
         }
 
         return success;
     };
 
-    // determine if this dialog is controlled (has external open state) or uncontrolled - affects trigger button rendering
+    // determine if this dialog is controlled (has external open state) or uncontrolled
+    // affects trigger button rendering
     const isControlled = isOpen !== undefined && onOpenChange !== undefined;
 
+    // use external or internal open state
+    const dialogOpen = isControlled ? isOpen : internalOpen;
+    const handleOpenChange = isControlled ? onOpenChange : setInternalOpen;
+
+    // handle cancel button click
+    const handleCancel = () => {
+        if (onOpenChange) {
+            onOpenChange(false);
+        } else {
+            setInternalOpen(false);
+        }
+    };
+
     return (
-        <AlertDialog.AlertDialog open={isOpen} onOpenChange={onOpenChange}>
-            {/* render trigger button only for uncontrolled mode - when used standalone */}
+        <AlertDialog.AlertDialog
+            open={dialogOpen}
+            onOpenChange={handleOpenChange}
+        >
             {!isControlled && (
                 <AlertDialog.AlertDialogTrigger asChild>
                     <Button
@@ -70,13 +92,12 @@ export function AddDDayDialog({
                         Add Event
                     </AlertDialog.AlertDialogTitle>
                     <AlertDialog.AlertDialogDescription asChild>
-                        {/* shared form component - used by both AddDdayDialog and EditDdayDialog */}
                         <DDayForm
                             initialData={
                                 initialDate ? { date: initialDate } : undefined
                             }
                             onSubmit={handleSubmit}
-                            onCancel={() => onOpenChange?.(false)}
+                            onCancel={handleCancel}
                             submitLabel="Add"
                             cancelLabel="Cancel"
                             isSubmitting={isSubmitting}

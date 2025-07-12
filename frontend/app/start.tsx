@@ -7,7 +7,7 @@ import { User } from "lucide-react";
 export default function Start() {
     const { authState } = useAuth();
     return (
-        <div className="container flex flex-col gap-4 px-8 my-16 md:px-20 font-serif">
+        <div className="container flex flex-col gap-4 px-4 md:px-8 my-16 md:px-20 font-serif">
             <h1 className="text-2xl font-bold">
                 Happier Dating life with Calple
             </h1>

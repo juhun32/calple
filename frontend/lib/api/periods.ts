@@ -28,6 +28,19 @@ export async function getPeriodDays(): Promise<{ periodDays: PeriodDay[] }> {
     return handleResponse<{ periodDays: PeriodDay[] }>(response);
 }
 
+export async function getPartnerPeriodDays(): Promise<{
+    periodDays: PeriodDay[];
+    partnerSex: string;
+}> {
+    const response = await fetch(`${API_BASE}/partner/days`, {
+        method: "GET",
+        credentials: "include",
+    });
+    return handleResponse<{ periodDays: PeriodDay[]; partnerSex: string }>(
+        response
+    );
+}
+
 export async function createPeriodDay(
     data: CreatePeriodDayRequest
 ): Promise<PeriodDay> {
