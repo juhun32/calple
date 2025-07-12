@@ -39,8 +39,8 @@ import {
     getPartnerMetadata,
     getTodayCheckin,
     createCheckin,
+    deleteCheckin,
     getPartnerCheckin as getPartnerCheckinAPI,
-    debugConnection,
 } from "@/lib/api/checkin";
 
 const moodOptions = [
@@ -49,35 +49,30 @@ const moodOptions = [
         label: "Great",
         icon: Star,
         color: "text-yellow-500",
-        bgColor: "bg-yellow-50 dark:bg-yellow-950/20",
     },
     {
         value: "good",
         label: "Good",
         icon: Smile,
         color: "text-green-500",
-        bgColor: "bg-green-50 dark:bg-green-950/20",
     },
     {
         value: "okay",
         label: "Okay",
         icon: Meh,
         color: "text-blue-500",
-        bgColor: "bg-blue-50 dark:bg-blue-950/20",
     },
     {
         value: "bad",
         label: "Bad",
         icon: Frown,
         color: "text-orange-500",
-        bgColor: "bg-orange-50 dark:bg-orange-950/20",
     },
     {
         value: "terrible",
         label: "Terrible",
         icon: Heart,
         color: "text-red-500",
-        bgColor: "bg-red-50 dark:bg-red-950/20",
     },
 ];
 
@@ -103,21 +98,18 @@ const sexualMoodOptions = [
         label: "Interested",
         icon: Heart,
         color: "text-purple-500",
-        bgColor: "bg-purple-50 dark:bg-purple-950/20",
     },
     {
         value: "neutral",
         label: "Neutral",
         icon: Heart,
         color: "text-gray-500",
-        bgColor: "bg-gray-50 dark:bg-gray-950/20",
     },
     {
         value: "not_interested",
         label: "Not Interested",
         icon: Heart,
         color: "text-blue-500",
-        bgColor: "bg-blue-50 dark:bg-blue-950/20",
     },
 ];
 
@@ -149,21 +141,38 @@ export default function Checkin() {
     const [hasPartner, setHasPartner] = useState(false);
     const [userSex, setUserSex] = useState<"male" | "female" | null>(null);
     const [isRefreshingPartner, setIsRefreshingPartner] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     if (!authState.isAuthenticated && typeof window !== "undefined") {
         redirect("/");
     }
 
-    // Debug function to test connection
-    const testConnection = async () => {
+    // Function to delete today's checkin
+    const handleDeleteCheckin = async () => {
+        if (!todayCheckin) return;
+
+        setIsDeleting(true);
         try {
-            console.log("🔍 Testing connection...");
-            const debugInfo = await debugConnection();
-            console.log("🔍 Connection debug info:", debugInfo);
-            toast("Connection debug info logged to console");
+            await deleteCheckin(todayCheckin.date);
+            setTodayCheckin(null);
+
+            // reset form
+            setCurrentMood(null);
+            setCurrentEnergy(null);
+            setCurrentPeriod(null);
+            setCurrentSexualMood(null);
+            setNote("");
+
+            toast("Checkin deleted successfully.");
         } catch (error) {
-            console.error("❌ Connection test failed:", error);
-            toast("Connection test failed - check console");
+            console.error("Failed to delete checkin:", error);
+            const errorMessage =
+                error instanceof Error
+                    ? error.message
+                    : "Failed to delete checkin";
+            toast(errorMessage);
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -174,20 +183,20 @@ export default function Checkin() {
             console.log("=== Loading partner data ===");
             console.log("Loading partner metadata...");
             const partnerMeta = await getPartnerMetadata();
-            console.log("✅ Partner metadata loaded:", partnerMeta);
+            console.log("Partner metadata loaded:", partnerMeta);
             setHasPartner(true);
 
             // Get partner's checkin for today
             console.log("Loading partner checkin...");
             const partnerCheckin = await getPartnerCheckinAPI();
-            console.log("✅ Partner checkin loaded:", partnerCheckin);
+            console.log("Partner checkin loaded:", partnerCheckin);
             if (partnerCheckin) {
                 setPartnerCheckin(partnerCheckin);
             } else {
                 setPartnerCheckin(null);
             }
         } catch (error) {
-            console.error("❌ Error loading partner data:", error);
+            console.error("Error loading partner data:", error);
             console.error("Error details:", {
                 message: error instanceof Error ? error.message : String(error),
                 stack: error instanceof Error ? error.stack : undefined,
@@ -272,7 +281,7 @@ export default function Checkin() {
             // Refresh partner data after submitting
             await loadPartnerData();
 
-            toast("Checkin submitted successfully!");
+            toast("Checkin submitted successfully");
         } catch (error) {
             console.error("Failed to submit checkin:", error);
             toast("Failed to submit checkin");
@@ -305,16 +314,16 @@ export default function Checkin() {
     const showPartialPartnerData = false;
 
     return (
-        <div className="container mx-auto flex flex-col pt-20 pb-12 lg:pb-16 px-4 lg:px-8 gap-6">
+        <div className="container mx-auto flex flex-col pt-20 pb-12 lg:pb-16 px-4 lg:px-8 gap-6 min-h-screen">
             {/* Header */}
-            <div className="flex flex-col items-center text-center">
-                <h1 className="text-3xl font-bold mb-2">Daily Check-in</h1>
+            <div className="flex flex-col items-start px-4 lg:px-8">
+                <h1 className="text-xl font-bold">Daily Check-in</h1>
                 <p className="text-muted-foreground">
                     Share your mood and day with your partner
                 </p>
                 <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
                     <Calendar className="w-4 h-4" />
-                    <span>
+                    <span className="bg-card inset-shadow-sm px-2 py-1 rounded text-foreground font-medium">
                         {new Date().toLocaleDateString("en-US", {
                             weekday: "long",
                             year: "numeric",
@@ -325,15 +334,28 @@ export default function Checkin() {
                 </div>
             </div>
 
-            <div className="flex items-center justify-center lg:items-stretch gap-4 flex-col lg:flex-row">
-                <Card.Card className="w-full h-full flex flex-col">
+            <div className="flex items-stretch gap-4 flex-col lg:flex-row flex-1">
+                <Card.Card className="w-full flex flex-col">
                     <Card.CardHeader>
                         <Card.CardTitle className="flex items-center gap-2">
-                            <User className="w-5 h-5" />
-                            Your Check-in
+                            <User className="w-4 h-4" />
+                            Your Today
+                            {todayCheckin && (
+                                <div className="ml-auto flex gap-2">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={handleDeleteCheckin}
+                                        disabled={isDeleting}
+                                        className=""
+                                    >
+                                        <XCircle className="w-4 h-4" />
+                                    </Button>
+                                </div>
+                            )}
                         </Card.CardTitle>
                     </Card.CardHeader>
-                    <Card.CardContent className="space-y-6 flex-1">
+                    <Card.CardContent className="space-y-4 flex-1">
                         {todayCheckin ? (
                             // Show existing checkin
                             <div className="space-y-4">
@@ -356,18 +378,14 @@ export default function Checkin() {
                                             {formatTime(todayCheckin.createdAt)}
                                         </div>
                                     </div>
-                                    <Badge
-                                        variant="outline"
-                                        className="ml-auto"
-                                    >
-                                        <CheckCircle className="w-4 h-4 mr-1" />
-                                        Completed
-                                    </Badge>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div className="text-center p-4 rounded-lg bg-card border">
-                                        <div className="text-2xl mb-2">
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                    <div className="text-center p-2 rounded-lg bg-card border inset-shadow-sm">
+                                        <div className="text-xs text-muted-foreground mb-1">
+                                            My Mood
+                                        </div>
+                                        <div className="text-lg mb-2">
                                             {(() => {
                                                 const moodOption =
                                                     moodOptions.find(
@@ -378,7 +396,7 @@ export default function Checkin() {
                                                 const IconComponent =
                                                     moodOption?.icon;
                                                 return IconComponent ? (
-                                                    <IconComponent className="mx-auto w-8 h-8 text-muted-foreground" />
+                                                    <IconComponent className="mx-auto w-4 h-4 text-muted-foreground" />
                                                 ) : null;
                                             })()}
                                         </div>
@@ -392,8 +410,11 @@ export default function Checkin() {
                                             }
                                         </div>
                                     </div>
-                                    <div className="text-center p-4 rounded-lg bg-card border">
-                                        <div className="text-2xl mb-2">
+                                    <div className="text-center p-2 rounded-lg bg-card border inset-shadow-sm">
+                                        <div className="text-xs text-muted-foreground mb-1">
+                                            My Energy Level
+                                        </div>
+                                        <div className="text-lg mb-2">
                                             {(() => {
                                                 const energyOption =
                                                     energyOptions.find(
@@ -404,7 +425,7 @@ export default function Checkin() {
                                                 const IconComponent =
                                                     energyOption?.icon;
                                                 return IconComponent ? (
-                                                    <IconComponent className="mx-auto w-8 h-8 text-muted-foreground" />
+                                                    <IconComponent className="mx-auto w-4 h-4 text-muted-foreground" />
                                                 ) : null;
                                             })()}
                                         </div>
@@ -419,8 +440,11 @@ export default function Checkin() {
                                         </div>
                                     </div>
                                     {todayCheckin.sexualMood && (
-                                        <div className="text-center p-4 rounded-lg bg-card border">
-                                            <div className="text-2xl mb-2">
+                                        <div className="text-center p-2 rounded-lg bg-card border inset-shadow-sm">
+                                            <div className="text-xs text-muted-foreground mb-1">
+                                                Up for intimacy?
+                                            </div>
+                                            <div className="text-lg mb-2">
                                                 {(() => {
                                                     const sexualMoodOption =
                                                         sexualMoodOptions.find(
@@ -431,7 +455,7 @@ export default function Checkin() {
                                                     const IconComponent =
                                                         sexualMoodOption?.icon;
                                                     return IconComponent ? (
-                                                        <IconComponent className="mx-auto w-8 h-8 text-muted-foreground" />
+                                                        <IconComponent className="mx-auto w-4 h-4 text-muted-foreground" />
                                                     ) : null;
                                                 })()}
                                             </div>
@@ -449,7 +473,7 @@ export default function Checkin() {
                                 </div>
 
                                 {todayCheckin.note && (
-                                    <div className="p-4 rounded-lg bg-muted/50">
+                                    <div className="p-4 rounded-lg bg-muted/50 inset-shadow-sm">
                                         <div className="font-medium text-sm mb-1">
                                             Note:
                                         </div>
@@ -461,7 +485,7 @@ export default function Checkin() {
                             </div>
                         ) : (
                             // Show checkin form
-                            <div className="space-y-6">
+                            <div className="space-y-4">
                                 {/* Mood Selection */}
                                 <div>
                                     <h3 className="font-medium mb-3">
@@ -478,9 +502,7 @@ export default function Checkin() {
                                                 }
                                                 className={cn(
                                                     "flex flex-col items-center gap-1 h-auto p-3",
-                                                    currentMood ===
-                                                        mood.value &&
-                                                        mood.bgColor
+                                                    currentMood === mood.value
                                                 )}
                                                 onClick={() =>
                                                     setCurrentMood(
@@ -490,7 +512,7 @@ export default function Checkin() {
                                             >
                                                 <mood.icon
                                                     className={cn(
-                                                        "w-6 h-6",
+                                                        "w-4 h-4",
                                                         mood.color
                                                     )}
                                                 />
@@ -526,7 +548,7 @@ export default function Checkin() {
                                             >
                                                 <energy.icon
                                                     className={cn(
-                                                        "w-6 h-6",
+                                                        "w-4 h-4",
                                                         energy.color
                                                     )}
                                                 />
@@ -556,8 +578,7 @@ export default function Checkin() {
                                                 className={cn(
                                                     "flex flex-col items-center gap-1 h-auto p-3",
                                                     currentSexualMood ===
-                                                        sexualMood.value &&
-                                                        sexualMood.bgColor
+                                                        sexualMood.value
                                                 )}
                                                 onClick={() =>
                                                     setCurrentSexualMood(
@@ -567,7 +588,7 @@ export default function Checkin() {
                                             >
                                                 <sexualMood.icon
                                                     className={cn(
-                                                        "w-5 h-5",
+                                                        "w-4 h-4",
                                                         sexualMood.color
                                                     )}
                                                 />
@@ -627,20 +648,12 @@ export default function Checkin() {
                 </Card.Card>
 
                 {hasPartner && partnerCheckin && (
-                    <Card.Card className="w-full h-full flex flex-col">
+                    <Card.Card className="w-full flex flex-col">
                         <Card.CardHeader>
                             <Card.CardTitle className="flex items-center gap-2">
-                                <MessageCircle className="w-5 h-5" />
-                                Partner's Check-in
+                                <MessageCircle className="w-4 h-4" />
+                                Partner's Today
                                 <div className="ml-auto flex gap-2">
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={testConnection}
-                                        className="text-xs"
-                                    >
-                                        Debug
-                                    </Button>
                                     <Button
                                         variant="ghost"
                                         size="sm"
@@ -686,9 +699,12 @@ export default function Checkin() {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <div className="text-center p-4 rounded-lg bg-card border">
-                                            <div className="text-2xl mb-2">
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                        <div className="text-center p-2 rounded-lg bg-card border inset-shadow-sm">
+                                            <div className="text-xs text-muted-foreground mb-1">
+                                                Partner's Mood
+                                            </div>
+                                            <div className="text-lg mb-2">
                                                 {(() => {
                                                     const moodOption =
                                                         moodOptions.find(
@@ -699,7 +715,7 @@ export default function Checkin() {
                                                     const IconComponent =
                                                         moodOption?.icon;
                                                     return IconComponent ? (
-                                                        <IconComponent className="mx-auto w-8 h-8 text-muted-foreground" />
+                                                        <IconComponent className="mx-auto w-4 h-4 text-muted-foreground" />
                                                     ) : null;
                                                 })()}
                                             </div>
@@ -713,8 +729,11 @@ export default function Checkin() {
                                                 }
                                             </div>
                                         </div>
-                                        <div className="text-center p-4 rounded-lg bg-card border">
-                                            <div className="text-2xl mb-2">
+                                        <div className="text-center p-2 rounded-lg bg-card border inset-shadow-sm">
+                                            <div className="text-xs text-muted-foreground mb-1">
+                                                Partner's Energy Level
+                                            </div>
+                                            <div className="text-lg mb-2">
                                                 {(() => {
                                                     const energyOption =
                                                         energyOptions.find(
@@ -725,7 +744,7 @@ export default function Checkin() {
                                                     const IconComponent =
                                                         energyOption?.icon;
                                                     return IconComponent ? (
-                                                        <IconComponent className="mx-auto w-8 h-8 text-muted-foreground" />
+                                                        <IconComponent className="mx-auto w-4 h-4 text-muted-foreground" />
                                                     ) : null;
                                                 })()}
                                             </div>
@@ -741,8 +760,11 @@ export default function Checkin() {
                                         </div>
                                         {/* Sexual mood */}
                                         {partnerCheckin.sexualMood && (
-                                            <div className="text-center p-4 rounded-lg bg-card border">
-                                                <div className="text-2xl mb-2">
+                                            <div className="text-center p-2 rounded-lg bg-card border inset-shadow-sm">
+                                                <div className="text-xs text-muted-foreground mb-1">
+                                                    Up for Intimacy?
+                                                </div>
+                                                <div className="text-lg mb-2">
                                                     {(() => {
                                                         const sexualMoodOption =
                                                             sexualMoodOptions.find(
@@ -753,7 +775,7 @@ export default function Checkin() {
                                                         const IconComponent =
                                                             sexualMoodOption?.icon;
                                                         return IconComponent ? (
-                                                            <IconComponent className="mx-auto w-8 h-8 text-muted-foreground" />
+                                                            <IconComponent className="mx-auto w-4 h-4 text-muted-foreground" />
                                                         ) : null;
                                                     })()}
                                                 </div>
@@ -772,7 +794,7 @@ export default function Checkin() {
 
                                     {/* Note */}
                                     {partnerCheckin.note && (
-                                        <div className="p-4 rounded-lg bg-muted/50">
+                                        <div className="p-4 rounded-lg bg-muted/50 inset-shadow-sm">
                                             <div className="font-medium text-sm mb-1">
                                                 Note:
                                             </div>
@@ -799,10 +821,10 @@ export default function Checkin() {
                 )}
 
                 {!hasPartner && (
-                    <Card.Card className="w-full h-full flex flex-col">
+                    <Card.Card className="w-full flex flex-col">
                         <Card.CardHeader>
                             <Card.CardTitle className="flex items-center gap-2">
-                                <MessageCircle className="w-5 h-5" />
+                                <MessageCircle className="w-4 h-4" />
                                 Partner Connection
                             </Card.CardTitle>
                         </Card.CardHeader>
@@ -831,11 +853,11 @@ export default function Checkin() {
                 )}
 
                 {hasPartner && !partnerCheckin && (
-                    <Card.Card className="w-full h-full flex flex-col">
+                    <Card.Card className="w-full flex flex-col">
                         <Card.CardHeader>
                             <Card.CardTitle className="flex items-center gap-2">
-                                <MessageCircle className="w-5 h-5" />
-                                Partner's Check-in
+                                <MessageCircle className="w-4 h-4" />
+                                Partner's Today
                             </Card.CardTitle>
                         </Card.CardHeader>
                         <Card.CardContent className="flex-1 flex flex-col items-center justify-center">

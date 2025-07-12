@@ -1081,6 +1081,63 @@ func GetPartnerCheckin(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"partnerCheckin": partnerCheckin})
 }
 
+// DeleteCheckin deletes a checkin for the specified date
+func DeleteCheckin(c *gin.Context) {
+	session := sessions.Default(c)
+	uid := session.Get("user_id")
+	if uid == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	fsClient := c.MustGet("firestore").(*firestore.Client)
+	ctx := context.Background()
+
+	date := c.Param("date")
+	if date == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Date parameter is required"})
+		return
+	}
+
+	// Validate date format (YYYY-MM-DD)
+	if len(date) != 10 || date[4] != '-' || date[7] != '-' {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Use YYYY-MM-DD"})
+		return
+	}
+
+	userID := uid.(string)
+	fmt.Printf("DEBUG: DeleteCheckin - User ID: %s, Date: %s\n", userID, date)
+
+	// Find the checkin document for the specified date in the user's checkins subcollection
+	checkinDocs, err := fsClient.Collection("users").Doc(userID).Collection("checkins").
+		Where("date", "==", date).
+		Documents(ctx).GetAll()
+
+	if err != nil {
+		fmt.Printf("DEBUG: DeleteCheckin - Error fetching checkin: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch checkin data"})
+		return
+	}
+
+	if len(checkinDocs) == 0 {
+		fmt.Printf("DEBUG: DeleteCheckin - No checkin found for date: %s\n", date)
+		c.JSON(http.StatusNotFound, gin.H{"error": "Checkin not found for the specified date"})
+		return
+	}
+
+	// Delete the checkin document
+	checkinDoc := checkinDocs[0]
+	_, err = checkinDoc.Ref.Delete(ctx)
+	if err != nil {
+		fmt.Printf("DEBUG: DeleteCheckin - Error deleting checkin: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete checkin"})
+		return
+	}
+
+	fmt.Printf("DEBUG: DeleteCheckin - Successfully deleted checkin for user: %s, date: %s\n", userID, date)
+	c.JSON(http.StatusOK, gin.H{"message": "Checkin deleted successfully"})
+}
+
 // DebugConnection is a test endpoint to verify connection status
 func DebugConnection(c *gin.Context) {
 	session := sessions.Default(c)

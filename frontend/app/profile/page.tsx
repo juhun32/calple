@@ -53,10 +53,10 @@ export default function Profile() {
         try {
             await updateUserMetadata(sex);
             setUserSex(sex);
-            toast("Sex setting updated successfully");
+            toast("Gender setting updated successfully");
         } catch (error) {
-            console.error("Failed to update sex setting:", error);
-            toast("Failed to update sex setting");
+            console.error("Failed to update Gender setting:", error);
+            toast("Failed to update Gender setting");
         } finally {
             setIsLoading(false);
         }
@@ -109,12 +109,12 @@ export default function Profile() {
                 </Card.CardContent>
             </Card.Card>
 
-            {/* Sex Settings */}
+            {/* Gender settings */}
             <Card.Card className="gap-4">
                 <Card.CardHeader>
                     <Card.CardTitle className="flex items-center gap-2 mb-2">
                         <User className="w-4 h-4" />
-                        Sex Setting
+                        Gender setting
                     </Card.CardTitle>
                     <Card.CardDescription className="text-xs">
                         This setting controls period data visibility and editing

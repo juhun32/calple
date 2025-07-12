@@ -92,16 +92,14 @@ func main() {
 		path := c.Request.URL.Path
 		method := c.Request.Method
 
-		// Process request
+		// process request
 		c.Next()
 
-		// Log after request is processed
 		status := c.Writer.Status()
 		latency := time.Since(start)
 
 		fmt.Printf("DEBUG: %s %s - Status: %d, Latency: %v\n", method, path, status, latency)
 
-		// Log additional info for errors
 		if status >= 400 {
 			fmt.Printf("DEBUG: Error request - Method: %s, Path: %s, Status: %d, User-Agent: %s\n",
 				method, path, status, c.Request.UserAgent())
@@ -123,15 +121,15 @@ func main() {
 		})
 	})
 
-	// Firebase connectivity test endpoint
+	// firebase connectivity test endpoint
 	r.GET("/api/health/firebase", func(c *gin.Context) {
 		fsClient := c.MustGet("firestore").(*firestore.Client)
 		ctx := context.Background()
 
-		// Try to access Firestore to test connectivity
+		// try to access Firestore to test connectivity
 		_, err := fsClient.Collection("_health_check").Doc("test").Get(ctx)
 		if err != nil {
-			// This is expected to fail since the document doesn't exist, but it tests connectivity
+			// this is expected to fail since the document doesn't exist
 			if strings.Contains(err.Error(), "NotFound") {
 				c.JSON(http.StatusOK, gin.H{
 					"status":  "firebase_connected",
@@ -197,6 +195,7 @@ func main() {
 		// checkin routes
 		api.POST("/periods/checkin", handlers.CreateCheckin)
 		api.GET("/periods/checkin/:date", handlers.GetTodayCheckin)
+		api.DELETE("/periods/checkin/:date", handlers.DeleteCheckin)
 		api.GET("/periods/partner/checkin/:date", handlers.GetPartnerCheckin)
 
 		// debug route

@@ -179,6 +179,21 @@ export const createCheckin = async (
     return data.checkin;
 };
 
+// Delete checkin for a specific date
+export const deleteCheckin = async (date: string): Promise<void> => {
+    const response = await fetch(`${BACKEND_URL}/api/periods/checkin/${date}`, {
+        method: "DELETE",
+        credentials: "include",
+    });
+
+    if (!response.ok) {
+        if (response.status === 404) {
+            throw new Error("Checkin not found for the specified date");
+        }
+        throw new Error("Failed to delete checkin");
+    }
+};
+
 // Get partner's checkin for today
 export const getPartnerCheckin = async (): Promise<PartnerCheckin | null> => {
     const today = new Date().toISOString().split("T")[0];

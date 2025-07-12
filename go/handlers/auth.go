@@ -114,7 +114,7 @@ func Callback(c *gin.Context) {
 	userData := map[string]interface{}{
 		"email": userinfo.Email,
 		"name":  userinfo.Name,
-		"sex":   "", // Default empty sex field
+		"sex":   "female", // Default sex field to female for new users
 		"tokens": map[string]interface{}{
 			"access_token":  token.AccessToken,
 			"refresh_token": token.RefreshToken,
