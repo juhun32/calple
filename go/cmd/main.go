@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"calple/firebase"
 	"calple/handlers"
 
+	"cloud.google.com/go/firestore"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -84,11 +86,71 @@ func main() {
 		c.Next()
 	})
 
+	// logging middleware for debugging
+	r.Use(func(c *gin.Context) {
+		start := time.Now()
+		path := c.Request.URL.Path
+		method := c.Request.Method
+
+		// Process request
+		c.Next()
+
+		// Log after request is processed
+		status := c.Writer.Status()
+		latency := time.Since(start)
+
+		fmt.Printf("DEBUG: %s %s - Status: %d, Latency: %v\n", method, path, status, latency)
+
+		// Log additional info for errors
+		if status >= 400 {
+			fmt.Printf("DEBUG: Error request - Method: %s, Path: %s, Status: %d, User-Agent: %s\n",
+				method, path, status, c.Request.UserAgent())
+		}
+	})
+
 	// auth routes
 	r.GET("/google/oauth/login", handlers.Login)
 	r.GET("/google/oauth/callback", handlers.Callback)
 	r.GET("/api/auth/status", handlers.AuthStatus)
 	r.GET("/google/oauth/logout", handlers.Logout)
+
+	// health check endpoint
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"status":      "healthy",
+			"timestamp":   time.Now().UTC(),
+			"environment": os.Getenv("ENV"),
+		})
+	})
+
+	// Firebase connectivity test endpoint
+	r.GET("/api/health/firebase", func(c *gin.Context) {
+		fsClient := c.MustGet("firestore").(*firestore.Client)
+		ctx := context.Background()
+
+		// Try to access Firestore to test connectivity
+		_, err := fsClient.Collection("_health_check").Doc("test").Get(ctx)
+		if err != nil {
+			// This is expected to fail since the document doesn't exist, but it tests connectivity
+			if strings.Contains(err.Error(), "NotFound") {
+				c.JSON(http.StatusOK, gin.H{
+					"status":  "firebase_connected",
+					"message": "Firebase connection is working (document not found is expected)",
+				})
+			} else {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"status": "firebase_error",
+					"error":  err.Error(),
+				})
+			}
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"status":  "firebase_connected",
+			"message": "Firebase connection is working",
+		})
+	})
 
 	api := r.Group("/api")
 	{

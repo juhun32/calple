@@ -49,16 +49,44 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 // Get user metadata (sex)
 export const getUserMetadata = async (): Promise<UserMetadata> => {
-    const response = await fetch(`${BACKEND_URL}/api/periods/metadata`, {
-        credentials: "include",
-    });
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/periods/metadata`, {
+            credentials: "include",
+        });
 
-    if (!response.ok) {
-        throw new Error("Failed to fetch user metadata");
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("getUserMetadata error:", {
+                status: response.status,
+                statusText: response.statusText,
+                body: errorText,
+            });
+
+            if (response.status === 401) {
+                throw new Error(
+                    "Authentication required. Please log in again."
+                );
+            } else if (response.status === 404) {
+                throw new Error("User not found. Please contact support.");
+            } else if (response.status === 500) {
+                throw new Error("Server error. Please try again later.");
+            } else {
+                throw new Error(
+                    `Failed to fetch user metadata: ${response.status} ${response.statusText}`
+                );
+            }
+        }
+
+        const data = await response.json();
+        return data.userMetadata;
+    } catch (error) {
+        console.error("getUserMetadata fetch error:", error);
+        if (error instanceof Error) {
+            throw error;
+        } else {
+            throw new Error("Failed to fetch user metadata");
+        }
     }
-
-    const data = await response.json();
-    return data.userMetadata;
 };
 
 // Update user metadata (sex)

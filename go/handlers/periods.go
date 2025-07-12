@@ -469,6 +469,7 @@ func GetUserMetadata(c *gin.Context) {
 	session := sessions.Default(c)
 	uid := session.Get("user_id")
 	if uid == nil {
+		fmt.Printf("DEBUG: GetUserMetadata - No user_id in session\n")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
@@ -476,27 +477,64 @@ func GetUserMetadata(c *gin.Context) {
 	fsClient := c.MustGet("firestore").(*firestore.Client)
 	ctx := context.Background()
 
+	userID := uid.(string)
+	fmt.Printf("DEBUG: GetUserMetadata - User ID: %s\n", userID)
+
 	// Get user document directly
-	userDoc, err := fsClient.Collection("users").Doc(uid.(string)).Get(ctx)
+	userDoc, err := fsClient.Collection("users").Doc(userID).Get(ctx)
 	if err != nil {
+		fmt.Printf("DEBUG: GetUserMetadata - Error fetching user: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user data"})
 		return
 	}
 
+	if !userDoc.Exists() {
+		fmt.Printf("DEBUG: GetUserMetadata - User document does not exist for ID: %s\n", userID)
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
 	userData := userDoc.Data()
+	fmt.Printf("DEBUG: GetUserMetadata - User data keys: %v\n", util.GetMapKeys(userData))
+
+	// Safely extract sex field
 	sex := ""
 	if userData["sex"] != nil {
-		sex = userData["sex"].(string)
+		if sexStr, ok := userData["sex"].(string); ok {
+			sex = sexStr
+		} else {
+			fmt.Printf("DEBUG: GetUserMetadata - Sex field is not a string: %T\n", userData["sex"])
+		}
+	}
+
+	// Handle optional timestamp fields with safe type assertions
+	createdAt := time.Now()
+	if userData["created_at"] != nil {
+		if createdTime, ok := userData["created_at"].(time.Time); ok {
+			createdAt = createdTime
+		} else {
+			fmt.Printf("DEBUG: GetUserMetadata - created_at field is not time.Time: %T\n", userData["created_at"])
+		}
+	}
+
+	updatedAt := time.Now()
+	if userData["last_login_at"] != nil {
+		if updatedTime, ok := userData["last_login_at"].(time.Time); ok {
+			updatedAt = updatedTime
+		} else {
+			fmt.Printf("DEBUG: GetUserMetadata - last_login_at field is not time.Time: %T\n", userData["last_login_at"])
+		}
 	}
 
 	metadata := UserMetadata{
 		ID:        userDoc.Ref.ID,
-		UserID:    uid.(string),
+		UserID:    userID,
 		Sex:       sex,
-		CreatedAt: userData["created_at"].(time.Time),
-		UpdatedAt: userData["last_login_at"].(time.Time),
+		CreatedAt: createdAt,
+		UpdatedAt: updatedAt,
 	}
 
+	fmt.Printf("DEBUG: GetUserMetadata - Successfully created metadata for user: %s\n", userID)
 	c.JSON(http.StatusOK, gin.H{"userMetadata": metadata})
 }
 
@@ -505,6 +543,7 @@ func UpdateUserMetadata(c *gin.Context) {
 	session := sessions.Default(c)
 	uid := session.Get("user_id")
 	if uid == nil {
+		fmt.Printf("DEBUG: UpdateUserMetadata - No user_id in session\n")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
@@ -515,39 +554,58 @@ func UpdateUserMetadata(c *gin.Context) {
 	// Parse request body
 	var metadata UserMetadata
 	if err := c.ShouldBindJSON(&metadata); err != nil {
+		fmt.Printf("DEBUG: UpdateUserMetadata - Invalid request body: %v\n", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
 	}
 
 	// Validate sex value
 	if metadata.Sex != "male" && metadata.Sex != "female" {
+		fmt.Printf("DEBUG: UpdateUserMetadata - Invalid sex value: %s\n", metadata.Sex)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Sex must be either 'male' or 'female'"})
 		return
 	}
 
+	userID := uid.(string)
+	fmt.Printf("DEBUG: UpdateUserMetadata - Updating metadata for user: %s, sex: %s\n", userID, metadata.Sex)
+
 	// Update user document directly
-	_, err := fsClient.Collection("users").Doc(uid.(string)).Update(ctx, []firestore.Update{
+	_, err := fsClient.Collection("users").Doc(userID).Update(ctx, []firestore.Update{
 		{Path: "sex", Value: metadata.Sex},
 		{Path: "last_login_at", Value: time.Now()},
 	})
 
 	if err != nil {
+		fmt.Printf("DEBUG: UpdateUserMetadata - Error updating user: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user metadata"})
 		return
 	}
 
 	// Get updated user data
-	userDoc, err := fsClient.Collection("users").Doc(uid.(string)).Get(ctx)
+	userDoc, err := fsClient.Collection("users").Doc(userID).Get(ctx)
 	if err != nil {
+		fmt.Printf("DEBUG: UpdateUserMetadata - Error fetching updated user data: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch updated user data"})
 		return
 	}
 
 	userData := userDoc.Data()
 	metadata.ID = userDoc.Ref.ID
-	metadata.UserID = uid.(string)
-	metadata.UpdatedAt = userData["last_login_at"].(time.Time)
+	metadata.UserID = userID
 
+	// Safely extract updated timestamp
+	if userData["last_login_at"] != nil {
+		if updatedTime, ok := userData["last_login_at"].(time.Time); ok {
+			metadata.UpdatedAt = updatedTime
+		} else {
+			fmt.Printf("DEBUG: UpdateUserMetadata - last_login_at field is not time.Time: %T\n", userData["last_login_at"])
+			metadata.UpdatedAt = time.Now()
+		}
+	} else {
+		metadata.UpdatedAt = time.Now()
+	}
+
+	fmt.Printf("DEBUG: UpdateUserMetadata - Successfully updated metadata for user: %s\n", userID)
 	c.JSON(http.StatusOK, gin.H{"userMetadata": metadata})
 }
 
@@ -624,12 +682,23 @@ func GetPartnerMetadata(c *gin.Context) {
 		partnerSex = partnerUserData["sex"].(string)
 	}
 
+	// Handle optional timestamp fields
+	createdAt := time.Now()
+	if partnerUserData["created_at"] != nil {
+		createdAt = partnerUserData["created_at"].(time.Time)
+	}
+
+	updatedAt := time.Now()
+	if partnerUserData["last_login_at"] != nil {
+		updatedAt = partnerUserData["last_login_at"].(time.Time)
+	}
+
 	metadata := UserMetadata{
 		ID:        partnerUserDocs[0].Ref.ID,
 		UserID:    partnerUserDocs[0].Ref.ID,
 		Sex:       partnerSex,
-		CreatedAt: partnerUserData["created_at"].(time.Time),
-		UpdatedAt: partnerUserData["last_login_at"].(time.Time),
+		CreatedAt: createdAt,
+		UpdatedAt: updatedAt,
 	}
 
 	c.JSON(http.StatusOK, gin.H{"partnerMetadata": metadata})
@@ -859,6 +928,18 @@ func GetTodayCheckin(c *gin.Context) {
 
 	// Return the checkin
 	data := docs[0].Data()
+
+	// Handle optional timestamp fields
+	createdAt := time.Now()
+	if data["createdAt"] != nil {
+		createdAt = data["createdAt"].(time.Time)
+	}
+
+	updatedAt := time.Now()
+	if data["updatedAt"] != nil {
+		updatedAt = data["updatedAt"].(time.Time)
+	}
+
 	checkin := CheckinData{
 		ID:           docs[0].Ref.ID,
 		UserID:       uid.(string),
@@ -868,8 +949,8 @@ func GetTodayCheckin(c *gin.Context) {
 		PeriodStatus: util.GetStringValue(data, "periodStatus"),
 		SexualMood:   util.GetStringValue(data, "sexualMood"),
 		Note:         util.GetStringValue(data, "note"),
-		CreatedAt:    data["createdAt"].(time.Time),
-		UpdatedAt:    data["updatedAt"].(time.Time),
+		CreatedAt:    createdAt,
+		UpdatedAt:    updatedAt,
 	}
 
 	c.JSON(http.StatusOK, gin.H{"checkin": checkin})
@@ -975,6 +1056,13 @@ func GetPartnerCheckin(c *gin.Context) {
 
 	// Return partner's checkin
 	data := checkinDocs[0].Data()
+
+	// Handle optional timestamp fields
+	createdAt := time.Now()
+	if data["createdAt"] != nil {
+		createdAt = data["createdAt"].(time.Time)
+	}
+
 	partnerCheckin := PartnerCheckin{
 		ID:           checkinDocs[0].Ref.ID,
 		UserID:       partnerID,
@@ -987,7 +1075,7 @@ func GetPartnerCheckin(c *gin.Context) {
 		PeriodStatus: util.GetStringValue(data, "periodStatus"),
 		SexualMood:   util.GetStringValue(data, "sexualMood"),
 		Note:         util.GetStringValue(data, "note"),
-		CreatedAt:    data["createdAt"].(time.Time),
+		CreatedAt:    createdAt,
 	}
 
 	c.JSON(http.StatusOK, gin.H{"partnerCheckin": partnerCheckin})

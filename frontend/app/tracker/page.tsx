@@ -100,7 +100,14 @@ export default function Tracker() {
                 }
             } catch (error) {
                 console.error("Failed to load metadata:", error);
-                toast("Failed to load user settings");
+                const errorMessage =
+                    error instanceof Error
+                        ? error.message
+                        : "Failed to load user settings";
+                toast(errorMessage, {
+                    description:
+                        "Please try refreshing the page or contact support if the issue persists.",
+                });
             }
         };
 

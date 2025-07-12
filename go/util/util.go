@@ -73,3 +73,12 @@ func GetStringValue(data map[string]interface{}, key string) string {
 	}
 	return ""
 }
+
+// getMapKeys returns a slice of keys from a map
+func GetMapKeys(data map[string]interface{}) []string {
+	keys := make([]string, 0, len(data))
+	for k := range data {
+		keys = append(keys, k)
+	}
+	return keys
+}

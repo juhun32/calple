@@ -264,7 +264,14 @@ export default function Checkin() {
                 await loadPartnerData();
             } catch (error) {
                 console.error("Failed to load checkin data:", error);
-                toast("Failed to load checkin data");
+                const errorMessage =
+                    error instanceof Error
+                        ? error.message
+                        : "Failed to load checkin data";
+                toast(errorMessage, {
+                    description:
+                        "Please try refreshing the page or contact support if the issue persists.",
+                });
             }
         };
 
