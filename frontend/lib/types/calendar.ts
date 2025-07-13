@@ -90,12 +90,15 @@ export interface DDayFormData {
 
 // props for the shared event form component; used by AddDdayDialog and EditDdayDialog
 export interface DDayFormProps {
-    initialData?: Partial<DDayFormData>; // prepopulated form data; from existing event or user input
+    initialData?: Partial<DDay>; // prepopulated form data; from existing event or user input
     onSubmit: (data: DDayFormData) => Promise<boolean>; // form submission handler; passed from parent dialog
     onCancel?: () => void; // cancel button handler; passed from parent dialog
+    onDelete?: () => void; // delete button handler; passed from parent dialog
     submitLabel?: string; // text for submit button; customizable by parent dialog
     cancelLabel?: string; // text for cancel button; customizable by parent dialog
+    deleteLabel?: string; // text for delete button; customizable by parent dialog
     isSubmitting?: boolean; // whether form is currently submitting; from parent dialog state
+    isDeleting?: boolean; // whether delete action is currently in progress; from parent dialog state
 }
 
 // props for the show all events dialog component; used by CalendarGrid only when there are 4+ events on a day
@@ -103,7 +106,7 @@ export interface ShowAllEventsProps {
     ddays: DDay[]; // array of events to display; from CalendarGrid day events
     updateDDay: (
         id: string,
-        updates: Partial<Omit<any, "id" | "days">>
+        updates: Partial<Omit<DDay, "id" | "days">>
     ) => Promise<boolean>; // update function; from useDDays hook
     deleteDDay: (id: string) => Promise<boolean>; // delete function; from useDDays hook
 }

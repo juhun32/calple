@@ -106,22 +106,14 @@ export function EditDdayDialog({
                             <DDayForm
                                 initialData={initialData}
                                 onSubmit={handleSubmit}
+                                onCancel={() => onOpenChange(false)}
+                                onDelete={handleDelete}
                                 submitLabel="Save"
+                                cancelLabel="Cancel"
+                                deleteLabel="Delete Event"
                                 isSubmitting={isSubmitting}
+                                isDeleting={isDeleting}
                             />
-
-                            <div className="flex justify-start pt-4 border-t">
-                                <Button
-                                    variant="destructive"
-                                    onClick={handleDelete}
-                                    disabled={isDeleting || isSubmitting}
-                                    className="rounded-full"
-                                >
-                                    {isDeleting
-                                        ? "Deleting..."
-                                        : "Delete Event"}
-                                </Button>
-                            </div>
                         </div>
                     </AlertDialog.AlertDialogDescription>
                 </AlertDialog.AlertDialogHeader>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { format } from "date-fns";
 import { DateRange } from "react-day-picker";
 
@@ -34,9 +34,12 @@ export function DDayForm({
     initialData,
     onSubmit,
     onCancel,
+    onDelete,
     submitLabel = "Save",
     cancelLabel = "Cancel",
+    deleteLabel = "Delete",
     isSubmitting = false,
+    isDeleting = false,
 }: DDayFormProps) {
     const [title, setTitle] = useState(initialData?.title || "");
     const [group, setGroup] = useState(initialData?.group || "");
@@ -48,14 +51,7 @@ export function DDayForm({
         initialData?.connectedUsers?.[0] || ""
     );
     const [isMultiDay, setIsMultiDay] = useState(false);
-    const [dateRange, setDateRange] = useState<DateRange | undefined>(
-        initialData?.date
-            ? {
-                  from: initialData.date,
-                  to: initialData.endDate || initialData.date,
-              }
-            : undefined
-    );
+    const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
     // update form when initialData changes (for edit mode) - called when editing existing events
     useEffect(() => {
@@ -67,20 +63,19 @@ export function DDayForm({
             setConnectedEmail(initialData.connectedUsers?.[0] || "");
 
             if (initialData.date) {
-                setDateRange({
-                    from: initialData.date,
-                    to: initialData.endDate || initialData.date,
-                });
-                setIsMultiDay(
-                    !!(
-                        initialData.endDate &&
-                        initialData.date.getTime() !==
-                            initialData.endDate.getTime()
-                    )
-                );
+                const fromDate = new Date(initialData.date);
+                const toDate = initialData.endDate
+                    ? new Date(initialData.endDate)
+                    : fromDate;
+                setDateRange({ from: fromDate, to: toDate });
+
+                const shouldBeMultiDay =
+                    fromDate.getTime() !== toDate.getTime();
+                setIsMultiDay(shouldBeMultiDay);
             }
         }
-    }, [initialData]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // handle form submission - called by parent dialog (AddDdayDialog or EditDdayDialog)
     const handleSubmit = async () => {
@@ -258,6 +253,7 @@ export function DDayForm({
                     <Popover.PopoverContent
                         className="w-auto p-0 z-50"
                         align="start"
+                        key={`calendar-${isMultiDay ? "range" : "single"}`}
                     >
                         {isMultiDay ? (
                             <Calendar
@@ -291,75 +287,96 @@ export function DDayForm({
                 </Label>
                 <div className="flex items-center gap-4 p-2">
                     <div className="flex items-center gap-2">
-                        <Checkbox
-                            id="isMultiDay"
-                            checked={isMultiDay}
-                            onCheckedChange={(checked) => {
-                                setIsMultiDay(checked === true);
-                                if (checked === false) {
-                                    setDateRange(
-                                        dateRange?.from
-                                            ? {
-                                                  from: dateRange.from,
-                                                  to: dateRange.from,
-                                              }
-                                            : undefined
-                                    );
+                        <Button
+                            type="button"
+                            variant={isMultiDay ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => {
+                                console.log(
+                                    "Multi-day button clicked, current state:",
+                                    isMultiDay
+                                );
+                                const newIsMultiDay = !isMultiDay;
+                                console.log(
+                                    "Setting isMultiDay to:",
+                                    newIsMultiDay
+                                );
+                                setIsMultiDay(newIsMultiDay);
+
+                                if (dateRange?.from) {
+                                    if (newIsMultiDay) {
+                                        // When enabling multi-day, set the end date to the same as start date initially
+                                        setDateRange({
+                                            from: dateRange.from,
+                                            to: dateRange.from,
+                                        });
+                                    } else {
+                                        // When disabling multi-day, keep only the start date
+                                        setDateRange({
+                                            from: dateRange.from,
+                                            to: dateRange.from,
+                                        });
+                                    }
                                 }
                             }}
-                        />
-                        <Label
-                            htmlFor="isMultiDay"
-                            className={cn(
-                                !isMultiDay
-                                    ? "text-muted-foreground"
-                                    : "text-foreground"
-                            )}
+                            className="h-6 px-2 text-xs"
                         >
-                            Multi-day
-                        </Label>
+                            Multi-day {isMultiDay ? "✓" : ""}
+                        </Button>
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <Checkbox
-                            id="isAnnual"
-                            checked={isAnnual}
-                            onCheckedChange={(checked) =>
-                                setIsAnnual(checked === true)
-                            }
-                        />
-                        <Label
-                            htmlFor="isAnnual"
-                            className={cn(
-                                !isAnnual
-                                    ? "text-muted-foreground"
-                                    : "text-foreground"
-                            )}
+                        <Button
+                            type="button"
+                            variant={isAnnual ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => {
+                                console.log(
+                                    "Annual button clicked, current state:",
+                                    isAnnual
+                                );
+                                setIsAnnual(!isAnnual);
+                            }}
+                            className="h-6 px-2 text-xs"
                         >
-                            Annual
-                        </Label>
+                            Annual {isAnnual ? "✓" : ""}
+                        </Button>
                     </div>
                 </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-4">
-                {onCancel && (
+            <div className="flex justify-between items-center gap-2 pt-4">
+                <div>
+                    {onDelete && (
+                        <Button
+                            variant="destructive"
+                            onClick={onDelete}
+                            disabled={isDeleting || isSubmitting}
+                            className="rounded-full"
+                        >
+                            {isDeleting ? "Deleting..." : deleteLabel}
+                        </Button>
+                    )}
+                </div>
+                <div className="flex gap-2">
+                    {onCancel && (
+                        <Button
+                            variant="outline"
+                            onClick={onCancel}
+                            disabled={isDeleting || isSubmitting}
+                            className="rounded-full"
+                        >
+                            {cancelLabel}
+                        </Button>
+                    )}
                     <Button
-                        variant="outline"
-                        onClick={onCancel}
-                        disabled={isSubmitting}
+                        onClick={handleSubmit}
+                        disabled={isDeleting || isSubmitting || !title}
                         className="rounded-full"
                     >
-                        {cancelLabel}
+                        {isSubmitting ? "Saving..." : submitLabel}
                     </Button>
-                )}
-                <Button
-                    onClick={handleSubmit}
-                    disabled={isSubmitting || !title}
-                    className="rounded-full"
-                >
-                    {isSubmitting ? "Saving..." : submitLabel}
-                </Button>
+                </div>
             </div>
         </div>
     );

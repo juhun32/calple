@@ -6,9 +6,6 @@ import { redirect } from "next/navigation";
 import * as Card from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
 import {
     Heart,
     Smile,
@@ -33,7 +30,6 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
     CheckinData,
-    UserMetadata,
     PartnerCheckin,
     getUserMetadata,
     getPartnerMetadata,
@@ -139,7 +135,6 @@ export default function Checkin() {
         null
     );
     const [hasPartner, setHasPartner] = useState(false);
-    const [userSex, setUserSex] = useState<"male" | "female" | null>(null);
     const [isRefreshingPartner, setIsRefreshingPartner] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
@@ -176,7 +171,6 @@ export default function Checkin() {
         }
     };
 
-    // Function to load partner data
     const loadPartnerData = useCallback(async (date?: string) => {
         setIsRefreshingPartner(true);
         try {
@@ -186,7 +180,6 @@ export default function Checkin() {
             console.log("Partner metadata loaded:", partnerMeta);
             setHasPartner(true);
 
-            // Get partner's checkin for today
             console.log("Loading partner checkin...");
             const partnerCheckin = await getPartnerCheckinAPI(date);
             console.log("Partner checkin loaded:", partnerCheckin);
@@ -201,7 +194,7 @@ export default function Checkin() {
                 message: error instanceof Error ? error.message : String(error),
                 stack: error instanceof Error ? error.stack : undefined,
             });
-            // No partner connection found
+
             setHasPartner(false);
             setPartnerCheckin(null);
         } finally {
@@ -209,15 +202,9 @@ export default function Checkin() {
         }
     }, []);
 
-    // Load user data and checkins
     useEffect(() => {
         const loadData = async () => {
             try {
-                // Get user metadata (sex)
-                const userMeta = await getUserMetadata();
-                setUserSex(userMeta.sex as "male" | "female");
-
-                // Get today's checkin
                 const todayCheckin = await getTodayCheckin();
                 if (todayCheckin) {
                     setTodayCheckin(todayCheckin);
@@ -228,7 +215,6 @@ export default function Checkin() {
                     setNote(todayCheckin.note || "");
                 }
 
-                // Load partner data
                 await loadPartnerData();
             } catch (error) {
                 console.error("Failed to load checkin data:", error);
@@ -245,12 +231,6 @@ export default function Checkin() {
 
         loadData();
     }, []);
-
-    // Set up periodic refresh for partner data (every 30 seconds)
-    useEffect(() => {
-        const interval = setInterval(() => loadPartnerData(), 30000);
-        return () => clearInterval(interval);
-    }, [loadPartnerData]);
 
     const handleSubmit = async () => {
         if (!currentMood || !currentEnergy) {
@@ -299,24 +279,8 @@ export default function Checkin() {
         });
     };
 
-    const getInitials = (name?: string) => {
-        if (!name) return "U";
-        return name
-            .split(" ")
-            .map((n) => n[0])
-            .join("")
-            .toUpperCase()
-            .slice(0, 2);
-    };
-
-    // All users can see and edit all data
-    const canSeePeriodData = true;
-    const canEditPeriodData = true;
-    const showPartialPartnerData = false;
-
     return (
         <div className="container mx-auto flex flex-col pt-20 pb-12 lg:pb-16 px-4 lg:px-8 gap-6 min-h-screen">
-            {/* Header */}
             <div className="flex flex-col items-start px-4 lg:px-8">
                 <h1 className="text-xl font-bold">Daily Check-in</h1>
                 <p className="text-muted-foreground">
@@ -358,26 +322,14 @@ export default function Checkin() {
                     </Card.CardHeader>
                     <Card.CardContent className="space-y-4 flex-1">
                         {todayCheckin ? (
-                            // Show existing checkin
                             <div className="space-y-4">
-                                <div className="flex items-center gap-3">
-                                    <Avatar className="w-12 h-12">
-                                        <AvatarImage
-                                            src=""
-                                            alt={authState.user?.name || "You"}
-                                        />
-                                        <AvatarFallback className="text-lg font-semibold">
-                                            {getInitials(authState.user?.name)}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                        <div className="font-medium">
-                                            {authState.user?.name || "You"}
-                                        </div>
-                                        <div className="text-sm text-muted-foreground">
-                                            Checked in at{" "}
-                                            {formatTime(todayCheckin.createdAt)}
-                                        </div>
+                                <div>
+                                    <div className="font-medium">
+                                        {authState.user?.name || "You"}
+                                    </div>
+                                    <div className="text-sm text-muted-foreground">
+                                        Checked in at{" "}
+                                        {formatTime(todayCheckin.createdAt)}
                                     </div>
                                 </div>
 
@@ -675,28 +627,15 @@ export default function Checkin() {
                         <Card.CardContent className="flex-1">
                             {partnerCheckin ? (
                                 <div className="space-y-4">
-                                    <div className="flex items-center gap-3">
-                                        <Avatar className="w-12 h-12">
-                                            <AvatarImage
-                                                src=""
-                                                alt={partnerCheckin.userName}
-                                            />
-                                            <AvatarFallback className="text-lg font-semibold">
-                                                {getInitials(
-                                                    partnerCheckin.userName
-                                                )}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                            <div className="font-medium">
-                                                {partnerCheckin.userName}
-                                            </div>
-                                            <div className="text-sm text-muted-foreground">
-                                                Checked in at{" "}
-                                                {formatTime(
-                                                    partnerCheckin.createdAt
-                                                )}
-                                            </div>
+                                    <div>
+                                        <div className="font-medium">
+                                            {partnerCheckin.userName}
+                                        </div>
+                                        <div className="text-sm text-muted-foreground">
+                                            Checked in at{" "}
+                                            {formatTime(
+                                                partnerCheckin.createdAt
+                                            )}
                                         </div>
                                     </div>
 
