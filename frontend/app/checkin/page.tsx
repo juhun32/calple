@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { redirect } from "next/navigation";
 import * as Card from "@/components/ui/card";
@@ -177,7 +177,7 @@ export default function Checkin() {
     };
 
     // Function to load partner data
-    const loadPartnerData = async () => {
+    const loadPartnerData = useCallback(async (date?: string) => {
         setIsRefreshingPartner(true);
         try {
             console.log("=== Loading partner data ===");
@@ -188,7 +188,7 @@ export default function Checkin() {
 
             // Get partner's checkin for today
             console.log("Loading partner checkin...");
-            const partnerCheckin = await getPartnerCheckinAPI();
+            const partnerCheckin = await getPartnerCheckinAPI(date);
             console.log("Partner checkin loaded:", partnerCheckin);
             if (partnerCheckin) {
                 setPartnerCheckin(partnerCheckin);
@@ -207,7 +207,7 @@ export default function Checkin() {
         } finally {
             setIsRefreshingPartner(false);
         }
-    };
+    }, []);
 
     // Load user data and checkins
     useEffect(() => {
@@ -244,12 +244,13 @@ export default function Checkin() {
         };
 
         loadData();
-
-        // Set up periodic refresh for partner data (every 30 seconds)
-        const interval = setInterval(loadPartnerData, 30000);
-
-        return () => clearInterval(interval);
     }, []);
+
+    // Set up periodic refresh for partner data (every 30 seconds)
+    useEffect(() => {
+        const interval = setInterval(() => loadPartnerData(), 30000);
+        return () => clearInterval(interval);
+    }, [loadPartnerData]);
 
     const handleSubmit = async () => {
         if (!currentMood || !currentEnergy) {
@@ -260,7 +261,7 @@ export default function Checkin() {
 
         try {
             const checkinData = {
-                date: new Date().toISOString().split("T")[0],
+                date: new Date().toLocaleDateString("en-CA"),
                 mood: currentMood,
                 energy: currentEnergy,
                 periodStatus: currentPeriod || undefined,
@@ -657,7 +658,7 @@ export default function Checkin() {
                                     <Button
                                         variant="ghost"
                                         size="sm"
-                                        onClick={loadPartnerData}
+                                        onClick={() => loadPartnerData()}
                                         disabled={isRefreshingPartner}
                                     >
                                         <RefreshCw
@@ -871,7 +872,7 @@ export default function Checkin() {
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={loadPartnerData}
+                                    onClick={() => loadPartnerData()}
                                     disabled={isRefreshingPartner}
                                     className="mt-4"
                                 >

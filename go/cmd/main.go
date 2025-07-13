@@ -193,10 +193,10 @@ func main() {
 		api.GET("/periods/partner/metadata", handlers.GetPartnerMetadata)
 
 		// checkin routes
-		api.POST("/periods/checkin", handlers.CreateCheckin)
-		api.GET("/periods/checkin/:date", handlers.GetTodayCheckin)
-		api.DELETE("/periods/checkin/:date", handlers.DeleteCheckin)
-		api.GET("/periods/partner/checkin/:date", handlers.GetPartnerCheckin)
+		api.POST("/checkin", handlers.CreateCheckin)
+		api.GET("/checkin/:date", handlers.GetTodayCheckin)
+		api.DELETE("/checkin/:date", handlers.DeleteCheckin)
+		api.GET("/checkin/partner/:date", handlers.GetPartnerCheckin)
 
 		// debug route
 		api.GET("/debug/connection", handlers.DebugConnection)

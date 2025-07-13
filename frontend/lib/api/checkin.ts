@@ -137,14 +137,13 @@ export const getPartnerMetadata = async (): Promise<UserMetadata> => {
 };
 
 // Get today's checkin
-export const getTodayCheckin = async (): Promise<CheckinData | null> => {
-    const today = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD format in local timezone
-    const response = await fetch(
-        `${BACKEND_URL}/api/periods/checkin/${today}`,
-        {
-            credentials: "include",
-        }
-    );
+export const getTodayCheckin = async (
+    date?: string
+): Promise<CheckinData | null> => {
+    const checkinDate = date || new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD format in local timezone
+    const response = await fetch(`${BACKEND_URL}/api/checkin/${checkinDate}`, {
+        credentials: "include",
+    });
 
     if (response.status === 404) {
         return null; // No checkin for today
@@ -162,7 +161,7 @@ export const getTodayCheckin = async (): Promise<CheckinData | null> => {
 export const createCheckin = async (
     checkinData: Omit<CheckinData, "id" | "userId" | "createdAt">
 ): Promise<CheckinData> => {
-    const response = await fetch(`${BACKEND_URL}/api/periods/checkin`, {
+    const response = await fetch(`${BACKEND_URL}/api/checkin`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -181,7 +180,7 @@ export const createCheckin = async (
 
 // Delete checkin for a specific date
 export const deleteCheckin = async (date: string): Promise<void> => {
-    const response = await fetch(`${BACKEND_URL}/api/periods/checkin/${date}`, {
+    const response = await fetch(`${BACKEND_URL}/api/checkin/${date}`, {
         method: "DELETE",
         credentials: "include",
     });
@@ -195,10 +194,12 @@ export const deleteCheckin = async (date: string): Promise<void> => {
 };
 
 // Get partner's checkin for today
-export const getPartnerCheckin = async (): Promise<PartnerCheckin | null> => {
-    const today = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD format in local timezone
+export const getPartnerCheckin = async (
+    date?: string
+): Promise<PartnerCheckin | null> => {
+    const checkinDate = date || new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD format in local timezone
     const response = await fetch(
-        `${BACKEND_URL}/api/periods/partner/checkin/${today}`,
+        `${BACKEND_URL}/api/checkin/partner/${checkinDate}`,
         {
             credentials: "include",
         }
