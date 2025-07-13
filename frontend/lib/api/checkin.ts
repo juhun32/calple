@@ -138,7 +138,7 @@ export const getPartnerMetadata = async (): Promise<UserMetadata> => {
 
 // Get today's checkin
 export const getTodayCheckin = async (): Promise<CheckinData | null> => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD format in local timezone
     const response = await fetch(
         `${BACKEND_URL}/api/periods/checkin/${today}`,
         {
@@ -196,7 +196,7 @@ export const deleteCheckin = async (date: string): Promise<void> => {
 
 // Get partner's checkin for today
 export const getPartnerCheckin = async (): Promise<PartnerCheckin | null> => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD format in local timezone
     const response = await fetch(
         `${BACKEND_URL}/api/periods/partner/checkin/${today}`,
         {
