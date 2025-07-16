@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
+import Image from "next/image";
 
 // components
 import * as AlertDialog from "@/components/ui/alert-dialog";
@@ -201,6 +202,17 @@ export function DDayIndicator({
                             </p>
                         </div>
                     ) : null}
+
+                    {dday.imageUrl && (
+                        <div className="mt-4 relative w-full h-48 rounded-lg overflow-hidden">
+                            <Image
+                                src={dday.imageUrl}
+                                alt={dday.title}
+                                layout="fill"
+                                objectFit="cover"
+                            />
+                        </div>
+                    )}
 
                     <AlertDialog.AlertDialogFooter className="flex flex-row justify-end gap-2 sm:gap-0">
                         <Button

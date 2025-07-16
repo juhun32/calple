@@ -10,6 +10,7 @@ export type DDay = {
     isAnnual: boolean; // whether this event repeats annually; used by useDDays hook for date filtering
     createdBy: string; // user ID who created the event; used by backend api for user association
     connectedUsers?: string[]; // array of connected user emails; used by DDayForm for user connections
+    imageUrl?: string;
 };
 
 // defines the visual position of an event in a multiday layout; used by DDayIndicator and calendar grid
@@ -86,6 +87,7 @@ export interface DDayFormData {
     endDate?: Date; // end date for mult;day events; used by layout system
     isAnnual: boolean; // whether event repeats annually; used by useDDays hook for filtering
     connectedUsers: string[]; // array of connected user emails; used for user connections
+    imageUrl?: string;
 }
 
 // props for the shared event form component; used by AddDdayDialog and EditDdayDialog

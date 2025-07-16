@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { DateRange } from "react-day-picker";
 
@@ -24,10 +24,12 @@ import {
     Pencil,
     SquareChevronRight,
     Settings,
+    Loader2,
 } from "lucide-react";
 
 // types
 import { DDay, DDayFormData, DDayFormProps } from "@/lib/types/calendar";
+import Image from "next/image";
 
 // shared form component for creating and editing calendar events
 export function DDayForm({
@@ -43,10 +45,10 @@ export function DDayForm({
 }: DDayFormProps) {
     const [title, setTitle] = useState(initialData?.title || "");
     const [group, setGroup] = useState(initialData?.group || "");
-    const [description, setDescription] = useState(
-        initialData?.description || ""
-    );
-    const [isAnnual, setIsAnnual] = useState(initialData?.isAnnual || false);
+    const [description, setDescription] = useState("");
+    const [imageUrl, setImageUrl] = useState("");
+    const [isUploading, setIsUploading] = useState(false);
+    const [isAnnual, setIsAnnual] = useState(false);
     const [connectedEmail, setConnectedEmail] = useState(
         initialData?.connectedUsers?.[0] || ""
     );
@@ -59,6 +61,7 @@ export function DDayForm({
             setTitle(initialData.title || "");
             setGroup(initialData.group || "");
             setDescription(initialData.description || "");
+            setImageUrl(initialData.imageUrl || "");
             setIsAnnual(initialData.isAnnual || false);
             setConnectedEmail(initialData.connectedUsers?.[0] || "");
 
@@ -75,7 +78,41 @@ export function DDayForm({
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [initialData]);
+
+    // handle file input change - uploads file to server and sets image URL state
+    const handleFileChange = async (
+        event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        try {
+            // 1. Get the presigned URL from our backend
+            const res = await fetch("/api/ddays/upload-url", {
+                method: "POST",
+            });
+            if (!res.ok) throw new Error("Failed to get upload URL.");
+            const { uploadUrl, publicUrl } = await res.json();
+
+            // 2. Upload the file directly to R2
+            const uploadRes = await fetch(uploadUrl, {
+                method: "PUT",
+                body: file,
+                headers: { "Content-Type": file.type },
+            });
+            if (!uploadRes.ok) throw new Error("Upload failed.");
+
+            // 3. Set the public URL to state for preview and submission
+            setImageUrl(publicUrl);
+        } catch (error) {
+            console.error("Error uploading file:", error);
+            // You can add a user-facing error message here (e.g., using a toast)
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     // handle form submission - called by parent dialog (AddDdayDialog or EditDdayDialog)
     const handleSubmit = async () => {
@@ -86,7 +123,8 @@ export function DDayForm({
         const formData: DDayFormData = {
             title,
             group: group || "others",
-            description: description || "",
+            description,
+            imageUrl,
             isAnnual,
             connectedUsers,
         };
@@ -106,6 +144,7 @@ export function DDayForm({
             setTitle("");
             setGroup("");
             setDescription("");
+            setImageUrl("");
             setIsAnnual(false);
             setConnectedEmail("");
             setDateRange(undefined);
@@ -145,7 +184,7 @@ export function DDayForm({
     };
 
     return (
-        <div className="flex flex-col gap-2">
+        <div className="space-y-4">
             <div className="grid grid-cols-[1fr_4fr] gap-2 items-center">
                 <Label
                     className={cn(
@@ -343,6 +382,45 @@ export function DDayForm({
                         </Button>
                     </div>
                 </div>
+            </div>
+
+            <div>
+                <label htmlFor="event-image" className="text-sm font-medium">
+                    Event Image
+                </label>
+                {isUploading ? (
+                    <div className="flex items-center justify-center w-full h-32 mt-1 border-2 border-dashed rounded-lg">
+                        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                    </div>
+                ) : imageUrl ? (
+                    <div className="mt-2 relative w-full h-40">
+                        <Image
+                            src={imageUrl}
+                            alt="Event image"
+                            layout="fill"
+                            objectFit="cover"
+                            className="rounded-lg"
+                        />
+                        <Button
+                            variant="destructive"
+                            size="sm"
+                            className="absolute top-2 right-2"
+                            onClick={() => setImageUrl("")}
+                        >
+                            Remove
+                        </Button>
+                    </div>
+                ) : (
+                    <div className="mt-1">
+                        <Input
+                            id="event-image"
+                            type="file"
+                            accept="image/png, image/jpeg, image/gif"
+                            onChange={handleFileChange}
+                            disabled={isUploading}
+                        />
+                    </div>
+                )}
             </div>
 
             <div className="flex justify-between items-center gap-2 pt-4">

@@ -4,12 +4,21 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
 	"cloud.google.com/go/firestore"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+
+	"github.com/google/uuid"
 
 	"calple/util"
 )
@@ -22,6 +31,7 @@ type DDay struct {
 	Description    string    `json:"description"`
 	Date           string    `json:"date,omitempty"`
 	EndDate        string    `json:"endDate,omitempty"`
+	ImageURL       string    `json:"imageUrl,omitempty"`
 	IsAnnual       bool      `json:"isAnnual"`
 	CreatedBy      string    `json:"createdBy"`
 	ConnectedUsers []string  `json:"connectedUsers"`
@@ -78,7 +88,7 @@ func GetDDays(c *gin.Context) {
 
 	fmt.Printf("DEBUG: GetDDays - userEmail: %s, viewMonthStartStr: %s, viewMonthEndStr: %s\n", userEmail, viewMonthStartStr, viewMonthEndStr)
 
-	// Debug: Check if user has any active connections
+	// debug: if user has any active connections
 	connectionDocs, err := fsClient.Collection("connections").
 		Where("status", "==", "active").
 		Where("user1", "==", userEmail).
@@ -125,7 +135,7 @@ func GetDDays(c *gin.Context) {
 		}
 		fmt.Printf("DEBUG: Query %d found %d documents\n", i+1, len(docs))
 
-		// Debug: Show details of each event found
+		// debug: show details of each event found
 		for _, doc := range docs {
 			data := doc.Data()
 			title, _ := data["title"].(string)
@@ -280,7 +290,7 @@ func CreateDDay(c *gin.Context) {
 
 		fmt.Printf("DEBUG: CreateDDay - found partner: %s\n", partnerEmail)
 
-		// Add partner to connectedUsers if not already present
+		// add partner to connectedUsers if not already present
 		if !util.Contains(connectedUsers, partnerEmail) {
 			connectedUsers = append(connectedUsers, partnerEmail)
 			fmt.Printf("DEBUG: CreateDDay - added partner to connectedUsers: %v\n", connectedUsers)
@@ -303,6 +313,7 @@ func CreateDDay(c *gin.Context) {
 		"description":    dday.Description,
 		"date":           dday.Date,
 		"endDate":        dday.EndDate,
+		"imageUrl":       dday.ImageURL,
 		"isAnnual":       dday.IsAnnual,
 		"createdBy":      userEmail,
 		"connectedUsers": connectedUsers,
@@ -358,7 +369,7 @@ func UpdateDDay(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "date field must be a string"})
 			return
 		}
-		// Only validate non-empty date strings.
+		// only validate non-empty date strings.
 		if dateStr != "" {
 			if len(dateStr) != 8 {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Use YYYYMMDD"})
@@ -449,4 +460,51 @@ func DeleteDDay(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "D-Day deleted"})
+}
+
+// generate presigned URL for upload to R2
+func GetDDayUploadURL(c *gin.Context) {
+	accountID := os.Getenv("R2_ACCOUNT_ID")
+	accessKeyID := os.Getenv("R2_ACCESS_KEY_ID")
+	accessKeySecret := os.Getenv("R2_ACCESS_KEY_SECRET")
+	bucketName := os.Getenv("R2_BUCKET_NAME")
+
+	// AWS config loader
+	cfg, err := config.LoadDefaultConfig(context.TODO(),
+		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKeyID, accessKeySecret, "")),
+		config.WithRegion("auto"),
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to configure R2 client"})
+		return
+	}
+
+	// create S3 client
+	s3Client := s3.NewFromConfig(cfg, func(o *s3.Options) {
+		o.BaseEndpoint = aws.String(fmt.Sprintf("https://%s.r2.cloudflarestorage.com", accountID))
+	})
+
+	presignClient := s3.NewPresignClient(s3Client)
+
+	// generate unique key (filename)
+	objectKey := "ddays/" + uuid.New().String()
+
+	presignedURL, err := presignClient.PresignPutObject(context.TODO(), &s3.PutObjectInput{
+		Bucket: aws.String(bucketName),
+		Key:    aws.String(objectKey),
+		// URL valid for 15 minutes
+	}, s3.WithPresignExpires(time.Minute*15))
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create presigned URL"})
+		return
+	}
+
+	// public URL stored in firestore
+	publicURL := fmt.Sprintf("https://pub-%s.r2.dev/%s", os.Getenv("R2_PUBLIC_BUCKET_ID"), objectKey)
+
+	c.JSON(http.StatusOK, gin.H{
+		"uploadUrl": presignedURL.URL,
+		"publicUrl": publicURL,
+	})
 }
