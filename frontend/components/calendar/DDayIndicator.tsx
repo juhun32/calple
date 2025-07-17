@@ -206,7 +206,7 @@ export function DDayIndicator({
                     ) : null}
 
                     {dday.imageUrl && (
-                        <div className="relative h-70 lg:h-90 rounded justify-center items-end flex bg-card inset-shadow-sm">
+                        <div className="relative h-70 lg:h-90 rounded justify-center items-end flex bg-card inset-shadow-sm p-2">
                             <Image
                                 src={dday.imageUrl}
                                 alt={dday.title}

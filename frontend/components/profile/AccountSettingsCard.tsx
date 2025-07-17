@@ -30,7 +30,7 @@ export const AccountSettingsCard = ({
                             <Button
                                 variant="outline"
                                 size="sm"
-                                className="w-fit rounded-full"
+                                className="w-fit rounded-full bg-background dark:bg-background"
                             >
                                 <DoorOpen className="w-4 h-4" />
                                 Delete Account
@@ -66,7 +66,7 @@ export const AccountSettingsCard = ({
                     <Button
                         variant="outline"
                         size="sm"
-                        className="w-fit rounded-full"
+                        className="w-fit rounded-full bg-background dark:bg-background"
                         onClick={onLogout}
                     >
                         <LogOut className="w-4 h-4" />
