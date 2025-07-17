@@ -20,10 +20,7 @@ import {
     Clock,
     User,
     MessageCircle,
-    CheckCircle,
     XCircle,
-    Eye,
-    EyeOff,
     RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -31,7 +28,6 @@ import { toast } from "sonner";
 import {
     CheckinData,
     PartnerCheckin,
-    getUserMetadata,
     getPartnerMetadata,
     getTodayCheckin,
     createCheckin,

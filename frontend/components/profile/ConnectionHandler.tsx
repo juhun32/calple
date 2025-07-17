@@ -260,7 +260,7 @@ export function ConnectionManager() {
                             )}
                         </TabsList>
 
-                        <TabsContent value="connection" className="mt-4">
+                        <TabsContent value="connection">
                             {connection ? (
                                 <Card>
                                     <CardHeader>
@@ -286,8 +286,7 @@ export function ConnectionManager() {
                                     <CardHeader className="gap-2">
                                         <CardTitle>No Connection</CardTitle>
                                         <CardDescription>
-                                            Invite someone to share your
-                                            calendar
+                                            Invite someone to share your calple
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>
@@ -298,7 +297,7 @@ export function ConnectionManager() {
                                             >
                                                 Email address
                                             </Label>
-                                            <div className="flex gap-2 lg:gap-4">
+                                            <div className="flex flex-col md:flex-row gap-2 lg:gap-4">
                                                 <Input
                                                     id="email"
                                                     placeholder="partner@example.com"
@@ -314,6 +313,7 @@ export function ConnectionManager() {
                                                 />
                                                 <Button
                                                     onClick={handleInvite}
+                                                    size={"sm"}
                                                     className="rounded-full"
                                                     disabled={
                                                         isLoading ||
@@ -331,7 +331,7 @@ export function ConnectionManager() {
                             )}
                         </TabsContent>
 
-                        <TabsContent value="invitations" className="mt-4">
+                        <TabsContent value="invitations">
                             {pendingInvitations.length === 0 ? (
                                 <Card>
                                     <CardHeader className="gap-4">

@@ -1,0 +1,75 @@
+import * as Card from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { User, Venus, Mars } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+interface GenderSettingsCardProps {
+    userSex: "male" | "female" | null;
+    isLoading: boolean;
+    onSexChange: (sex: "male" | "female") => void;
+}
+
+export const GenderSettingsCard = ({
+    userSex,
+    isLoading,
+    onSexChange,
+}: GenderSettingsCardProps) => {
+    return (
+        <Card.Card className="gap-4">
+            <Card.CardHeader>
+                <Card.CardTitle className="flex items-center gap-2 mb-2">
+                    <User className="w-4 h-4" />
+                    Gender setting
+                </Card.CardTitle>
+                <Card.CardDescription className="text-sm">
+                    This setting controls period data visibility and editing
+                    permissions
+                </Card.CardDescription>
+            </Card.CardHeader>
+            <Card.CardContent>
+                <div className="flex gap-2 mb-2">
+                    <Button
+                        variant={"outline"}
+                        size="sm"
+                        onClick={() => onSexChange("female")}
+                        disabled={isLoading}
+                        className={cn(
+                            `flex items-center gap-2`,
+                            userSex === "female"
+                                ? "bg-accent dark:bg-accent"
+                                : "bg-background dark:bg-background"
+                        )}
+                    >
+                        <Venus className="w-4 h-4" />
+                        Female
+                    </Button>
+                    <Button
+                        variant={"outline"}
+                        size="sm"
+                        onClick={() => onSexChange("male")}
+                        disabled={isLoading}
+                        className={cn(
+                            `flex items-center gap-2`,
+                            userSex === "male"
+                                ? "bg-accent dark:bg-accent"
+                                : "bg-background dark:bg-background"
+                        )}
+                    >
+                        <Mars className="w-4 h-4" />
+                        Male
+                    </Button>
+                </div>
+                {userSex && (
+                    <Badge
+                        variant="outline"
+                        className="w-fit bg-background dark:bg-background inset-shadow-sm"
+                    >
+                        Current Setting :{" "}
+                        {userSex === "female" ? "Female" : "Male"}
+                    </Badge>
+                )}
+            </Card.CardContent>
+        </Card.Card>
+    );
+};
