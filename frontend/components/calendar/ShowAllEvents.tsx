@@ -57,7 +57,7 @@ export function ShowAllEvents({
                             return (
                                 <div
                                     key={dday.id}
-                                    className="flex items-center justify-between p-2 rounded-md bg-muted/50"
+                                    className="flex items-center justify-between p-2 rounded-lg bg-muted/50"
                                 >
                                     <div className="flex items-center gap-2">
                                         <div

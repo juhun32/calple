@@ -201,6 +201,9 @@ func main() {
 
 		// debug route
 		api.GET("/debug/connection", handlers.DebugConnection)
+
+		// user routes
+		api.DELETE("/user", handlers.DeleteUser)
 	}
 
 	// run server

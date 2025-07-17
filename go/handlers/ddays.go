@@ -39,6 +39,10 @@ type DDay struct {
 	UpdatedAt      time.Time `json:"updatedAt"`
 }
 
+type UploadRequest struct {
+	FileSize int64 `json:"fileSize"`
+}
+
 // fetch all events for the current user
 func GetDDays(c *gin.Context) {
 	session := sessions.Default(c)
@@ -407,9 +411,18 @@ func UpdateDDay(c *gin.Context) {
 		return
 	}
 
-	updates["updatedAt"] = time.Now()
+	firestoreUpdates := []firestore.Update{}
+	for key, value := range updates {
+		// prevent users from updating protected fields
+		if key == "id" || key == "createdBy" || key == "createdAt" {
+			continue
+		}
+		firestoreUpdates = append(firestoreUpdates, firestore.Update{Path: key, Value: value})
+	}
+	// always update 'updatedAt' timestamp
+	firestoreUpdates = append(firestoreUpdates, firestore.Update{Path: "updatedAt", Value: time.Now()})
 
-	if _, err := ddayRef.Set(context.Background(), updates, firestore.MergeAll); err != nil {
+	if _, err := ddayRef.Update(context.Background(), firestoreUpdates); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update event: " + err.Error()})
 		return
 	}
@@ -466,6 +479,21 @@ func DeleteDDay(c *gin.Context) {
 
 // generate presigned URL for upload to R2
 func GetDDayUploadURL(c *gin.Context) {
+	var req UploadRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request: missing fileSize"})
+		return
+	}
+
+	// maximum upload size (5MB)
+	const maxUploadSize = 5 * 1024 * 1024
+
+	// Enforce the size limit on the backend before generating the URL
+	if req.FileSize > maxUploadSize {
+		c.JSON(http.StatusRequestEntityTooLarge, gin.H{"error": "File size exceeds the 5MB limit"})
+		return
+	}
+
 	accountID := os.Getenv("R2_ACCOUNT_ID")
 	accessKeyID := os.Getenv("R2_ACCESS_KEY_ID")
 	accessKeySecret := os.Getenv("R2_ACCESS_KEY_SECRET")
@@ -494,7 +522,8 @@ func GetDDayUploadURL(c *gin.Context) {
 	presignedURL, err := presignClient.PresignPutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket: aws.String(bucketName),
 		Key:    aws.String(objectKey),
-		// URL valid for 15 minutes
+		// while PresignPutObject doesn't directly enforce a range,
+		// the client MUST set the Content-Length header, which will be checked on the frontend
 	}, s3.WithPresignExpires(time.Minute*15))
 
 	if err != nil {

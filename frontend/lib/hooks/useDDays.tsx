@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { EventPosition, type DDay } from "@/lib/types/calendar";
+import { toast } from "sonner";
 
 // main hook for managing calendar events
 export function useDDays(currentDate: Date = new Date()) {
@@ -312,32 +313,48 @@ export function useDDays(currentDate: Date = new Date()) {
     // upload an image file and return the public URL
     const uploadDDayImage = async (file: File): Promise<string | null> => {
         try {
-            const res = await fetch(
+            // get presigned URL from go
+            // send the file size so go can enforce size limits (5MB max)
+            const presignedUrlResponse = await fetch(
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/ddays/upload-url`,
                 {
                     method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
                     credentials: "include",
+                    body: JSON.stringify({ fileSize: file.size }),
                 }
             );
-            if (!res.ok) {
-                throw new Error("Failed to get upload URL from server.");
-            }
-            const { uploadUrl, publicUrl } = await res.json();
 
-            // upload the file directly to R2
-            const uploadRes = await fetch(uploadUrl, {
+            if (!presignedUrlResponse.ok) {
+                const errorData = await presignedUrlResponse.json();
+                toast.error(
+                    `Failed to get upload URL: ${
+                        errorData.message || "Unknown error"
+                    }`
+                );
+                return null;
+            }
+
+            const { uploadUrl, publicUrl } = await presignedUrlResponse.json();
+
+            const uploadResponse = await fetch(uploadUrl, {
                 method: "PUT",
                 body: file,
-                headers: { "Content-Type": file.type },
+                headers: {
+                    "Content-Type": file.type,
+                },
             });
-            if (!uploadRes.ok) {
-                throw new Error("Direct upload to R2 failed.");
-            }
 
-            // return the public URL for storing in the form state
+            if (!uploadResponse.ok) {
+                console.error("Failed to upload file to R2");
+                return null;
+            }
+            // return public URL of uploaded image
             return publicUrl;
         } catch (error) {
-            console.error("Error uploading file:", error);
+            console.error("Error in uploadDDayImage:", error);
             return null;
         }
     };

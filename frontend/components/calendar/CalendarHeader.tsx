@@ -44,7 +44,7 @@ export function CalendarHeader({
         <div className="flex items-center gap-2">
             {/* today button - navigates to current month - calls useCalendar hook goToToday */}
             <Button
-                className="rounded-full w-16 h-8 flex items-center gap-2 hover:cursor-pointer"
+                className="rounded-full w-16 h-8 flex items-center gap-2 hover:cursor-pointer bg-card dark:bg-card"
                 variant={"outline"}
                 onClick={goToToday}
             >
@@ -53,7 +53,9 @@ export function CalendarHeader({
             {/* previous month button - calls useCalendar hook goToPrevMonth */}
             <Button
                 variant={"outline"}
-                className={"rounded-full w-8 h-8 hover:cursor-pointer"}
+                className={
+                    "rounded-full w-8 h-8 hover:cursor-pointer bg-card dark:bg-card"
+                }
                 onClick={goToPrevMonth}
             >
                 <ChevronLeft className="h-6 w-6" />
@@ -61,7 +63,9 @@ export function CalendarHeader({
             {/* next month button - calls useCalendar hook goToNextMonth */}
             <Button
                 variant={"outline"}
-                className={"rounded-full w-8 h-8 hover:cursor-pointer"}
+                className={
+                    "rounded-full w-8 h-8 hover:cursor-pointer bg-card dark:bg-card"
+                }
                 onClick={goToNextMonth}
             >
                 <ChevronRight className="h-6 w-6" />

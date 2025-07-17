@@ -25,7 +25,7 @@ export default function Home() {
             <Rectangle className="absolute inset-0 w-full h-full z-[-1]" />
             <div className="container px-4 md:px-8 gap-4 h-full w-full md:border-8 border-border/20 bg-background/50 md:px-20 md:py-20 rounded-lg flex flex-col">
                 <div className="flex flex-col gap-2 items-start justify-start">
-                    <h1 className="flex flex-col md:flex-row sm:gap-2 text-4xl sm:text-4xl font-medium">
+                    <h1 className="flex flex-col md:flex-row sm:gap-2 text-3xl sm:text-4xl font-medium">
                         For Your Healthier
                         <p className="text-rose-500">Dating</p> Life
                     </h1>

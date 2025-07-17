@@ -323,18 +323,20 @@ export default function Checkin() {
                     <Card.CardContent className="space-y-4 flex-1">
                         {todayCheckin ? (
                             <div className="space-y-4">
-                                <div>
+                                <div className="flex items-center justify-between gap-2 mb-4">
                                     <div className="font-medium">
                                         {authState.user?.name || "You"}
                                     </div>
-                                    <div className="text-sm text-muted-foreground">
-                                        Checked in at{" "}
+                                    <div className="text-sm text-muted-foreground bg-background inset-shadow-sm px-2 py-1 rounded flex flex-row gap-1">
+                                        <p className="hidden md:block">
+                                            Checked in at
+                                        </p>
                                         {formatTime(todayCheckin.createdAt)}
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                                    <div className="text-center p-2 rounded-lg bg-card border inset-shadow-sm">
+                                    <div className="text-center p-2 rounded-lg bg-background inset-shadow-sm">
                                         <div className="text-xs text-muted-foreground mb-1">
                                             My Mood
                                         </div>
@@ -363,7 +365,7 @@ export default function Checkin() {
                                             }
                                         </div>
                                     </div>
-                                    <div className="text-center p-2 rounded-lg bg-card border inset-shadow-sm">
+                                    <div className="text-center p-2 rounded-lg bg-background inset-shadow-sm">
                                         <div className="text-xs text-muted-foreground mb-1">
                                             My Energy Level
                                         </div>
@@ -393,7 +395,7 @@ export default function Checkin() {
                                         </div>
                                     </div>
                                     {todayCheckin.sexualMood && (
-                                        <div className="text-center p-2 rounded-lg bg-card border inset-shadow-sm">
+                                        <div className="text-center p-2 rounded-lg bg-background inset-shadow-sm">
                                             <div className="text-xs text-muted-foreground mb-1">
                                                 Up for intimacy?
                                             </div>
@@ -426,7 +428,7 @@ export default function Checkin() {
                                 </div>
 
                                 {todayCheckin.note && (
-                                    <div className="p-4 rounded-lg bg-muted/50 inset-shadow-sm">
+                                    <div className="p-4 rounded-lg bg-background inset-shadow-sm">
                                         <div className="font-medium text-sm mb-1">
                                             Note:
                                         </div>
@@ -448,14 +450,12 @@ export default function Checkin() {
                                         {moodOptions.map((mood) => (
                                             <Button
                                                 key={mood.value}
-                                                variant={
-                                                    currentMood === mood.value
-                                                        ? "default"
-                                                        : "outline"
-                                                }
+                                                variant="outline"
                                                 className={cn(
                                                     "flex flex-col items-center gap-1 h-auto p-3",
                                                     currentMood === mood.value
+                                                        ? "bg-accent dark:bg-accent"
+                                                        : "bg-background dark:bg-background"
                                                 )}
                                                 onClick={() =>
                                                     setCurrentMood(
@@ -486,13 +486,14 @@ export default function Checkin() {
                                         {energyOptions.map((energy) => (
                                             <Button
                                                 key={energy.value}
-                                                variant={
+                                                variant="outline"
+                                                className={cn(
+                                                    "flex flex-col items-center gap-1 h-auto p-3",
                                                     currentEnergy ===
-                                                    energy.value
-                                                        ? "default"
-                                                        : "outline"
-                                                }
-                                                className="flex flex-col items-center gap-1 h-auto p-3"
+                                                        energy.value
+                                                        ? "bg-accent dark:bg-accent"
+                                                        : "bg-background dark:bg-background"
+                                                )}
                                                 onClick={() =>
                                                     setCurrentEnergy(
                                                         energy.value as any
@@ -522,16 +523,13 @@ export default function Checkin() {
                                         {sexualMoodOptions.map((sexualMood) => (
                                             <Button
                                                 key={sexualMood.value}
-                                                variant={
-                                                    currentSexualMood ===
-                                                    sexualMood.value
-                                                        ? "default"
-                                                        : "outline"
-                                                }
+                                                variant="outline"
                                                 className={cn(
                                                     "flex flex-col items-center gap-1 h-auto p-3",
                                                     currentSexualMood ===
                                                         sexualMood.value
+                                                        ? "bg-accent dark:bg-accent"
+                                                        : "bg-background dark:bg-background"
                                                 )}
                                                 onClick={() =>
                                                     setCurrentSexualMood(
@@ -564,7 +562,7 @@ export default function Checkin() {
                                         onChange={(e) =>
                                             setNote(e.target.value)
                                         }
-                                        className="min-h-[100px]"
+                                        className="min-h-[100px] resize-none bg-background dark:bg-background inset-shadow-sm"
                                         maxLength={500}
                                     />
                                     <div className="text-xs text-muted-foreground mt-1 text-right">
@@ -640,7 +638,7 @@ export default function Checkin() {
                                     </div>
 
                                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                                        <div className="text-center p-2 rounded-lg bg-card border inset-shadow-sm">
+                                        <div className="text-center p-2 rounded-lg bg-card inset-shadow-sm">
                                             <div className="text-xs text-muted-foreground mb-1">
                                                 Partner's Mood
                                             </div>
@@ -669,7 +667,7 @@ export default function Checkin() {
                                                 }
                                             </div>
                                         </div>
-                                        <div className="text-center p-2 rounded-lg bg-card border inset-shadow-sm">
+                                        <div className="text-center p-2 rounded-lg bg-card inset-shadow-sm">
                                             <div className="text-xs text-muted-foreground mb-1">
                                                 Partner's Energy Level
                                             </div>
@@ -700,7 +698,7 @@ export default function Checkin() {
                                         </div>
                                         {/* Sexual mood */}
                                         {partnerCheckin.sexualMood && (
-                                            <div className="text-center p-2 rounded-lg bg-card border inset-shadow-sm">
+                                            <div className="text-center p-2 rounded-lg bg-card inset-shadow-sm">
                                                 <div className="text-xs text-muted-foreground mb-1">
                                                     Up for Intimacy?
                                                 </div>
@@ -780,7 +778,7 @@ export default function Checkin() {
                                 </p>
                                 <Button
                                     variant="outline"
-                                    className="mt-4"
+                                    className="mt-4 bg-background dark:bg-background"
                                     onClick={() =>
                                         (window.location.href = "/profile")
                                     }

@@ -112,7 +112,7 @@ export function DDayIndicator({
 
     return (
         <div
-            className={`border ${getBorderStyles()} ${getBorderColorFromGroup(
+            className={`bg-background inset-shadow-sm border ${getBorderStyles()} ${getBorderColorFromGroup(
                 dday.group
             )} text-sm`}
         >
@@ -136,12 +136,12 @@ export function DDayIndicator({
                                 }}
                             >
                                 <CircleSmall
-                                    className={`h-4 w-4 flex-shrink-0 ${getColorFromGroup(
+                                    className={`h-4 w-4 flex-shrink-0 hidden md:block ${getColorFromGroup(
                                         dday.group
                                     )}`}
                                     strokeWidth={1.5}
                                 />
-                                <div className="flex-grow min-w-0 overflow-hidden">
+                                <div className="flex-grow min-w-0 overflow-hidden z-40">
                                     <p
                                         className="w-full overflow-hidden text-ellipsis whitespace-nowrap"
                                         title={dday.title}
@@ -167,11 +167,11 @@ export function DDayIndicator({
                                 </div>
                                 <div className="w-full flex items-baseline justify-between gap-1 sm:gap-2">
                                     {dday.date && (
-                                        <span className="text-sm text-gray-500">
+                                        <span className="text-sm bg-card px-2 py-1 rounded inset-shadow-sm">
                                             [{dday.date.toLocaleDateString()}]
                                         </span>
                                     )}
-                                    <span className="text-xs sm:text-base">
+                                    <span className="text-xs sm:text-base bg-card px-2 py-1 rounded inset-shadow-sm">
                                         {dday.days}
                                     </span>
                                 </div>
@@ -191,7 +191,7 @@ export function DDayIndicator({
                     </AlertDialog.AlertDialogHeader>
 
                     {dday.description ? (
-                        <div className="text-sm text-muted-foreground border p-2 px-4 rounded-lg">
+                        <div className="text-sm text-muted-foreground p-2 px-4 rounded bg-card inset-shadow-sm">
                             <p
                                 style={{
                                     whiteSpace: "pre-wrap",
@@ -206,12 +206,12 @@ export function DDayIndicator({
                     ) : null}
 
                     {dday.imageUrl && (
-                        <div className="relative h-70 rounded-lg justify-center items-end flex border">
+                        <div className="relative h-70 lg:h-90 rounded justify-center items-end flex bg-card inset-shadow-sm">
                             <Image
                                 src={dday.imageUrl}
                                 alt={dday.title}
                                 fill
-                                className="object-contain p-2"
+                                className="object-contain"
                             />
                         </div>
                     )}

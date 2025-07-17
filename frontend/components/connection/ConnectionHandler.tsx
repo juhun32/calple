@@ -211,7 +211,7 @@ export function ConnectionManager() {
                 <DialogTrigger asChild>
                     <Button
                         variant="outline"
-                        className="w-fit sm:w-auto rounded-full"
+                        className="w-fit sm:w-auto rounded-full bg-background dark:bg-background hover:cursor-pointer"
                     >
                         <Blend className="w-4 h-4" />
                         Manage Connection

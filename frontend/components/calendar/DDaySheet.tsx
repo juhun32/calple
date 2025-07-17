@@ -158,7 +158,7 @@ export function DDaySheet({ ddays, updateDDay, deleteDDay }: DDaySheetProps) {
                 )}
             </div>
 
-            <div className="hidden lg:grid grid-cols-3 gap-1 p-2 px-4 border border-dashed rounded-lg">
+            <div className="hidden lg:grid grid-cols-3 gap-1 p-2 px-4 border border-dashed rounded-lg inset-shadow-sm bg-card">
                 {selectGroups.map((group, idx) => (
                     <div key={idx} className="flex items-center gap-1">
                         <CircleSmall

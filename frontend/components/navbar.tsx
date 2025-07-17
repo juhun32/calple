@@ -258,16 +258,16 @@ export function NavBar() {
                                             <User className="h-4 w-4" />
                                             Profile
                                         </DropdownMenu.DropdownMenuItem>
-                                        <DropdownMenu.DropdownMenuItem disabled>
+                                        {/* <DropdownMenu.DropdownMenuItem disabled>
                                             <Settings className="h-4 w-4" />
                                             Settings
-                                        </DropdownMenu.DropdownMenuItem>
+                                        </DropdownMenu.DropdownMenuItem> */}
                                     </DropdownMenu.DropdownMenuGroup>
-                                    <DropdownMenu.DropdownMenuSeparator />
+                                    {/* <DropdownMenu.DropdownMenuSeparator />
                                     <DropdownMenu.DropdownMenuItem disabled>
                                         <Siren className="h-4 w-4" />
                                         Support
-                                    </DropdownMenu.DropdownMenuItem>
+                                    </DropdownMenu.DropdownMenuItem> */}
                                     <DropdownMenu.DropdownMenuSeparator />
                                     <DropdownMenu.DropdownMenuItem
                                         onClick={logout}
@@ -299,16 +299,16 @@ export function NavBar() {
                                             <User className="h-4 w-4" />
                                             Profile
                                         </DropdownMenu.DropdownMenuItem>
-                                        <DropdownMenu.DropdownMenuItem disabled>
+                                        {/* <DropdownMenu.DropdownMenuItem disabled>
                                             <Settings className="h-4 w-4" />
                                             Settings
-                                        </DropdownMenu.DropdownMenuItem>
+                                        </DropdownMenu.DropdownMenuItem> */}
                                     </DropdownMenu.DropdownMenuGroup>
-                                    <DropdownMenu.DropdownMenuSeparator />
+                                    {/* <DropdownMenu.DropdownMenuSeparator />
                                     <DropdownMenu.DropdownMenuItem disabled>
                                         <Siren className="h-4 w-4" />
                                         Support
-                                    </DropdownMenu.DropdownMenuItem>
+                                    </DropdownMenu.DropdownMenuItem> */}
                                 </DropdownMenu.DropdownMenuContent>
                             </DropdownMenu.DropdownMenu>
                         )}

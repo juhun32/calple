@@ -17,6 +17,7 @@ import { Calendar } from "@/components/ui/calendar";
 import * as Select from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
 
 // icons
 import {
@@ -86,9 +87,24 @@ export function DDayForm({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [initialData]);
 
+    // handle file selection and enforce size limit
+    // no upload happens here, just file selection
+    // the actual upload is handled in the handleSubmit function
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
+
+        // enforce 5MB file size limit on the client side
+        const maxFileSize = 5 * 1024 * 1024; // 5MB
+        if (file.size > maxFileSize) {
+            toast.error(
+                `Please select a file smaller than ${
+                    maxFileSize / 1024 / 1024
+                }MB.`
+            );
+            event.target.value = "";
+            return;
+        }
 
         setSelectedFile(file);
         setImageUrl(URL.createObjectURL(file)); // Create a temporary local URL for preview
@@ -400,10 +416,10 @@ export function DDayForm({
                         <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
                     </div>
                 ) : imageUrl ? (
-                    <div className="relative h-70 w-full border-2 border-dashed rounded-lg">
+                    <div className="relative h-70 lg:h-90 w-full border-2 border-dashed rounded-lg">
                         <Image
                             src={imageUrl}
-                            alt="image"
+                            alt="Event image preview"
                             fill
                             className="rounded-lg object-contain p-2"
                         />
@@ -411,19 +427,38 @@ export function DDayForm({
                             variant="destructive"
                             size="icon"
                             className="absolute top-1 right-1 h-6 w-6 rounded-full"
-                            onClick={() => setImageUrl("")}
+                            onClick={handleRemoveImage}
                         >
                             <CircleX className="h-4 w-4" />
                         </Button>
                     </div>
                 ) : (
-                    <Input
-                        id="event-image"
-                        type="file"
-                        accept="image/png, image/jpeg, image/gif"
-                        onChange={handleFileChange}
-                        disabled={isUploading}
-                    />
+                    <>
+                        <Input
+                            id="event-image"
+                            type="file"
+                            accept="image/png, image/jpeg, image/gif"
+                            onChange={handleFileChange}
+                            disabled={isUploading}
+                            className="hidden"
+                        />
+                        <Label
+                            htmlFor="event-image"
+                            className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50"
+                        >
+                            <div className="flex flex-col items-center justify-center gap-2">
+                                <ImageDown className="w-7 h-7 text-muted-foreground" />
+                                <p className="text-sm text-muted-foreground">
+                                    <span className="font-semibold">
+                                        Click to upload
+                                    </span>
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    PNG, JPG, GIF (max. 5MB)
+                                </p>
+                            </div>
+                        </Label>
+                    </>
                 )}
             </div>
 
