@@ -69,7 +69,7 @@ export function CalendarHeader({
             {/* current month/year display - shows formatted month from state */}
             <div className="flex items-center gap-1">
                 <CalendarIcon className="h-4" strokeWidth={1.5} />
-                <h2 className="flex gap-2 justify-center items-center text-md md:text-lg font-medium px-2 md:px-4 rounded-md lg:rounded-lg bg-card inset-shadow-sm">
+                <h2 className="flex gap-2 justify-center items-center text-md md:text-lg font-medium px-2 md:px-4 rounded-md lg:rounded-lg bg-card inset-shadow-sm border">
                     {formattedMonth}
                 </h2>
             </div>

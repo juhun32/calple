@@ -142,6 +142,7 @@ export function useDDays(currentDate: Date = new Date()) {
                 title: dday.title,
                 group: dday.group || "others",
                 description: dday.description || "",
+                imageUrl: dday.imageUrl || "", // Correctly reads the URL
                 date: dday.date ? parseDateString(dday.date) : undefined,
                 endDate: dday.endDate
                     ? parseDateString(dday.endDate)
@@ -237,6 +238,7 @@ export function useDDays(currentDate: Date = new Date()) {
                 title: dday.title,
                 group: dday.group,
                 description: dday.description,
+                imageUrl: dday.imageUrl, // Correctly includes URL on create
                 isAnnual: dday.isAnnual,
                 connectedUsers: dday.connectedUsers || [],
                 createdBy: dday.createdBy,
@@ -273,13 +275,16 @@ export function useDDays(currentDate: Date = new Date()) {
         updates: Partial<Omit<DDay, "days" | "id">>
     ): Promise<boolean> => {
         try {
-            const payload = { ...updates };
+            const payload: { [key: string]: any } = { ...updates };
 
             if (updates.date !== undefined) {
-                (payload as any).date = formatDateForAPI(updates.date);
+                payload.date = formatDateForAPI(updates.date);
             }
             if (updates.endDate !== undefined) {
-                (payload as any).endDate = formatDateForAPI(updates.endDate);
+                payload.endDate = formatDateForAPI(updates.endDate);
+            }
+            if (updates.imageUrl !== undefined) {
+                payload.imageUrl = updates.imageUrl;
             }
 
             const response = await fetch(
@@ -301,6 +306,39 @@ export function useDDays(currentDate: Date = new Date()) {
         } catch (error) {
             console.error("Failed to update D-day:", error);
             return false;
+        }
+    };
+
+    // upload an image file and return the public URL
+    const uploadDDayImage = async (file: File): Promise<string | null> => {
+        try {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/ddays/upload-url`,
+                {
+                    method: "POST",
+                    credentials: "include",
+                }
+            );
+            if (!res.ok) {
+                throw new Error("Failed to get upload URL from server.");
+            }
+            const { uploadUrl, publicUrl } = await res.json();
+
+            // upload the file directly to R2
+            const uploadRes = await fetch(uploadUrl, {
+                method: "PUT",
+                body: file,
+                headers: { "Content-Type": file.type },
+            });
+            if (!uploadRes.ok) {
+                throw new Error("Direct upload to R2 failed.");
+            }
+
+            // return the public URL for storing in the form state
+            return publicUrl;
+        } catch (error) {
+            console.error("Error uploading file:", error);
+            return null;
         }
     };
 
@@ -336,6 +374,7 @@ export function useDDays(currentDate: Date = new Date()) {
         getRenderableDDaysForDay, // get events with layout positions; passed to CalendarGrid
         createDDay, // create new event; passed to AddDdayDialog and DDayForm
         updateDDay, // update existing event; passed to EditDdayDialog and DDayForm
+        uploadDDayImage, // upload image for an event; passed to DDayForm
         deleteDDay, // delete event; passed to EditDdayDialog and DDayIndicator
         refreshDDays: fetchDDays, // refresh events from API; used for manual refresh
     };

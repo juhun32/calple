@@ -12,7 +12,7 @@ import { useAuth } from "@/components/auth-provider";
 import { Button } from "@/components/ui/button";
 
 // icons
-import { Calendar, Droplets } from "lucide-react";
+import { Calendar, Droplets, SquareCheckBig } from "lucide-react";
 import Rectangle from "@/lib/assets/rectangle";
 import Start from "./start";
 
@@ -74,6 +74,15 @@ export default function Home() {
                     </Button>
                 ) : (
                     <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            size={"sm"}
+                            className="rounded-full px-3 w-fit"
+                            onClick={() => router.push("/checkin")}
+                        >
+                            <SquareCheckBig className="h-4 w-4 text-rose-500" />
+                            <span>Check-In</span>
+                        </Button>
                         <Button
                             variant="outline"
                             size={"sm"}

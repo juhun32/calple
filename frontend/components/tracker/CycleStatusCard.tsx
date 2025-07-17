@@ -53,7 +53,7 @@ export function CycleStatusCard({
         <Card.Card className="w-full h-full">
             <Card.CardContent>
                 <div className="flex items-baseline gap-2">
-                    <p className="text-lg font-semibold text-gray-900 dark:text-white h-7 px-2 inset-shadow-sm bg-background rounded">
+                    <p className="text-lg font-semibold h-7 px-2 inset-shadow-sm bg-background rounded">
                         Day {currentCycleDay ?? "—"}
                     </p>
                     <p className="text-sm text-muted-foreground">
@@ -96,7 +96,7 @@ export function CycleStatusCard({
                 </div>
 
                 <div className="grid">
-                    <div className="mt-2 lg:mt-4 inset-shadow-sm rounded-lg">
+                    <div className="mt-2 lg:mt-4 inset-shadow-sm rounded-lg bg-background">
                         <div className="flex items-center gap-4 px-4 py-4">
                             <Droplets className="w-4 h-4 text-rose-500" />
                             <div>
@@ -104,7 +104,7 @@ export function CycleStatusCard({
                                     {isPartnerData ? "Partner's" : "Next"}{" "}
                                     Period Expected
                                 </p>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-sm text-muted-foreground">
                                     {nextPeriod
                                         ? nextPeriod.toLocaleDateString(
                                               "en-US",
@@ -120,14 +120,14 @@ export function CycleStatusCard({
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4 mt-2 lg:mt-4 inset-shadow-sm rounded-lg px-4 py-4">
+                    <div className="flex items-center gap-4 mt-2 lg:mt-4 inset-shadow-sm rounded-lg px-4 py-4 bg-background">
                         <Heart className="w-4 h-4 text-blue-400" />
                         <div>
                             <p className="text-sm font-medium">
                                 {isPartnerData ? "Partner's" : ""} Fertility
                                 Window
                             </p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-sm text-muted-foreground">
                                 {fertileStart
                                     ? fertileStart.toLocaleDateString("en-US", {
                                           month: "short",
@@ -145,13 +145,13 @@ export function CycleStatusCard({
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4 mt-2 lg:mt-4 inset-shadow-sm rounded-lg px-4 py-4">
+                    <div className="flex items-center gap-4 mt-2 lg:mt-4 inset-shadow-sm rounded-lg px-4 py-4 bg-background">
                         <Moon className="w-4 h-4 text-yellow-500" />
                         <div>
                             <p className="text-sm font-medium">
                                 {isPartnerData ? "Partner's" : ""} Cycle Length
                             </p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-sm text-muted-foreground">
                                 {cycleLength} days average
                             </p>
                         </div>

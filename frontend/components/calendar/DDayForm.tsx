@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
+import Image from "next/image";
 import { DateRange } from "react-day-picker";
 
 // utils
@@ -11,11 +12,11 @@ import { selectGroups } from "@/lib/constants/calendar";
 // components
 import * as Popover from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import * as Select from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 // icons
 import {
@@ -25,16 +26,19 @@ import {
     SquareChevronRight,
     Settings,
     Loader2,
+    ImageDown,
+    ImageIcon,
+    CircleX,
 } from "lucide-react";
 
 // types
 import { DDay, DDayFormData, DDayFormProps } from "@/lib/types/calendar";
-import Image from "next/image";
 
 // shared form component for creating and editing calendar events
 export function DDayForm({
     initialData,
     onSubmit,
+    uploadImage,
     onCancel,
     onDelete,
     submitLabel = "Save",
@@ -47,13 +51,15 @@ export function DDayForm({
     const [group, setGroup] = useState(initialData?.group || "");
     const [description, setDescription] = useState("");
     const [imageUrl, setImageUrl] = useState("");
-    const [isUploading, setIsUploading] = useState(false);
     const [isAnnual, setIsAnnual] = useState(false);
     const [connectedEmail, setConnectedEmail] = useState(
         initialData?.connectedUsers?.[0] || ""
     );
     const [isMultiDay, setIsMultiDay] = useState(false);
     const [dateRange, setDateRange] = useState<DateRange | undefined>();
+
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
 
     // update form when initialData changes (for edit mode) - called when editing existing events
     useEffect(() => {
@@ -80,56 +86,52 @@ export function DDayForm({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [initialData]);
 
-    // handle file input change - uploads file to server and sets image URL state
-    const handleFileChange = async (
-        event: React.ChangeEvent<HTMLInputElement>
-    ) => {
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
 
-        setIsUploading(true);
-        try {
-            // 1. Get the presigned URL from our backend
-            const res = await fetch("/api/ddays/upload-url", {
-                method: "POST",
-            });
-            if (!res.ok) throw new Error("Failed to get upload URL.");
-            const { uploadUrl, publicUrl } = await res.json();
-
-            // 2. Upload the file directly to R2
-            const uploadRes = await fetch(uploadUrl, {
-                method: "PUT",
-                body: file,
-                headers: { "Content-Type": file.type },
-            });
-            if (!uploadRes.ok) throw new Error("Upload failed.");
-
-            // 3. Set the public URL to state for preview and submission
-            setImageUrl(publicUrl);
-        } catch (error) {
-            console.error("Error uploading file:", error);
-            // You can add a user-facing error message here (e.g., using a toast)
-        } finally {
-            setIsUploading(false);
-        }
+        setSelectedFile(file);
+        setImageUrl(URL.createObjectURL(file)); // Create a temporary local URL for preview
     };
 
-    // handle form submission - called by parent dialog (AddDdayDialog or EditDdayDialog)
-    const handleSubmit = async () => {
-        if (!title) return;
+    // If the user removes the image, clear both the preview URL and the selected file.
+    const handleRemoveImage = () => {
+        setImageUrl("");
+        setSelectedFile(null);
+    };
 
-        // prepare connected users array - used for user connections
+    // This function is called ONLY when the user clicks the final "Save" button.
+    const handleSubmit = async () => {
+        if (!title || !uploadImage) return;
+
+        setIsUploading(true);
+        let finalImageUrl = imageUrl;
+
+        // If a new file has been selected by the user, upload it now.
+        if (selectedFile) {
+            const publicUrl = await uploadImage(selectedFile);
+            if (publicUrl) {
+                finalImageUrl = publicUrl; // The upload was successful, use the new permanent URL.
+            } else {
+                console.error("Upload failed, aborting form submission.");
+                setIsUploading(false);
+                return; // Stop the submission if upload fails.
+            }
+        } else if (imageUrl === "" && initialData?.imageUrl) {
+            // This case handles when a user removes an existing image.
+            finalImageUrl = "";
+        }
+
         const connectedUsers = connectedEmail ? [connectedEmail] : [];
         const formData: DDayFormData = {
             title,
             group: group || "others",
             description,
-            imageUrl,
+            imageUrl: finalImageUrl,
             isAnnual,
             connectedUsers,
         };
 
-        // add date information if available - used by calendar grid and date calculations
         if (dateRange?.from) {
             formData.date = dateRange.from;
             if (isMultiDay && dateRange.to && dateRange.to >= dateRange.from) {
@@ -137,14 +139,16 @@ export function DDayForm({
             }
         }
 
-        // submit form data - calls parent dialog's onSubmit function
         const success = await onSubmit(formData);
+        setIsUploading(false);
+
         if (success) {
-            // reset form on successful submission - clears form for next use
+            // Reset form state after successful submission
             setTitle("");
             setGroup("");
             setDescription("");
             setImageUrl("");
+            setSelectedFile(null);
             setIsAnnual(false);
             setConnectedEmail("");
             setDateRange(undefined);
@@ -384,42 +388,42 @@ export function DDayForm({
                 </div>
             </div>
 
-            <div>
-                <label htmlFor="event-image" className="text-sm font-medium">
-                    Event Image
-                </label>
+            <Separator className="my-4" />
+
+            <div className="grid grid-cols-[1fr_4fr] gap-2 items-center">
+                <Label htmlFor="event-image" className="text-sm font-medium">
+                    <ImageIcon className="h-4 w-4" />
+                    Image:
+                </Label>
                 {isUploading ? (
                     <div className="flex items-center justify-center w-full h-32 mt-1 border-2 border-dashed rounded-lg">
                         <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
                     </div>
                 ) : imageUrl ? (
-                    <div className="mt-2 relative w-full h-40">
+                    <div className="relative h-70 w-full border-2 border-dashed rounded-lg">
                         <Image
                             src={imageUrl}
-                            alt="Event image"
-                            layout="fill"
-                            objectFit="cover"
-                            className="rounded-lg"
+                            alt="image"
+                            fill
+                            className="rounded-lg object-contain p-2"
                         />
                         <Button
                             variant="destructive"
-                            size="sm"
-                            className="absolute top-2 right-2"
+                            size="icon"
+                            className="absolute top-1 right-1 h-6 w-6 rounded-full"
                             onClick={() => setImageUrl("")}
                         >
-                            Remove
+                            <CircleX className="h-4 w-4" />
                         </Button>
                     </div>
                 ) : (
-                    <div className="mt-1">
-                        <Input
-                            id="event-image"
-                            type="file"
-                            accept="image/png, image/jpeg, image/gif"
-                            onChange={handleFileChange}
-                            disabled={isUploading}
-                        />
-                    </div>
+                    <Input
+                        id="event-image"
+                        type="file"
+                        accept="image/png, image/jpeg, image/gif"
+                        onChange={handleFileChange}
+                        disabled={isUploading}
+                    />
                 )}
             </div>
 

@@ -30,6 +30,7 @@ function GridDDayItem({
     droppableId,
     activeDDay,
     currentDate,
+    uploadDDayImage,
 }: {
     dday: DDay;
     position?: EventPosition;
@@ -39,6 +40,7 @@ function GridDDayItem({
     droppableId: string;
     activeDDay?: DDay | null;
     currentDate?: Date;
+    uploadDDayImage?: CalendarGridProps["uploadDDayImage"];
 }) {
     const isEventBeingDragged = activeDDay && activeDDay.id === dday.id;
 
@@ -53,6 +55,7 @@ function GridDDayItem({
                 dayIndex={dayIndex}
                 droppableId={droppableId}
                 currentDate={currentDate}
+                uploadDDayImage={uploadDDayImage}
             />
         </div>
     );
@@ -70,6 +73,7 @@ function CalendarDayCell({
     deleteDDay,
     handleAddClick,
     activeDDay,
+    uploadDDayImage,
 }: {
     day: number | null;
     index: number;
@@ -82,6 +86,7 @@ function CalendarDayCell({
     deleteDDay: CalendarGridProps["deleteDDay"];
     handleAddClick: (e: React.MouseEvent, day: number) => void;
     activeDDay?: DDay | null;
+    uploadDDayImage?: CalendarGridProps["uploadDDayImage"];
 }) {
     const todayDate = day
         ? new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
@@ -173,6 +178,7 @@ function CalendarDayCell({
                                     droppableId={droppableId}
                                     activeDDay={activeDDay}
                                     currentDate={currentDate}
+                                    uploadDDayImage={uploadDDayImage}
                                 />
                             );
                         })}
@@ -186,6 +192,7 @@ function CalendarDayCell({
                                     }
                                     updateDDay={updateDDay}
                                     deleteDDay={deleteDDay}
+                                    uploadDDayImage={uploadDDayImage}
                                 />
                             )}
                         </div>
@@ -207,6 +214,7 @@ export function CalendarGrid({
     updateDDay,
     deleteDDay,
     activeDDay,
+    uploadDDayImage,
 }: CalendarGridProps) {
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
@@ -251,6 +259,7 @@ export function CalendarGrid({
                             deleteDDay={deleteDDay}
                             handleAddClick={handleAddClick}
                             activeDDay={activeDDay}
+                            uploadDDayImage={uploadDDayImage}
                         />
                     ))}
                 </div>
@@ -260,6 +269,7 @@ export function CalendarGrid({
                 onOpenChange={setIsAddDialogOpen}
                 initialDate={selectedDateForAdd}
                 createDDay={createDDay}
+                uploadDDayImage={uploadDDayImage}
             />
         </>
     );

@@ -336,7 +336,7 @@ export function TodaysSummary({
                 <Separator orientation="horizontal" className="" />
 
                 {closestEvent && (
-                    <div className="inset-shadow-sm rounded-lg p-4">
+                    <div className="inset-shadow-sm rounded-lg p-4 bg-background">
                         <div className="flex items-center gap-4">
                             <closestEvent.icon
                                 className={`w-4 h-4 ${closestEvent.color}`}
@@ -355,7 +355,7 @@ export function TodaysSummary({
                                               closestEvent.days
                                           )}`}
                                 </p>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-sm text-muted-foreground">
                                     {closestEvent.type === "current_period"
                                         ? closestEvent.isFirstDay
                                             ? "Your period has started"
@@ -372,7 +372,7 @@ export function TodaysSummary({
                 {/* Pregnancy Chance */}
                 {hasPeriodData && (
                     <div className="space-y-2">
-                        <div className="flex items-center gap-4 inset-shadow-sm rounded-lg p-4">
+                        <div className="flex items-center gap-4 inset-shadow-sm rounded-lg p-4 bg-background">
                             <Heart className="w-4 h-4 text-pink-500" />
                             <div className="flex flex-col">
                                 <p
@@ -383,7 +383,7 @@ export function TodaysSummary({
                                         chance of conception today
                                     </span>
                                 </p>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-sm text-muted-foreground">
                                     {pregnancyChance.description}
                                 </p>
                             </div>
@@ -395,9 +395,9 @@ export function TodaysSummary({
                     <div className="space-y-2 lg:space-y-4">
                         <div className="flex items-center gap-2">
                             <Lightbulb className="w-4 h-4 text-yellow-500" />
-                            <p className="text-sm font-medium">Suggestions</p>
+                            <p className="font-medium">Suggestions</p>
                         </div>
-                        <div className="space-y-2 inset-shadow-sm rounded-lg px-2 py-4">
+                        <div className="space-y-2 inset-shadow-sm rounded-lg px-2 py-4 bg-background">
                             {suggestions.map((suggestion, index) => (
                                 <div
                                     key={index}

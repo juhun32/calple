@@ -18,7 +18,21 @@ export default function Start() {
             </p>
 
             {!authState.isAuthenticated ? (
-                <p>Get started by signing in with your Google account.</p>
+                <>
+                    <p>Get started by signing in with your Google account.</p>
+                    <Button
+                        className="rounded-full w-fit"
+                        variant="outline"
+                        size={"sm"}
+                        onClick={() => {
+                            window.location.href = "/profile";
+                        }}
+                        disabled
+                    >
+                        <User className="h-4 w-4 text-rose-500 border border-rose-500 rounded-full" />
+                        Profile
+                    </Button>
+                </>
             ) : (
                 <>
                     <p>

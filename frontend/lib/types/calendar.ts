@@ -31,6 +31,7 @@ export interface CalendarGridProps {
     ) => Promise<boolean>; // update existing event; from useDDays hook
     deleteDDay: (id: string) => Promise<boolean>; // delete an event; from useDDays hook
     activeDDay: DDay | null; // currently dragged event for dnd; from calendar page drag state
+    uploadDDayImage?: (file: File) => Promise<string | null>; // optional image upload function; from useDDays hook
 }
 
 // props for the add event dialog component; used by CalendarGrid and can be controlled externally
@@ -39,6 +40,7 @@ export interface AddDDayDialogProps {
     onOpenChange?: (open: boolean) => void; // callback when dialog open state changes; passed to CalendarGrid
     initialDate?: Date | null; // preselected date for the new event; from CalendarGrid day selection
     createDDay: (dday: Omit<DDay, "id" | "days">) => Promise<boolean>; // function to create event; from useDDays hook
+    uploadDDayImage?: (file: File) => Promise<string | null>; // function to upload event image; from useDDays hook
 }
 
 // props for individual event indicator components; used by CalendarGrid, DDaySheet, and ShowAllEvents
@@ -56,6 +58,7 @@ export interface DDayIndicatorProps {
     dayIndex?: number; // index of the day in the grid; used by CalendarGrid for week highlighting
     droppableId?: string; // id for dnd functionality; used by CalendarGrid drag system
     currentDate?: Date; // current date for context; used by CalendarGrid for date calculations
+    uploadDDayImage?: (file: File) => Promise<string | null>; // optional image upload function; used by DDayForm
 }
 
 // props for the calendar header component; passed from calendar page to CalendarHeader
@@ -76,6 +79,7 @@ export interface EditDdayDialogProps {
         updates: Partial<Omit<DDay, "days" | "id">>
     ) => Promise<boolean>; // update function; from useDDays hook
     deleteDDay: (id: string) => Promise<boolean>; // delete function; from useDDays hook
+    uploadDDayImage?: (file: File) => Promise<string | null>; // image upload function; from useDDays hook
 }
 
 // data structure for event form inputs; used by DDayForm and shared between AddDdayDialog and EditDdayDialog
@@ -94,6 +98,7 @@ export interface DDayFormData {
 export interface DDayFormProps {
     initialData?: Partial<DDay>; // prepopulated form data; from existing event or user input
     onSubmit: (data: DDayFormData) => Promise<boolean>; // form submission handler; passed from parent dialog
+    uploadImage?: (file: File) => Promise<string | null>; // image upload handler
     onCancel?: () => void; // cancel button handler; passed from parent dialog
     onDelete?: () => void; // delete button handler; passed from parent dialog
     submitLabel?: string; // text for submit button; customizable by parent dialog
@@ -111,4 +116,5 @@ export interface ShowAllEventsProps {
         updates: Partial<Omit<DDay, "id" | "days">>
     ) => Promise<boolean>; // update function; from useDDays hook
     deleteDDay: (id: string) => Promise<boolean>; // delete function; from useDDays hook
+    uploadDDayImage?: (file: File) => Promise<string | null>; // image upload function; from useDDays hook
 }

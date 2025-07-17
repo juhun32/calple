@@ -21,6 +21,7 @@ export function AddDDayDialog({
     onOpenChange,
     initialDate,
     createDDay,
+    uploadDDayImage,
 }: AddDDayDialogProps) {
     // loading state during form submission - passed to DDayForm for button state
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -101,6 +102,7 @@ export function AddDDayDialog({
                             submitLabel="Add"
                             cancelLabel="Cancel"
                             isSubmitting={isSubmitting}
+                            uploadImage={uploadDDayImage}
                         />
                     </AlertDialog.AlertDialogDescription>
                 </AlertDialog.AlertDialogHeader>

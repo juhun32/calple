@@ -23,6 +23,7 @@ export function ShowAllEvents({
     ddays = [],
     updateDDay,
     deleteDDay,
+    uploadDDayImage,
 }: ShowAllEventsProps) {
     const { authState } = useAuth();
     const [editingDDay, setEditingDDay] = useState<DDay | null>(null);
@@ -121,6 +122,7 @@ export function ShowAllEvents({
                     onOpenChange={(open) => !open && setEditingDDay(null)}
                     updateDDay={updateDDay}
                     deleteDDay={deleteDDay}
+                    uploadDDayImage={uploadDDayImage}
                 />
             )}
         </>

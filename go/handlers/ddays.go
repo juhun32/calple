@@ -179,6 +179,7 @@ func GetDDays(c *gin.Context) {
 			title, _ := data["title"].(string)
 			group, _ := data["group"].(string)
 			description, _ := data["description"].(string)
+			imageUrl, _ := data["imageUrl"].(string)
 			createdBy, _ := data["createdBy"].(string)
 			var createdAt, updatedAt time.Time
 			if ct, ok := data["createdAt"].(time.Time); ok {
@@ -198,6 +199,7 @@ func GetDDays(c *gin.Context) {
 				Description:    description,
 				Date:           dateStr,
 				EndDate:        endDateStr,
+				ImageURL:       imageUrl,
 				IsAnnual:       isAnnual,
 				CreatedBy:      createdBy,
 				ConnectedUsers: connectedUsers,

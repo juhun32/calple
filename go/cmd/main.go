@@ -38,11 +38,11 @@ func main() {
 	}
 	defer fsClient.Close()
 
-	r := gin.Default()
+	router := gin.Default()
 
 	// trusted proxies for prod environment
 	if os.Getenv("ENV") != "development" {
-		r.SetTrustedProxies([]string{"0.0.0.0/0"})
+		router.SetTrustedProxies([]string{"0.0.0.0/0"})
 	}
 
 	// set gin mode for prod
@@ -66,7 +66,7 @@ func main() {
 			return ".calple.date"
 		}(),
 	})
-	r.Use(sessions.Sessions("calple_session", store))
+	router.Use(sessions.Sessions("calple_session", store))
 
 	// CORS
 	corsConfig := cors.Config{
@@ -77,17 +77,17 @@ func main() {
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}
-	r.Use(cors.New(corsConfig))
+	router.Use(cors.New(corsConfig))
 
 	// firestore into context
 	// this middleware sets the firestore client in the context for use in handlers
-	r.Use(func(c *gin.Context) {
+	router.Use(func(c *gin.Context) {
 		c.Set("firestore", fsClient)
 		c.Next()
 	})
 
 	// logging middleware for debugging
-	r.Use(func(c *gin.Context) {
+	router.Use(func(c *gin.Context) {
 		start := time.Now()
 		path := c.Request.URL.Path
 		method := c.Request.Method
@@ -107,13 +107,13 @@ func main() {
 	})
 
 	// auth routes
-	r.GET("/google/oauth/login", handlers.Login)
-	r.GET("/google/oauth/callback", handlers.Callback)
-	r.GET("/api/auth/status", handlers.AuthStatus)
-	r.GET("/google/oauth/logout", handlers.Logout)
+	router.GET("/google/oauth/login", handlers.Login)
+	router.GET("/google/oauth/callback", handlers.Callback)
+	router.GET("/api/auth/status", handlers.AuthStatus)
+	router.GET("/google/oauth/logout", handlers.Logout)
 
 	// health check endpoint
-	r.GET("/health", func(c *gin.Context) {
+	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"status":      "healthy",
 			"timestamp":   time.Now().UTC(),
@@ -122,7 +122,7 @@ func main() {
 	})
 
 	// firebase connectivity test endpoint
-	r.GET("/api/health/firebase", func(c *gin.Context) {
+	router.GET("/api/health/firebase", func(c *gin.Context) {
 		fsClient := c.MustGet("firestore").(*firestore.Client)
 		ctx := context.Background()
 
@@ -150,13 +150,14 @@ func main() {
 		})
 	})
 
-	api := r.Group("/api")
+	api := router.Group("/api")
 	{
 		// dday event routes
 		api.GET("/ddays", handlers.GetDDays)
 		api.POST("/ddays", handlers.CreateDDay)
 		api.PUT("/ddays/:id", handlers.UpdateDDay)
 		api.DELETE("/ddays/:id", handlers.DeleteDDay)
+		api.POST("/ddays/upload-url", handlers.GetDDayUploadURL)
 
 		// connection routes
 		api.GET("/connection", handlers.GetConnection)
@@ -207,5 +208,5 @@ func main() {
 	if port == "" {
 		port = "5000"
 	}
-	r.Run(":" + port)
+	router.Run(":" + port)
 }

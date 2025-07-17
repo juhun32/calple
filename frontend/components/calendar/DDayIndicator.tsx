@@ -25,6 +25,7 @@ export function DDayIndicator({
     dayIndex,
     droppableId,
     currentDate,
+    uploadDDayImage,
 }: DDayIndicatorProps) {
     // state for controlling the edit dialog used by EditDdayDialog
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -188,8 +189,9 @@ export function DDayIndicator({
                             </span>
                         </AlertDialog.AlertDialogDescription>
                     </AlertDialog.AlertDialogHeader>
+
                     {dday.description ? (
-                        <div className="text-sm text-muted-foreground p-2 border rounded-lg">
+                        <div className="text-sm text-muted-foreground border p-2 px-4 rounded-lg">
                             <p
                                 style={{
                                     whiteSpace: "pre-wrap",
@@ -204,12 +206,12 @@ export function DDayIndicator({
                     ) : null}
 
                     {dday.imageUrl && (
-                        <div className="mt-4 relative w-full h-48 rounded-lg overflow-hidden">
+                        <div className="relative h-70 rounded-lg justify-center items-end flex border">
                             <Image
                                 src={dday.imageUrl}
                                 alt={dday.title}
-                                layout="fill"
-                                objectFit="cover"
+                                fill
+                                className="object-contain p-2"
                             />
                         </div>
                     )}
@@ -235,6 +237,7 @@ export function DDayIndicator({
                 onOpenChange={setIsEditDialogOpen}
                 updateDDay={updateDDay}
                 deleteDDay={deleteDDay}
+                uploadDDayImage={uploadDDayImage}
             />
         </div>
     );

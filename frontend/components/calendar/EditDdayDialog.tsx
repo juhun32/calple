@@ -1,8 +1,7 @@
-import { useState } from "react";
+import { useState, useMemo } from "react"; // Import useMemo
 
 // components
 import * as AlertDialog from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 // internal components
@@ -18,6 +17,7 @@ export function EditDdayDialog({
     onOpenChange,
     updateDDay,
     deleteDDay,
+    uploadDDayImage,
 }: EditDdayDialogProps) {
     // loading state during form submission - passed to DDayForm for button state
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -83,16 +83,21 @@ export function EditDdayDialog({
         }
     };
 
-    // prepare initial data for the form from the existing event - passed to DDayForm
-    const initialData = {
-        title: dday.title,
-        group: dday.group,
-        description: dday.description,
-        date: dday.date,
-        endDate: dday.endDate,
-        isAnnual: dday.isAnnual,
-        connectedUsers: dday.connectedUsers || [],
-    };
+    // Memoize initialData to prevent it from being recreated on every render.
+    // This stabilizes the prop and prevents the DDayForm's useEffect from re-running unnecessarily.
+    const initialData = useMemo(
+        () => ({
+            title: dday.title,
+            group: dday.group,
+            description: dday.description,
+            imageUrl: dday.imageUrl,
+            date: dday.date,
+            endDate: dday.endDate,
+            isAnnual: dday.isAnnual,
+            connectedUsers: dday.connectedUsers || [],
+        }),
+        [dday]
+    );
 
     return (
         <AlertDialog.AlertDialog open={isOpen} onOpenChange={onOpenChange}>
@@ -113,6 +118,7 @@ export function EditDdayDialog({
                                 deleteLabel="Delete Event"
                                 isSubmitting={isSubmitting}
                                 isDeleting={isDeleting}
+                                uploadImage={uploadDDayImage}
                             />
                         </div>
                     </AlertDialog.AlertDialogDescription>

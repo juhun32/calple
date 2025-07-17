@@ -79,6 +79,7 @@ export default function Calendar() {
         deleteDDay,
         createDDay,
         getRenderableDDaysForDay,
+        uploadDDayImage,
     } = useDDays(currentDate);
 
     // dnd state
@@ -167,7 +168,10 @@ export default function Calendar() {
                                     updateDDay={updateDDay}
                                     deleteDDay={deleteDDay}
                                 />
-                                <AddDDayDialog createDDay={createDDay} />
+                                <AddDDayDialog
+                                    createDDay={createDDay}
+                                    uploadDDayImage={uploadDDayImage}
+                                />
                             </div>
                         </div>
 
@@ -183,12 +187,16 @@ export default function Calendar() {
                                 updateDDay={updateDDay}
                                 deleteDDay={deleteDDay}
                                 activeDDay={activeDDay}
+                                uploadDDayImage={uploadDDayImage}
                             />
                         </div>
                     </div>
 
                     <div className="hidden lg:flex flex-col h-full pr-4 md:pr-8 pt-20 pb-12 gap-4">
-                        <AddDDayDialog createDDay={createDDay} />
+                        <AddDDayDialog
+                            createDDay={createDDay}
+                            uploadDDayImage={uploadDDayImage}
+                        />
                         <DDaySheet
                             ddays={ddays}
                             updateDDay={updateDDay}
