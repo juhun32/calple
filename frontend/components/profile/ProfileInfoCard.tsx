@@ -1,9 +1,7 @@
 import * as Card from "@/components/ui/card";
 import { User, Mail, Calendar, Clock } from "lucide-react";
 
-interface ProfileInfoCardProps {
-    email: string | null | undefined;
-}
+import { ProfileInfoCardProps } from "@/lib/types/profile";
 
 export const ProfileInfoCard = ({ email }: ProfileInfoCardProps) => {
     return (

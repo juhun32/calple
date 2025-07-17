@@ -1,20 +1,15 @@
 "use client";
 
 import { useState, useEffect, memo } from "react";
+
+// components
 import { Button } from "@/components/ui/button";
 import * as Card from "@/components/ui/card";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
-interface ButtonRowCalendarProps {
-    currentDate: Date;
-    onDateSelect: (date: Date) => void;
-    periodDays: Set<string>;
-    onPeriodToggle: (date: Date) => void;
-    predictedPeriodDays: Set<string>;
-    fertilityWindowDays: Set<string>;
-    sexualActivityDays: Set<string>;
-}
+// types
+import { ButtonRowCalendarProps } from "@/lib/types/periods";
 
 export const ButtonRowCalendar = memo(function ButtonRowCalendar({
     currentDate,

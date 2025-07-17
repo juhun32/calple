@@ -1,14 +1,14 @@
+// components
 import * as Card from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import * as AlertDialog from "@/components/ui/alert-dialog";
 import { Shield, DoorOpen, LogOut } from "lucide-react";
+
+// utils
 import { cn } from "@/lib/utils";
 
-interface AccountSettingsCardProps {
-    isDeleting: boolean;
-    onDeleteAccount: () => void;
-    onLogout: () => void;
-}
+// types
+import { AccountSettingsCardProps } from "@/lib/types/profile";
 
 export const AccountSettingsCard = ({
     isDeleting,

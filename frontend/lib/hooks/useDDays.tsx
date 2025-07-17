@@ -18,7 +18,7 @@ export function useDDays(currentDate: Date = new Date()) {
         new Map()
     );
 
-    // calculate the D-day count (days until/since an event); used to populate DDay.days field
+    // calculate the D-day count (days until/since an event)
     const calculateDDay = (targetDate: Date): string => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -33,7 +33,7 @@ export function useDDays(currentDate: Date = new Date()) {
         return `D+${Math.abs(diffDays)}`;
     };
 
-    // parse date string from API format (YYYYMMDD) to Date object; used when fetching from backend
+    // parse date string from API format (YYYYMMDD) to Date object
     const parseDateString = (dateStr: string): Date => {
         if (dateStr.match(/^\d{8}$/)) {
             const year = parseInt(dateStr.substring(0, 4));
@@ -44,7 +44,7 @@ export function useDDays(currentDate: Date = new Date()) {
         return new Date(dateStr);
     };
 
-    // format Date object to API format (YYYYMMDD); used when sending data to backend
+    // format Date object to API format (YYYYMMDD); used when sending data to go
     const formatDateForAPI = (date: Date | undefined): string => {
         if (!date) return "";
         return `${date.getFullYear()}${String(date.getMonth() + 1).padStart(
@@ -53,7 +53,7 @@ export function useDDays(currentDate: Date = new Date()) {
         )}${String(date.getDate()).padStart(2, "0")}`;
     };
 
-    // calculate layout positions for multiday events to ensure visual continuity; used by CalendarGrid
+    // calculate layout positions for multiday events to ensure visual continuity
     const calculateEventLayout = (events: DDay[]): Map<string, number> => {
         const layout = new Map<string, number>();
         const daySlots = new Map<string, boolean[]>(); // date string -> occupied rows
@@ -143,7 +143,7 @@ export function useDDays(currentDate: Date = new Date()) {
                 title: dday.title,
                 group: dday.group || "others",
                 description: dday.description || "",
-                imageUrl: dday.imageUrl || "", // Correctly reads the URL
+                imageUrl: dday.imageUrl || "",
                 date: dday.date ? parseDateString(dday.date) : undefined,
                 endDate: dday.endDate
                     ? parseDateString(dday.endDate)
@@ -239,7 +239,7 @@ export function useDDays(currentDate: Date = new Date()) {
                 title: dday.title,
                 group: dday.group,
                 description: dday.description,
-                imageUrl: dday.imageUrl, // Correctly includes URL on create
+                imageUrl: dday.imageUrl,
                 isAnnual: dday.isAnnual,
                 connectedUsers: dday.connectedUsers || [],
                 createdBy: dday.createdBy,

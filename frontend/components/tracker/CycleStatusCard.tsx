@@ -1,21 +1,13 @@
 "use client";
 
+// components
 import * as Card from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Droplets, Calendar, Heart, Moon, Plus } from "lucide-react";
-import { Separator } from "../ui/separator";
-import { Button } from "../ui/button";
+import { Droplets, Calendar, Heart, Moon } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
-interface CycleStatusCardProps {
-    currentCycleDay: number | null | undefined;
-    cycleLength: number;
-    daysUntilNextPeriod: number | null | undefined;
-    nextPeriod: Date | null | undefined;
-    hasPeriodData: boolean;
-    fertileStart: Date | null | undefined;
-    fertileEnd: Date | null | undefined;
-    isPartnerData?: boolean;
-}
+// types
+import { CycleStatusCardProps } from "@/lib/types/periods";
 
 export function CycleStatusCard({
     currentCycleDay,

@@ -22,8 +22,6 @@ import {
     Moon,
     Menu,
     User,
-    Settings,
-    Siren,
     Flower,
     Download,
     Home,

@@ -11,13 +11,14 @@ import { Button } from "../ui/button";
 import { CirclePlus } from "lucide-react";
 
 // internal components
-import { DDayIndicator } from "./DDayIndicator";
-import { AddDDayDialog } from "./AddDdayDialog";
-import { ShowAllEvents } from "./ShowAllEvents";
+import { DDayIndicator } from "@/components/calendar/DDayIndicator";
+import { AddDDayDialog } from "@/components/calendar/AddDdayDialog";
+import { ShowAllEvents } from "@/components/calendar/ShowAllEvents";
 
 // types
 import { CalendarGridProps, DDay, EventPosition } from "@/lib/types/calendar";
 
+// hooks/utils
 import { getEventPosition } from "@/lib/hooks/useDDays";
 import { cn } from "@/lib/utils";
 

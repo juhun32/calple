@@ -3,15 +3,20 @@
 import { useAuth } from "@/components/auth-provider";
 import { useState, useEffect } from "react";
 import { redirect } from "next/navigation";
-import { toast } from "sonner";
-import { getUserMetadata, updateUserMetadata } from "@/lib/api/checkin";
-import { logout } from "@/lib/utils";
 
+// components
+import { toast } from "sonner";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { ProfileInfoCard } from "@/components/profile/ProfileInfoCard";
 import { ConnectionCard } from "@/components/profile/ConnectionCard";
 import { GenderSettingsCard } from "@/components/profile/GenderSettingsCard";
 import { AccountSettingsCard } from "@/components/profile/AccountSettingsCard";
+
+// api
+import { getUserMetadata, updateUserMetadata } from "@/lib/api/checkin";
+
+// utils
+import { logout } from "@/lib/utils";
 
 export default function Profile() {
     const { authState } = useAuth();

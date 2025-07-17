@@ -8,7 +8,7 @@ import {
 
 const API_BASE = `${BACKEND_URL}/api/periods`;
 
-// Helper function to handle API responses
+// helper function to handle API responses
 async function handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -19,7 +19,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
     return response.json();
 }
 
-// Period Days API
+// period days
 export async function getPeriodDays(): Promise<{ periodDays: PeriodDay[] }> {
     const response = await fetch(`${API_BASE}/days`, {
         method: "GET",
@@ -65,7 +65,7 @@ export async function deletePeriodDay(
     return handleResponse<{ message: string }>(response);
 }
 
-// Cycle Settings API
+// cycle settings
 export async function getCycleSettings(): Promise<{
     cycleSettings: CycleSettings;
 }> {

@@ -33,9 +33,8 @@ import {
 } from "lucide-react";
 
 // types
-import { DDay, DDayFormData, DDayFormProps } from "@/lib/types/calendar";
+import { DDayFormData, DDayFormProps } from "@/lib/types/calendar";
 
-// shared form component for creating and editing calendar events
 export function DDayForm({
     initialData,
     onSubmit,
@@ -62,7 +61,6 @@ export function DDayForm({
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
 
-    // update form when initialData changes (for edit mode) - called when editing existing events
     useEffect(() => {
         if (initialData) {
             setTitle(initialData.title || "");
@@ -84,7 +82,6 @@ export function DDayForm({
                 setIsMultiDay(shouldBeMultiDay);
             }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [initialData]);
 
     // handle file selection and enforce size limit
@@ -94,8 +91,7 @@ export function DDayForm({
         const file = event.target.files?.[0];
         if (!file) return;
 
-        // enforce 5MB file size limit on the client side
-        const maxFileSize = 5 * 1024 * 1024; // 5MB
+        const maxFileSize = 5 * 1024 * 1024; // 5MB limit
         if (file.size > maxFileSize) {
             toast.error(
                 `Please select a file smaller than ${
@@ -107,34 +103,30 @@ export function DDayForm({
         }
 
         setSelectedFile(file);
-        setImageUrl(URL.createObjectURL(file)); // Create a temporary local URL for preview
+        setImageUrl(URL.createObjectURL(file));
     };
 
-    // If the user removes the image, clear both the preview URL and the selected file.
     const handleRemoveImage = () => {
         setImageUrl("");
         setSelectedFile(null);
     };
 
-    // This function is called ONLY when the user clicks the final "Save" button.
     const handleSubmit = async () => {
         if (!title || !uploadImage) return;
 
         setIsUploading(true);
         let finalImageUrl = imageUrl;
 
-        // If a new file has been selected by the user, upload it now.
         if (selectedFile) {
             const publicUrl = await uploadImage(selectedFile);
             if (publicUrl) {
-                finalImageUrl = publicUrl; // The upload was successful, use the new permanent URL.
+                finalImageUrl = publicUrl;
             } else {
                 console.error("Upload failed, aborting form submission.");
                 setIsUploading(false);
-                return; // Stop the submission if upload fails.
+                return;
             }
         } else if (imageUrl === "" && initialData?.imageUrl) {
-            // This case handles when a user removes an existing image.
             finalImageUrl = "";
         }
 
@@ -159,7 +151,6 @@ export function DDayForm({
         setIsUploading(false);
 
         if (success) {
-            // Reset form state after successful submission
             setTitle("");
             setGroup("");
             setDescription("");
@@ -172,7 +163,6 @@ export function DDayForm({
         }
     };
 
-    // format date display for the date picker button - responsive formatting for different screen sizes
     const formatDateDisplay = () => {
         if (!dateRange?.from) return <span>(Optional)</span>;
 
@@ -364,13 +354,11 @@ export function DDayForm({
 
                                 if (dateRange?.from) {
                                     if (newIsMultiDay) {
-                                        // When enabling multi-day, set the end date to the same as start date initially
                                         setDateRange({
                                             from: dateRange.from,
                                             to: dateRange.from,
                                         });
                                     } else {
-                                        // When disabling multi-day, keep only the start date
                                         setDateRange({
                                             from: dateRange.from,
                                             to: dateRange.from,
@@ -469,7 +457,7 @@ export function DDayForm({
                             variant="destructive"
                             onClick={onDelete}
                             disabled={isDeleting || isSubmitting}
-                            className="rounded-full"
+                            className="rounded-full inset-shadow-sm"
                         >
                             {isDeleting ? "Deleting..." : deleteLabel}
                         </Button>

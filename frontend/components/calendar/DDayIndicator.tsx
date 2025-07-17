@@ -161,7 +161,7 @@ export function DDayIndicator({
                         <AlertDialog.AlertDialogTitle>
                             <div className="flex flex-col justify-between items-baseline gap-1 sm:gap-2">
                                 <div className="truncate w-[15rem] sm:w-full">
-                                    <span className="truncate block">
+                                    <span className="relative truncate block max-w-50 sm:max-w-90 lg:max-w-120">
                                         {dday.title}
                                     </span>
                                 </div>

@@ -3,17 +3,12 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RotateCcw, Play, RotateCw } from "lucide-react";
-import { RouletteProps } from "@/lib/types/roulette";
-
-interface RouletteCardsProps {
-    posts: RouletteProps[];
-}
-
-interface RouletteCarouselProps {
-    items: string[];
-    onResult: (item: string) => void;
-}
+import { Play, RotateCw } from "lucide-react";
+import {
+    RouletteCardsProps,
+    RouletteCarouselProps,
+    RouletteProps,
+} from "@/lib/types/roulette";
 
 function RouletteCarousel({ items, onResult }: RouletteCarouselProps) {
     // roulette carousel component

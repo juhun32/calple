@@ -1,5 +1,3 @@
-// API functions for checkin functionality
-
 export interface CheckinData {
     id: string;
     userId: string;
@@ -47,7 +45,7 @@ export interface PartnerCheckin {
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-// Get user metadata (sex)
+// get user metadata (sex)
 export const getUserMetadata = async (): Promise<UserMetadata> => {
     try {
         const response = await fetch(`${BACKEND_URL}/api/periods/metadata`, {
@@ -89,7 +87,7 @@ export const getUserMetadata = async (): Promise<UserMetadata> => {
     }
 };
 
-// Update user metadata (sex)
+// update user metadata (sex)
 export const updateUserMetadata = async (
     sex: "male" | "female"
 ): Promise<UserMetadata> => {
@@ -110,7 +108,7 @@ export const updateUserMetadata = async (
     return data.userMetadata;
 };
 
-// Get partner metadata
+// get partner metadata
 export const getPartnerMetadata = async (): Promise<UserMetadata> => {
     const response = await fetch(
         `${BACKEND_URL}/api/periods/partner/metadata`,
@@ -120,14 +118,14 @@ export const getPartnerMetadata = async (): Promise<UserMetadata> => {
     );
 
     if (!response.ok) {
-        // Check if it's a "No partner connection found" error
         try {
             const errorData = await response.json();
             if (errorData.error === "No partner connection found") {
                 throw new Error("No partner connection found");
             }
         } catch (e) {
-            // If we can't parse the error, continue with the original error
+            // continue with the original error if cant parse error
+            console.error("Error parsing partner metadata response:", e);
         }
         throw new Error("Failed to fetch partner metadata");
     }
@@ -140,13 +138,13 @@ export const getPartnerMetadata = async (): Promise<UserMetadata> => {
 export const getTodayCheckin = async (
     date?: string
 ): Promise<CheckinData | null> => {
-    const checkinDate = date || new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD format in local timezone
+    const checkinDate = date || new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD
     const response = await fetch(`${BACKEND_URL}/api/checkin/${checkinDate}`, {
         credentials: "include",
     });
 
     if (response.status === 404) {
-        return null; // No checkin for today
+        return null; // no checkin today
     }
 
     if (!response.ok) {
@@ -157,7 +155,7 @@ export const getTodayCheckin = async (
     return data.checkin;
 };
 
-// Create or update checkin
+// create/update checkin
 export const createCheckin = async (
     checkinData: Omit<CheckinData, "id" | "userId" | "createdAt">
 ): Promise<CheckinData> => {
@@ -178,7 +176,7 @@ export const createCheckin = async (
     return data.checkin;
 };
 
-// Delete checkin for a specific date
+// delete checkin for a specific date
 export const deleteCheckin = async (date: string): Promise<void> => {
     const response = await fetch(`${BACKEND_URL}/api/checkin/${date}`, {
         method: "DELETE",
@@ -193,11 +191,11 @@ export const deleteCheckin = async (date: string): Promise<void> => {
     }
 };
 
-// Get partner's checkin for today
+// get partners checkin for today
 export const getPartnerCheckin = async (
     date?: string
 ): Promise<PartnerCheckin | null> => {
-    const checkinDate = date || new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD format in local timezone
+    const checkinDate = date || new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD
     const response = await fetch(
         `${BACKEND_URL}/api/checkin/partner/${checkinDate}`,
         {
@@ -206,18 +204,18 @@ export const getPartnerCheckin = async (
     );
 
     if (response.status === 404) {
-        return null; // Partner hasn't checked in today
+        return null; // partner hasn't checked in today
     }
 
     if (!response.ok) {
-        // Check if it's a "No partner connection found" error
         try {
             const errorData = await response.json();
             if (errorData.error === "No partner connection found") {
-                return null; // No partner connection
+                return null; // no partner connection
             }
         } catch (e) {
-            // If we can't parse the error, continue with the original error
+            // continue with the original error if cant parse error
+            console.error("Error parsing partner checkin response:", e);
         }
         throw new Error("Failed to fetch partner's checkin");
     }
@@ -226,7 +224,7 @@ export const getPartnerCheckin = async (
     return data.partnerCheckin;
 };
 
-// Debug function to test connection status
+// just debugging lol
 export const debugConnection = async () => {
     const response = await fetch(`${BACKEND_URL}/api/debug/connection`, {
         credentials: "include",

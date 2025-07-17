@@ -1,9 +1,5 @@
+import { ProfileHeaderProps } from "@/lib/types/profile";
 import { Mail } from "lucide-react";
-
-interface ProfileHeaderProps {
-    name: string | null | undefined;
-    email: string | null | undefined;
-}
 
 export const ProfileHeader = ({ name, email }: ProfileHeaderProps) => {
     return (

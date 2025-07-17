@@ -6,26 +6,16 @@ import { useState } from "react";
 import * as Sheet from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import * as Table from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
 
 // icons
 import { Calendar, CircleSmall } from "lucide-react";
 
 // types
-import { type DDay } from "@/lib/types/calendar";
+import { DDaySheetProps, type DDay } from "@/lib/types/calendar";
 
 // constants
 import { selectGroups } from "@/lib/constants/calendar";
 import { DDayIndicator } from "./DDayIndicator";
-
-type DDaySheetProps = {
-    ddays: DDay[]; // array of events to display from useDDays hook
-    updateDDay: (
-        id: string,
-        updates: Partial<Omit<any, "id" | "days">>
-    ) => Promise<boolean>; // function to update events from useDDays hook
-    deleteDDay: (id: string) => Promise<boolean>; // function to delete events from useDDays hook
-};
 
 // individual row component for the events table used by DDaySheet
 function DDayRow({

@@ -1,66 +1,26 @@
 "use client";
 
 import { useState, useEffect } from "react";
+
+// components
 import { Button } from "@/components/ui/button";
 import * as Card from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { PeriodDay } from "@/lib/types/periods";
-import { Separator } from "../ui/separator";
+import { Separator } from "@/components/ui/separator";
 
-const symptoms = [
-    "Cramps",
-    "Headache",
-    "Fatigue",
-    "Bloating",
-    "Mood Swings",
-    "Back Pain",
-    "Tender Breasts",
-    "Acne",
-];
+// types
+import { LogFormProps } from "@/lib/types/periods";
 
-const moodsPositive = [
-    "Happy",
-    "Calm",
-    "Energetic",
-    "Content",
-    "Relaxed",
-    "Motivated",
-];
-
-const moodsNegative = [
-    "Angry",
-    "Frustrated",
-    "Overwhelmed",
-    "Disappointed",
-    "Lonely",
-    "Bored",
-    "Nervous",
-];
-
-const activities = ["Exercise", "Meditation", "Social", "Work", "Rest"];
-
-const sexualActivities = ["Used", "Not Used"];
-
-interface LogFormProps {
-    date: Date;
-    existingLog?: PeriodDay | null;
-    onSave: (log: {
-        date: string;
-        symptoms: string[];
-        mood: string[];
-        activities: string[];
-        notes: string;
-    }) => Promise<void>;
-    onUpdate: (log: {
-        date: string;
-        symptoms: string[];
-        mood: string[];
-        activities: string[];
-        notes: string;
-    }) => Promise<void>;
-}
+// constants
+import {
+    symptoms,
+    moodsPositive,
+    moodsNegative,
+    activities,
+    sexualActivities,
+} from "@/lib/constants/periods";
 
 export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
     const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>(
@@ -75,7 +35,6 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
     const [notes, setNotes] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Update form when the selected date or its log data changes
     useEffect(() => {
         setSelectedSymptoms(existingLog?.symptoms || []);
         setSelectedMoods(existingLog?.mood || []);
@@ -150,7 +109,6 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                 <Separator orientation="horizontal" className="my-2 lg:my-4" />
             </Card.CardHeader>
             <Card.CardContent className="flex flex-col flex-1 gap-4">
-                {/* Symptoms */}
                 <div>
                     <Label className="text-base text-muted-foreground px-0">
                         Symptoms
@@ -179,7 +137,6 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                     </div>
                 </div>
 
-                {/* Mood */}
                 <div>
                     <Label className="text-base text-muted-foreground px-0">
                         Mood
@@ -226,7 +183,6 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                     </div>
                 </div>
 
-                {/* Activities */}
                 <div>
                     <Label className="text-base text-muted-foreground px-0">
                         Activities
@@ -257,7 +213,6 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                     </div>
                 </div>
 
-                {/* Sexual Activity */}
                 <div>
                     <Label className="text-base text-muted-foreground px-0">
                         Sexual Activity
@@ -289,7 +244,6 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                     </div>
                 </div>
 
-                {/* Notes */}
                 <div>
                     <Label className="text-base text-muted-foreground px-0">
                         Notes

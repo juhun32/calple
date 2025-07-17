@@ -16,9 +16,7 @@ import {
     MessageCircle,
     ThumbsUp,
     Frame,
-    List,
     Plus,
-    X,
 } from "lucide-react";
 
 // components

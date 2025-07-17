@@ -1,17 +1,12 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-    Activity,
-    Plus,
-    TrendingUp,
-    Settings,
-    Users,
-    RefreshCw,
-} from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { redirect } from "next/navigation";
+
+// components
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Activity, Plus, Settings, Users } from "lucide-react";
 import {
     CycleStatusCard,
     TodaysSummary,
@@ -21,12 +16,15 @@ import {
     ButtonRowCalendar,
     CycleSettingsForm,
 } from "@/components/tracker";
-import { usePeriods } from "@/lib/hooks/usePeriods";
-import { getUserMetadata, getPartnerMetadata } from "@/lib/api/checkin";
-import { getPartnerPeriodDays } from "@/lib/api/periods";
 import { toast } from "sonner";
 
-// Helper function to format date consistently
+// hooks
+import { usePeriods } from "@/lib/hooks/usePeriod";
+
+// api
+import { getUserMetadata } from "@/lib/api/checkin";
+import { getPartnerPeriodDays } from "@/lib/api/periods";
+
 const formatDateKey = (date: Date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -34,7 +32,7 @@ const formatDateKey = (date: Date) => {
     return `${year}-${month}-${day}`;
 };
 
-// Helper function to parse date key back to Date
+// parse date key back to Date
 const parseDateKey = (dateKey: string): Date => {
     const [year, month, day] = dateKey.split("-").map(Number);
     return new Date(year, month - 1, day);
@@ -60,16 +58,11 @@ export default function Tracker() {
     const [selectedTab, setSelectedTab] = useState("overview");
     const [isSavingSettings, setIsSavingSettings] = useState(false);
     const [userSex, setUserSex] = useState<"male" | "female" | null>(null);
-    const [partnerSex, setPartnerSex] = useState<"male" | "female" | null>(
-        null
-    );
     const [hasPartner, setHasPartner] = useState(false);
     const [partnerPeriodDays, setPartnerPeriodDays] = useState<Set<string>>(
         new Set()
     );
-    const [isLoadingPartnerData, setIsLoadingPartnerData] = useState(false);
-    const [lastPartnerDataRefresh, setLastPartnerDataRefresh] =
-        useState<Date | null>(null);
+    useState<Date | null>(null);
     const [partnerCycleData, setPartnerCycleData] = useState<{
         mostRecentPeriodStart: Date | null;
         cycleLength: number;
@@ -81,21 +74,15 @@ export default function Tracker() {
         daysUntilOvulation: number | null;
     } | null>(null);
 
-    // Load user and partner metadata
     useEffect(() => {
         const loadMetadata = async () => {
             try {
-                // Get user metadata
                 const userMeta = await getUserMetadata();
                 setUserSex(userMeta.sex as "male" | "female");
 
-                // Try to get partner metadata
                 try {
-                    const partnerMeta = await getPartnerMetadata();
-                    setPartnerSex(partnerMeta.sex as "male" | "female");
                     setHasPartner(true);
                 } catch (error) {
-                    // No partner connection found
                     setHasPartner(false);
                 }
             } catch (error) {
@@ -114,7 +101,7 @@ export default function Tracker() {
         loadMetadata();
     }, []);
 
-    // Calculate partner cycle data from period days
+    // calc partner cycle data based on period days
     const calculatePartnerCycleData = (periodDays: Set<string>) => {
         if (periodDays.size === 0) {
             setPartnerCycleData(null);
@@ -125,7 +112,7 @@ export default function Tracker() {
             .map(parseDateKey)
             .sort((a, b) => a.getTime() - b.getTime());
 
-        // Group dates into potential periods (dates within 3 days of each other)
+        // date groups of potential periods: within 3 days of each other
         const potentialPeriods: Date[][] = [];
         let currentPeriod: Date[] = [];
 
@@ -154,11 +141,11 @@ export default function Tracker() {
             potentialPeriods.push(currentPeriod);
         }
 
-        // Extract start dates from each period
+        // extracting start dates from each period
         const periodStartDates = potentialPeriods.map((period) => period[0]);
 
-        // Calculate average cycle length
-        let avgCycleLength = 28; // Default
+        // calc average cycle length default 28
+        let avgCycleLength = 28;
         if (periodStartDates.length > 1) {
             let totalCycleDays = 0;
             for (let i = 1; i < periodStartDates.length; i++) {
@@ -181,7 +168,7 @@ export default function Tracker() {
             periodStart = mostRecentPeriod[0];
         }
 
-        // Calculate next period date
+        // calc next period date
         const nextPeriod = periodStart
             ? (() => {
                   const next = new Date(periodStart);
@@ -190,7 +177,7 @@ export default function Tracker() {
               })()
             : null;
 
-        // Calculate days until next period
+        // calc days until next period
         const today = new Date();
         const daysUntilNextPeriod = nextPeriod
             ? Math.ceil(
@@ -199,7 +186,7 @@ export default function Tracker() {
               )
             : null;
 
-        // Calculate current cycle day
+        // calc current cycle day
         const currentCycleDay = periodStart
             ? (() => {
                   const daysSinceLastPeriod = Math.ceil(
@@ -211,7 +198,7 @@ export default function Tracker() {
               })()
             : null;
 
-        // Calculate fertility window
+        // calc fertile window
         const fertileStart = periodStart
             ? (() => {
                   const start = new Date(periodStart);
@@ -228,7 +215,7 @@ export default function Tracker() {
               })()
             : null;
 
-        // Calculate days until ovulation
+        // calc until ovulation
         const daysUntilOvulation = periodStart
             ? (() => {
                   const ovulationDate = new Date(periodStart);
@@ -253,11 +240,9 @@ export default function Tracker() {
         });
     };
 
-    // Load partner period data when we have a partner
     const loadPartnerData = async () => {
         if (!hasPartner) return;
 
-        setIsLoadingPartnerData(true);
         try {
             const response = await getPartnerPeriodDays();
             const partnerDays = new Set<string>();
@@ -270,12 +255,8 @@ export default function Tracker() {
 
             setPartnerPeriodDays(partnerDays);
             calculatePartnerCycleData(partnerDays);
-            setLastPartnerDataRefresh(new Date());
         } catch (error) {
             console.error("Failed to load partner period data:", error);
-            // Don't show toast for partner data loading errors
-        } finally {
-            setIsLoadingPartnerData(false);
         }
     };
 
@@ -283,7 +264,7 @@ export default function Tracker() {
         loadPartnerData();
     }, [hasPartner]);
 
-    // Auto-refresh partner data every 30 seconds
+    // refresh partner data every 30s
     useEffect(() => {
         if (!hasPartner) return;
 
@@ -313,11 +294,7 @@ export default function Tracker() {
     const periodLength = cycleSettings?.periodLength || 5;
 
     // calculate most recent period start/end dates and average cycle length
-    const {
-        mostRecentPeriodStart,
-        mostRecentPeriodEnd,
-        calculatedCycleLength,
-    } = useMemo(() => {
+    const { mostRecentPeriodStart, calculatedCycleLength } = useMemo(() => {
         if (periodDaysSet.size === 0) {
             return {
                 mostRecentPeriodStart: null,
@@ -330,7 +307,7 @@ export default function Tracker() {
             .map(parseDateKey)
             .sort((a, b) => a.getTime() - b.getTime());
 
-        // Group dates into potential periods (dates within 3 days of each other)
+        // date groups of potential periods: within 3 days of each other
         const potentialPeriods: Date[][] = [];
         let currentPeriod: Date[] = [];
 
@@ -359,10 +336,10 @@ export default function Tracker() {
             potentialPeriods.push(currentPeriod);
         }
 
-        // Extract start dates from each period
+        // extracting start dates from each period
         const periodStartDates = potentialPeriods.map((period) => period[0]);
 
-        // Calculate average cycle length
+        // average cycle length
         let avgCycleLength = cycleSettings?.cycleLength || 28;
         if (periodStartDates.length > 1) {
             let totalCycleDays = 0;
@@ -652,6 +629,7 @@ export default function Tracker() {
                             </TabsTrigger>
                         </TabsList>
                     )}
+
                     {/* <TabsTrigger
                             value="insights"
                             className="flex items-center gap-2"
@@ -677,7 +655,6 @@ export default function Tracker() {
                         )}
 
                         {userSex !== "female" ? (
-                            // For non-female users, show partner's cycle data if available
                             <div className="grid md:grid-cols-[1fr_1fr] gap-4 flex-1">
                                 <TodaysSummary
                                     todaysData={getLogForDate(
@@ -772,7 +749,6 @@ export default function Tracker() {
                                 />
                             </div>
                         ) : (
-                            // For female users, show full interface
                             <div className="grid md:grid-cols-[4fr_2fr_2fr] gap-4 flex-1">
                                 <TodaysSummary
                                     todaysData={getLogForDate(
@@ -811,7 +787,6 @@ export default function Tracker() {
                             </div>
                         )}
 
-                        {/* Message for non-female users explaining limited access */}
                         {userSex !== "female" && (
                             <div className="bg-muted/50 border rounded-lg p-4">
                                 <div className="flex items-center gap-2 mb-2">

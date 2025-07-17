@@ -23,7 +23,6 @@ import (
 	"calple/util"
 )
 
-// countdown event structure for DDay
 type DDay struct {
 	ID             string    `json:"id"`
 	Title          string    `json:"title"`
@@ -488,7 +487,7 @@ func GetDDayUploadURL(c *gin.Context) {
 	// maximum upload size (5MB)
 	const maxUploadSize = 5 * 1024 * 1024
 
-	// Enforce the size limit on the backend before generating the URL
+	// enforce the size limit on the backend before generating the URL
 	if req.FileSize > maxUploadSize {
 		c.JSON(http.StatusRequestEntityTooLarge, gin.H{"error": "File size exceeds the 5MB limit"})
 		return

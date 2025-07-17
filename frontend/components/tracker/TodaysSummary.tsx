@@ -1,36 +1,12 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+// components
 import * as Card from "@/components/ui/card";
-import {
-    CalendarIcon,
-    Plus,
-    Lightbulb,
-    Clock,
-    Droplets,
-    Heart,
-    Dot,
-    CircleSmall,
-} from "lucide-react";
-import { PeriodDay } from "@/lib/types/periods";
+import { CalendarIcon, Lightbulb, Droplets, Heart } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
-interface TodaysSummaryProps {
-    todaysData?: PeriodDay | null;
-    // New props for enhanced features
-    daysUntilNextPeriod?: number | null | undefined;
-    daysUntilOvulation?: number | null | undefined;
-    currentCycleDay?: number | null | undefined;
-    cycleLength?: number;
-    hasPeriodData?: boolean;
-    // New props for period status
-    isTodayPeriodDay?: boolean;
-    isFirstDayOfPeriod?: boolean;
-    periodDaysSet?: Set<string>;
-    mostRecentPeriodStart?: Date | null | undefined;
-    periodDays?: string[]; // Array of period day dates for cycle calculation
-    isPartnerData?: boolean; // Whether this is showing partner's data
-}
+// types
+import { EventInfo, TodaysSummaryProps } from "@/lib/types/periods";
 
 export function TodaysSummary({
     todaysData,
@@ -46,13 +22,6 @@ export function TodaysSummary({
     periodDays,
     isPartnerData = false,
 }: TodaysSummaryProps) {
-    const symptomsCount = todaysData?.symptoms?.length || 0;
-    const moodCount = todaysData?.mood?.length || 0;
-    const activitiesCount = todaysData?.activities?.length || 0;
-
-    const primaryMood = todaysData?.mood?.[0] || "None";
-
-    // Helper function to format date consistently
     const formatDateKey = (date: Date) => {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -60,7 +29,7 @@ export function TodaysSummary({
         return `${year}-${month}-${day}`;
     };
 
-    // Determine if today is a period day and if it's the first day
+    // is today a period day? and if it's the first day?
     const today = new Date();
     const todayKey = formatDateKey(today);
     const isInPeriod = periodDaysSet?.has(todayKey) || isTodayPeriodDay;
@@ -69,7 +38,7 @@ export function TodaysSummary({
         (mostRecentPeriodStart &&
             formatDateKey(mostRecentPeriodStart) === todayKey);
 
-    // Calculate cycle length (days from last period start to current period start)
+    // cycle length: days from last period start to current period start
     const getCycleLength = () => {
         if (
             !mostRecentPeriodStart ||
@@ -77,15 +46,15 @@ export function TodaysSummary({
             !periodDays ||
             periodDays.length < 2
         ) {
-            return cycleLength; // Fallback to user's cycle length setting
+            return cycleLength;
         }
 
-        // Sort period days to find the previous period start
+        // sort period days to find the previous period start
         const sortedPeriodDays = periodDays
             .map((date) => new Date(date))
             .sort((a, b) => a.getTime() - b.getTime());
 
-        // Find the period start before the most recent one
+        // find the period start before the most recent one
         const currentPeriodStartIndex = sortedPeriodDays.findIndex(
             (date) =>
                 formatDateKey(date) === formatDateKey(mostRecentPeriodStart!)
@@ -102,10 +71,10 @@ export function TodaysSummary({
             return daysDiff;
         }
 
-        return cycleLength; // Fallback to user's cycle length setting
+        return cycleLength;
     };
 
-    // Calculate current period day (how many days since period started)
+    // calculate current period day (how many days since period started)
     const getCurrentPeriodDay = () => {
         if (!mostRecentPeriodStart || !isInPeriod) return 0;
 
@@ -116,18 +85,7 @@ export function TodaysSummary({
         return daysDiff + 1; // +1 because we count the start day as day 1
     };
 
-    // Type for event objects
-    type EventInfo = {
-        type: string;
-        days: number;
-        icon: any;
-        color: string;
-        isFirstDay?: boolean;
-        cycleLength?: number;
-        currentPeriodDay?: number;
-    };
-
-    // Generate AI suggestions based on current data and cycle position
+    // generate suggestions based on current data and cycle position
     const generateSuggestions = () => {
         const suggestions: string[] = [];
 
@@ -150,7 +108,7 @@ export function TodaysSummary({
             return suggestions;
         }
 
-        // Suggestions based on cycle day
+        // suggestions based on cycle day
         if (currentCycleDay) {
             if (currentCycleDay <= 5) {
                 suggestions.push(
@@ -179,7 +137,7 @@ export function TodaysSummary({
             }
         }
 
-        // Suggestions based on symptoms
+        // suggestions based on symptoms
         if (todaysData?.symptoms) {
             if (todaysData.symptoms.includes("cramps")) {
                 suggestions.push(
@@ -194,7 +152,7 @@ export function TodaysSummary({
             }
         }
 
-        // Suggestions based on mood
+        // suggestions based on mood
         if (todaysData?.mood) {
             if (todaysData.mood.includes("anxious")) {
                 suggestions.push("Practice deep breathing or meditation");
@@ -204,7 +162,7 @@ export function TodaysSummary({
             }
         }
 
-        // Default suggestions if none generated
+        // default suggestions if none generated
         if (suggestions.length === 0) {
             suggestions.push("Keep tracking to receive personalized insights");
             suggestions.push("Regular exercise can help with cycle regularity");
@@ -213,13 +171,13 @@ export function TodaysSummary({
         return suggestions.slice(0, 3); // Limit to 3 suggestions
     };
 
-    // Get closest upcoming event
+    // get closest upcoming event
     const getClosestEvent = (): EventInfo | null => {
         if (!hasPeriodData) {
             return null;
         }
 
-        // If user is in period, show period information
+        // show period information if user is in period
         if (isInPeriod) {
             return {
                 type: "current_period",
@@ -256,13 +214,13 @@ export function TodaysSummary({
             return null;
         }
 
-        // Return the closest event
+        // return the closest event
         return events.reduce((closest, event) =>
             event.days < closest.days ? event : closest
         );
     };
 
-    // Determine pregnancy chance based on cycle phase
+    // pregnancy chance based on cycle phase
     const getPregnancyChance = () => {
         if (isInPeriod) {
             return {
@@ -286,7 +244,7 @@ export function TodaysSummary({
             };
         }
 
-        // Check for post-ovulation, pre-period phase
+        // check post-ovulation, pre-period phase
         if (daysUntilOvulation != null && daysUntilOvulation < -3) {
             return {
                 level: "Low",
@@ -296,7 +254,7 @@ export function TodaysSummary({
             };
         }
 
-        // Default case: pre-ovulation, non-fertile phase
+        // default: pre-ovulation, non-fertile phase
         return {
             level: "Low",
             color: "text-orange-500",
@@ -309,7 +267,7 @@ export function TodaysSummary({
     const closestEvent = getClosestEvent();
     const pregnancyChance = getPregnancyChance();
 
-    // Helper to format text like "in 5 days" or "2 days ago"
+    // format text ex) "in 5 days", "2 days ago"
     const formatDaysAwayText = (days: number) => {
         if (days > 0) {
             return `in ${days} ${days === 1 ? "day" : "days"}`;
@@ -369,7 +327,6 @@ export function TodaysSummary({
                     </div>
                 )}
 
-                {/* Pregnancy Chance */}
                 {hasPeriodData && (
                     <div className="space-y-2">
                         <div className="flex items-center gap-4 inset-shadow-sm rounded-lg p-4 bg-background">

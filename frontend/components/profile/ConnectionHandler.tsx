@@ -1,39 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-    Dialog,
-    DialogTrigger,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-} from "@/components/ui/dialog";
+import * as Dialog from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-    CardFooter,
-} from "@/components/ui/card";
-import {
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialog,
-    AlertDialogContent,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "../ui/alert-dialog";
+import * as Card from "@/components/ui/card";
+import * as AlertDialog from "../ui/alert-dialog";
 
 // types
 import { Connection, Invitation } from "@/lib/types/connection";
@@ -197,7 +172,7 @@ export function ConnectionManager() {
 
     return (
         <div>
-            <Dialog
+            <Dialog.Dialog
                 open={open}
                 onOpenChange={(value) => {
                     setOpen(value);
@@ -208,7 +183,7 @@ export function ConnectionManager() {
                     }
                 }}
             >
-                <DialogTrigger asChild>
+                <Dialog.DialogTrigger asChild>
                     <Button
                         variant="outline"
                         className="w-fit sm:w-auto rounded-full bg-background dark:bg-background hover:cursor-pointer"
@@ -216,14 +191,16 @@ export function ConnectionManager() {
                         <Blend className="w-4 h-4" />
                         Manage Connection
                     </Button>
-                </DialogTrigger>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Calendar Connection</DialogTitle>
-                        <DialogDescription>
+                </Dialog.DialogTrigger>
+                <Dialog.DialogContent>
+                    <Dialog.DialogHeader>
+                        <Dialog.DialogTitle>
+                            Calendar Connection
+                        </Dialog.DialogTitle>
+                        <Dialog.DialogDescription>
                             Connect with a partner.
-                        </DialogDescription>
-                    </DialogHeader>
+                        </Dialog.DialogDescription>
+                    </Dialog.DialogHeader>
 
                     <Tabs
                         defaultValue={activeTab}
@@ -262,14 +239,16 @@ export function ConnectionManager() {
 
                         <TabsContent value="connection">
                             {connection ? (
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Connected Partner</CardTitle>
-                                        <CardDescription>
+                                <Card.Card>
+                                    <Card.CardHeader>
+                                        <Card.CardTitle>
+                                            Connected Partner
+                                        </Card.CardTitle>
+                                        <Card.CardDescription>
                                             You are sharing with:
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
+                                        </Card.CardDescription>
+                                    </Card.CardHeader>
+                                    <Card.CardContent>
                                         <div className="flex flex-col space-y-2">
                                             <p className="font-medium">
                                                 {connection.partner?.name ||
@@ -279,17 +258,19 @@ export function ConnectionManager() {
                                                 {connection.partner?.email}
                                             </p>
                                         </div>
-                                    </CardContent>
-                                </Card>
+                                    </Card.CardContent>
+                                </Card.Card>
                             ) : (
-                                <Card className="gap-8">
-                                    <CardHeader className="gap-2">
-                                        <CardTitle>No Connection</CardTitle>
-                                        <CardDescription>
+                                <Card.Card className="gap-8">
+                                    <Card.CardHeader className="gap-2">
+                                        <Card.CardTitle>
+                                            No Connection
+                                        </Card.CardTitle>
+                                        <Card.CardDescription>
                                             Invite someone to share your calple
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
+                                        </Card.CardDescription>
+                                    </Card.CardHeader>
+                                    <Card.CardContent>
                                         <div className="flex flex-col gap-2">
                                             <Label
                                                 htmlFor="email"
@@ -326,40 +307,40 @@ export function ConnectionManager() {
                                                 </Button>
                                             </div>
                                         </div>
-                                    </CardContent>
-                                </Card>
+                                    </Card.CardContent>
+                                </Card.Card>
                             )}
                         </TabsContent>
 
                         <TabsContent value="invitations">
                             {pendingInvitations.length === 0 ? (
-                                <Card>
-                                    <CardHeader className="gap-4">
-                                        <CardTitle>
+                                <Card.Card>
+                                    <Card.CardHeader className="gap-4">
+                                        <Card.CardTitle>
                                             No Pending Invitations
-                                        </CardTitle>
-                                        <CardDescription>
+                                        </Card.CardTitle>
+                                        <Card.CardDescription>
                                             You don't have any pending
                                             invitations.
-                                        </CardDescription>
-                                    </CardHeader>
-                                </Card>
+                                        </Card.CardDescription>
+                                    </Card.CardHeader>
+                                </Card.Card>
                             ) : (
                                 <div className="space-y-4">
                                     {pendingInvitations.map((invitation) => (
-                                        <Card key={invitation.id}>
-                                            <CardHeader>
-                                                <CardTitle>
+                                        <Card.Card key={invitation.id}>
+                                            <Card.CardHeader>
+                                                <Card.CardTitle>
                                                     Calendar Invitation
-                                                </CardTitle>
-                                                <CardDescription>
+                                                </Card.CardTitle>
+                                                <Card.CardDescription>
                                                     {invitation.from_name ||
                                                         invitation.from_email ||
                                                         "Someone"}{" "}
                                                     wants to connect
-                                                </CardDescription>
-                                            </CardHeader>
-                                            <CardContent>
+                                                </Card.CardDescription>
+                                            </Card.CardHeader>
+                                            <Card.CardContent>
                                                 <p className="text-sm">
                                                     {invitation.from_email}
                                                 </p>
@@ -369,8 +350,8 @@ export function ConnectionManager() {
                                                         invitation.createdAt
                                                     ).toLocaleDateString()}
                                                 </p>
-                                            </CardContent>
-                                            <CardFooter className="flex justify-between">
+                                            </Card.CardContent>
+                                            <Card.CardFooter className="flex justify-between">
                                                 <Button
                                                     variant="destructive"
                                                     onClick={() =>
@@ -392,42 +373,42 @@ export function ConnectionManager() {
                                                 >
                                                     Accept
                                                 </Button>
-                                            </CardFooter>
-                                        </Card>
+                                            </Card.CardFooter>
+                                        </Card.Card>
                                     ))}
                                 </div>
                             )}
                         </TabsContent>
                     </Tabs>
 
-                    <DialogFooter>
+                    <Dialog.DialogFooter>
                         {connection && (
-                            <AlertDialog>
-                                <AlertDialogTrigger asChild>
+                            <AlertDialog.AlertDialog>
+                                <AlertDialog.AlertDialogTrigger asChild>
                                     <Button
                                         variant="destructive"
                                         disabled={isLoading}
                                     >
                                         Disconnect
                                     </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>
+                                </AlertDialog.AlertDialogTrigger>
+                                <AlertDialog.AlertDialogContent>
+                                    <AlertDialog.AlertDialogHeader>
+                                        <AlertDialog.AlertDialogTitle>
                                             Are you absolutely sure?
-                                        </AlertDialogTitle>
-                                        <AlertDialogDescription>
+                                        </AlertDialog.AlertDialogTitle>
+                                        <AlertDialog.AlertDialogDescription>
                                             This action cannot be undone. This
                                             will permanently delete your account
                                             and remove your data from our
                                             servers.
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel>
+                                        </AlertDialog.AlertDialogDescription>
+                                    </AlertDialog.AlertDialogHeader>
+                                    <AlertDialog.AlertDialogFooter>
+                                        <AlertDialog.AlertDialogCancel>
                                             Cancel
-                                        </AlertDialogCancel>
-                                        <AlertDialogAction
+                                        </AlertDialog.AlertDialogCancel>
+                                        <AlertDialog.AlertDialogAction
                                             onClick={() =>
                                                 handleCancelInvitation(
                                                     connection.connectionId
@@ -435,10 +416,10 @@ export function ConnectionManager() {
                                             }
                                         >
                                             Disconnect
-                                        </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
+                                        </AlertDialog.AlertDialogAction>
+                                    </AlertDialog.AlertDialogFooter>
+                                </AlertDialog.AlertDialogContent>
+                            </AlertDialog.AlertDialog>
                         )}
 
                         <Button
@@ -449,9 +430,9 @@ export function ConnectionManager() {
                         >
                             Close
                         </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+                    </Dialog.DialogFooter>
+                </Dialog.DialogContent>
+            </Dialog.Dialog>
         </div>
     );
 }

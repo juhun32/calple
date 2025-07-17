@@ -15,7 +15,6 @@ import { DDayForm } from "./DDayForm";
 // types
 import { DDayFormData, type AddDDayDialogProps } from "@/lib/types/calendar";
 
-// dialog component for adding new calendar events - used by CalendarGrid and can be controlled externally
 export function AddDDayDialog({
     isOpen,
     onOpenChange,
@@ -23,26 +22,20 @@ export function AddDDayDialog({
     createDDay,
     uploadDDayImage,
 }: AddDDayDialogProps) {
-    // loading state during form submission - passed to DDayForm for button state
     const [isSubmitting, setIsSubmitting] = useState(false);
-    // internal open state for uncontrolled mode
     const [internalOpen, setInternalOpen] = useState(false);
 
-    // handle form submission from the shared DDayForm component - called when user submits form
     const handleSubmit = async (formData: DDayFormData) => {
         setIsSubmitting(true);
 
-        // prepare event data for creation (add createdBy field) - required by backend API
         const ddayData = {
             ...formData,
             createdBy: "",
         };
 
-        // attempt to create the event - calls useDDays hook createDDay function
         const success = await createDDay(ddayData);
         setIsSubmitting(false);
 
-        // close dialog on successful creation
         if (success) {
             if (onOpenChange) {
                 onOpenChange(false);

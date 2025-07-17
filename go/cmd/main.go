@@ -202,7 +202,7 @@ func main() {
 		// debug route
 		api.GET("/debug/connection", handlers.DebugConnection)
 
-		// user routes
+		// user acc delete
 		api.DELETE("/user", handlers.DeleteUser)
 	}
 

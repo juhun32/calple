@@ -1,9 +1,12 @@
 "use client";
 
 import { memo, useState, useEffect, useMemo } from "react";
-import { motion, AnimatePresence, PanInfo } from "framer-motion"; // Import PanInfo for drag event type
+import { motion, AnimatePresence, PanInfo } from "framer-motion";
+
+// components
 import { Button } from "@/components/ui/button";
 import * as Card from "@/components/ui/card";
+import * as Tooltip from "@/components/ui/tooltip";
 import {
     ChevronLeft,
     ChevronRight,
@@ -11,18 +14,12 @@ import {
     CircleSmall,
     Info,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import * as Tooltip from "../ui/tooltip";
 
-interface DayButtonRowProps {
-    currentDate: Date;
-    onDateSelect: (date: Date) => void;
-    periodDays: Set<string>;
-    onPeriodToggle: (date: Date) => void;
-    predictedPeriodDays: Set<string>;
-    fertilityWindowDays: Set<string>;
-    sexualActivityDays: Set<string>;
-}
+// utils
+import { cn } from "@/lib/utils";
+
+// types
+import { DayButtonRowProps } from "@/lib/types/periods";
 
 export const DayButtonRow = memo(function DayButtonRow({
     currentDate,

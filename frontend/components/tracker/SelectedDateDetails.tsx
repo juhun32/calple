@@ -2,16 +2,11 @@
 
 import * as Card from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { PeriodDay } from "@/lib/types/periods";
-import { Button } from "../ui/button";
-import { Plus, Edit } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Plus, Edit } from "lucide-react";
 
-interface SelectedDateDetailsProps {
-    date: Date;
-    periodData?: PeriodDay | null;
-    onLogClick?: () => void;
-}
+import { SelectedDateDetailsProps } from "@/lib/types/periods";
 
 export function SelectedDateDetails({
     date,

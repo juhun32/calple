@@ -1,14 +1,14 @@
+// compontents
 import * as Card from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { User, Venus, Mars } from "lucide-react";
+
+// utils
 import { cn } from "@/lib/utils";
 
-interface GenderSettingsCardProps {
-    userSex: "male" | "female" | null;
-    isLoading: boolean;
-    onSexChange: (sex: "male" | "female") => void;
-}
+// types
+import { GenderSettingsCardProps } from "@/lib/types/profile";
 
 export const GenderSettingsCard = ({
     userSex,

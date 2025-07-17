@@ -1,16 +1,13 @@
-import { useState, useMemo } from "react"; // Import useMemo
+import { useState, useMemo } from "react";
 
 // components
 import * as AlertDialog from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
-// internal components
-
 // types
 import { DDayFormData, EditDdayDialogProps } from "@/lib/types/calendar";
 import { DDayForm } from "./DDayForm";
 
-// dialog component for editing existing calendar events - used by DDayIndicator
 export function EditDdayDialog({
     dday,
     isOpen,
@@ -19,12 +16,10 @@ export function EditDdayDialog({
     deleteDDay,
     uploadDDayImage,
 }: EditDdayDialogProps) {
-    // loading state during form submission - passed to DDayForm for button state
     const [isSubmitting, setIsSubmitting] = useState(false);
-    // loading state during deletion - used for delete button state
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
 
-    // handle form submission from the shared DDayForm component - called when user submits form
     const handleSubmit = async (formData: DDayFormData) => {
         if (!dday.id) {
             toast("Missing event ID");
@@ -34,7 +29,6 @@ export function EditDdayDialog({
         setIsSubmitting(true);
 
         try {
-            // attempt to update the event - calls useDDays hook updateDDay function
             const success = await updateDDay(dday.id, formData);
 
             if (success) {
@@ -54,37 +48,34 @@ export function EditDdayDialog({
         }
     };
 
-    // handle event deletion - called when user clicks delete button
-    const handleDelete = async () => {
+    const handleDelete = () => {
         if (!dday.id) return;
+        setIsDeleteAlertOpen(true);
+    };
 
-        // confirm deletion with user - browser confirm dialog
-        if (!confirm("Are you sure you want to delete this event?")) {
-            return;
-        }
-
+    const confirmDelete = async () => {
+        if (!dday.id) return;
         setIsDeleting(true);
-
         try {
-            // attempt to delete the event - calls useDDays hook deleteDDay function
             const success = await deleteDDay(dday.id);
 
             if (success) {
-                toast("Your event has been deleted successfully");
+                toast.success("Your event has been deleted successfully");
                 onOpenChange(false);
             } else {
-                toast("Failed to delete event. Please try again.");
+                toast.error("Failed to delete event. Please try again.");
             }
         } catch (error) {
             console.error("Error deleting event:", error);
-            toast("Something went wrong. Please try again.");
+            toast.error("Something went wrong. Please try again.");
         } finally {
             setIsDeleting(false);
+            setIsDeleteAlertOpen(false);
         }
     };
 
-    // Memoize initialData to prevent it from being recreated on every render.
-    // This stabilizes the prop and prevents the DDayForm's useEffect from re-running unnecessarily.
+    // memoize initial data to prevent it from being recreated on every render
+    // to stabilize the prop and prevent the DDayForm's useEffect from re-running unnecessarily
     const initialData = useMemo(
         () => ({
             title: dday.title,
@@ -100,30 +91,61 @@ export function EditDdayDialog({
     );
 
     return (
-        <AlertDialog.AlertDialog open={isOpen} onOpenChange={onOpenChange}>
-            <AlertDialog.AlertDialogContent>
-                <AlertDialog.AlertDialogHeader>
-                    <AlertDialog.AlertDialogTitle>
-                        Edit Event
-                    </AlertDialog.AlertDialogTitle>
-                    <AlertDialog.AlertDialogDescription asChild>
-                        <div className="space-y-4">
-                            <DDayForm
-                                initialData={initialData}
-                                onSubmit={handleSubmit}
-                                onCancel={() => onOpenChange(false)}
-                                onDelete={handleDelete}
-                                submitLabel="Save"
-                                cancelLabel="Cancel"
-                                deleteLabel="Delete Event"
-                                isSubmitting={isSubmitting}
-                                isDeleting={isDeleting}
-                                uploadImage={uploadDDayImage}
-                            />
-                        </div>
-                    </AlertDialog.AlertDialogDescription>
-                </AlertDialog.AlertDialogHeader>
-            </AlertDialog.AlertDialogContent>
-        </AlertDialog.AlertDialog>
+        <>
+            <AlertDialog.AlertDialog open={isOpen} onOpenChange={onOpenChange}>
+                <AlertDialog.AlertDialogContent>
+                    <AlertDialog.AlertDialogHeader>
+                        <AlertDialog.AlertDialogTitle>
+                            Edit Event
+                        </AlertDialog.AlertDialogTitle>
+                        <AlertDialog.AlertDialogDescription asChild>
+                            <div className="space-y-4">
+                                <DDayForm
+                                    initialData={initialData}
+                                    onSubmit={handleSubmit}
+                                    onCancel={() => onOpenChange(false)}
+                                    onDelete={handleDelete}
+                                    submitLabel="Save"
+                                    cancelLabel="Cancel"
+                                    deleteLabel="Delete Event"
+                                    isSubmitting={isSubmitting}
+                                    isDeleting={isDeleting}
+                                    uploadImage={uploadDDayImage}
+                                />
+                            </div>
+                        </AlertDialog.AlertDialogDescription>
+                    </AlertDialog.AlertDialogHeader>
+                </AlertDialog.AlertDialogContent>
+            </AlertDialog.AlertDialog>
+
+            <AlertDialog.AlertDialog
+                open={isDeleteAlertOpen}
+                onOpenChange={setIsDeleteAlertOpen}
+            >
+                <AlertDialog.AlertDialogContent>
+                    <AlertDialog.AlertDialogHeader>
+                        <AlertDialog.AlertDialogTitle>
+                            Are you absolutely sure?
+                        </AlertDialog.AlertDialogTitle>
+                        <AlertDialog.AlertDialogDescription>
+                            This action cannot be undone. This will permanently
+                            delete the event.
+                        </AlertDialog.AlertDialogDescription>
+                    </AlertDialog.AlertDialogHeader>
+                    <AlertDialog.AlertDialogFooter>
+                        <AlertDialog.AlertDialogCancel disabled={isDeleting}>
+                            Cancel
+                        </AlertDialog.AlertDialogCancel>
+                        <AlertDialog.AlertDialogAction
+                            onClick={confirmDelete}
+                            disabled={isDeleting}
+                            className="bg-destructive text-card hover:bg-destructive/90 inset-shadow-sm"
+                        >
+                            {isDeleting ? "Deleting..." : "Delete event"}
+                        </AlertDialog.AlertDialogAction>
+                    </AlertDialog.AlertDialogFooter>
+                </AlertDialog.AlertDialogContent>
+            </AlertDialog.AlertDialog>
+        </>
     );
 }

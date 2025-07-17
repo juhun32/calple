@@ -1,120 +1,129 @@
 // represents a calendar event with all its properties; used by useDDays hook and all calendar components
 export type DDay = {
-    id: string; // unique identifier for the event; used by api calls and database operations
-    title: string; // display name of the event; shown in DDayIndicator and form components
-    group: string; // category/group the event belongs to; used for color coding and filtering
-    date?: Date; // start date of the event (optional for unscheduled events); used by calendar grid and date calculations
-    endDate?: Date; // end date for mult;day events; used by layout system and date range calculations
-    description: string; // detailed description of the event; shown in DDayIndicator details dialog
-    days: string; // calculated day count (e.g., ";5", "Today", "D+3"); computed by useDDays hook
-    isAnnual: boolean; // whether this event repeats annually; used by useDDays hook for date filtering
-    createdBy: string; // user ID who created the event; used by backend api for user association
-    connectedUsers?: string[]; // array of connected user emails; used by DDayForm for user connections
+    id: string;
+    title: string;
+    group: string;
+    date?: Date;
+    endDate?: Date;
+    description: string;
+    days: string; // day count ex)"Today", "D+3" by useDDays hook
+    isAnnual: boolean;
+    createdBy: string; // user id
+    connectedUsers?: string[];
     imageUrl?: string;
 };
 
-// defines the visual position of an event in a multiday layout; used by DDayIndicator and calendar grid
+// defines the visual position of an event in a multiday layout (DDayIndicator, calendar grid)
 export type EventPosition = "start" | "middle" | "end" | "single";
 
 // props for the main calendar grid component passed from calendar page to CalendarGrid
 export interface CalendarGridProps {
-    currentDate: Date; // currently displayed month/year; from useCalendar hook
-    monthData: (number | null)[]; // array of day numbers (null for empty cells); from useCalendar hook
-    isSelected: (day: number | null) => boolean; // function to check if a day is selected; from useCalendar hook
-    isToday: (day: number | null) => boolean; // function to check if a day is today; from useCalendar hook
-    selectDate: (day: number) => void; // function to select a date; from useCalendar hook
-    getDDaysForDay: (day: number | null, currentDate: Date) => (DDay | null)[]; // get events for a specific day; from useDDays hook
-    createDDay: (dday: Omit<DDay, "id" | "days">) => Promise<boolean>; // create new event; from useDDays hook
+    currentDate: Date; // currently displayed month/year
+    monthData: (number | null)[]; // array of day numbers (null for empty cells) from useCalendar hook
+    isSelected: (day: number | null) => boolean; // check if a day is selected
+    isToday: (day: number | null) => boolean; // check if a day is today
+    selectDate: (day: number) => void; // select a date
+    getDDaysForDay: (day: number | null, currentDate: Date) => (DDay | null)[]; // get events for a specific day
+    createDDay: (dday: Omit<DDay, "id" | "days">) => Promise<boolean>; // create new event
     updateDDay: (
         id: string,
         updates: Partial<Omit<DDay, "id" | "days">>
-    ) => Promise<boolean>; // update existing event; from useDDays hook
-    deleteDDay: (id: string) => Promise<boolean>; // delete an event; from useDDays hook
-    activeDDay: DDay | null; // currently dragged event for dnd; from calendar page drag state
-    uploadDDayImage?: (file: File) => Promise<string | null>; // optional image upload function; from useDDays hook
+    ) => Promise<boolean>; // update existing event
+    deleteDDay: (id: string) => Promise<boolean>; // delete an event
+    activeDDay: DDay | null; // currently dragged event for dnd from calendar page drag state
+    uploadDDayImage?: (file: File) => Promise<string | null>; // image upload function
 }
 
-// props for the add event dialog component; used by CalendarGrid and can be controlled externally
+// props for the add event dialog component (CalendarGrid)
 export interface AddDDayDialogProps {
-    isOpen?: boolean; // whether the dialog is open; from CalendarGrid state
-    onOpenChange?: (open: boolean) => void; // callback when dialog open state changes; passed to CalendarGrid
-    initialDate?: Date | null; // preselected date for the new event; from CalendarGrid day selection
-    createDDay: (dday: Omit<DDay, "id" | "days">) => Promise<boolean>; // function to create event; from useDDays hook
-    uploadDDayImage?: (file: File) => Promise<string | null>; // function to upload event image; from useDDays hook
+    isOpen?: boolean; // is dialog open?
+    onOpenChange?: (open: boolean) => void; // callback when dialog open state changes passed down to CalendarGrid
+    initialDate?: Date | null; // preselected date for the new event when adding new evet
+    createDDay: (dday: Omit<DDay, "id" | "days">) => Promise<boolean>; // create event
+    uploadDDayImage?: (file: File) => Promise<string | null>; // upload event image
 }
 
-// props for individual event indicator components; used by CalendarGrid, DDaySheet, and ShowAllEvents
+// props for individual event indicator components (CalendarGrid, DDaySheet, ShowAllEvents)
 export interface DDayIndicatorProps {
-    dday: DDay; // the event to display; from useDDays hook data
+    dday: DDay; // the event to display
     updateDDay: (
         id: string,
         updates: Partial<Omit<DDay, "id" | "days">>
-    ) => Promise<boolean>; // update function; from useDDays hook
-    deleteDDay: (id: string) => Promise<boolean>; // delete function; from useDDays hook
+    ) => Promise<boolean>;
+    deleteDDay: (id: string) => Promise<boolean>;
     onDraggingChange?: (isDragging: boolean) => void; // callback for drag state changes; used by DDaySheet
-    context?: "sheet" | "grid"; // where the indicator is being used; affects styling and behavior
-    length?: "short" | "long"; // display length for title truncation; used by ShowAllEvents for table display
-    position?: EventPosition; // visual position in multiday layout; calculated by getEventPosition function
-    dayIndex?: number; // index of the day in the grid; used by CalendarGrid for week highlighting
-    droppableId?: string; // id for dnd functionality; used by CalendarGrid drag system
-    currentDate?: Date; // current date for context; used by CalendarGrid for date calculations
-    uploadDDayImage?: (file: File) => Promise<string | null>; // optional image upload function; used by DDayForm
+    context?: "sheet" | "grid"; // where the indicator is being used (affects styling and behavior)
+    length?: "short" | "long"; // display length for title truncation (ShowAllEvents for table display)
+    position?: EventPosition; // visual position in multiday layout
+    dayIndex?: number; // index of the day in the grid (CalendarGrid for week highlighting)
+    droppableId?: string; // id for dnd functionality
+    currentDate?: Date; // current date for context (CalendarGrid for date calculations)
+    uploadDDayImage?: (file: File) => Promise<string | null>; // image upload function
 }
 
 // props for the calendar header component; passed from calendar page to CalendarHeader
 export interface CalendarHeaderProps {
-    currentDate: Date; // currently displayed month/year; from useCalendar hook
-    goToNextMonth: () => void; // navigate to next month; from useCalendar hook
-    goToPrevMonth: () => void; // navigate to previous month; from useCalendar hook
-    goToToday: () => void; // navigate to current month; from useCalendar hook
+    currentDate: Date; // currently displayed month/year
+    goToNextMonth: () => void;
+    goToPrevMonth: () => void;
+    goToToday: () => void; // navigate to current month
 }
 
 // props for the edit event dialog component; used by DDayIndicator for editing events
 export interface EditDdayDialogProps {
-    dday: DDay; // the event to edit; from DDayIndicator click
-    isOpen: boolean; // whether the dialog is open; from DDayIndicator state
-    onOpenChange: (open: boolean) => void; // callback when dialog state changes; passed to DDayIndicator
+    dday: DDay;
+    isOpen: boolean; // is dialog open?
+    onOpenChange: (open: boolean) => void; // callback when dialog state changes
     updateDDay: (
         id: string,
         updates: Partial<Omit<DDay, "days" | "id">>
-    ) => Promise<boolean>; // update function; from useDDays hook
-    deleteDDay: (id: string) => Promise<boolean>; // delete function; from useDDays hook
-    uploadDDayImage?: (file: File) => Promise<string | null>; // image upload function; from useDDays hook
+    ) => Promise<boolean>;
+    deleteDDay: (id: string) => Promise<boolean>;
+    uploadDDayImage?: (file: File) => Promise<string | null>;
 }
 
 // data structure for event form inputs; used by DDayForm and shared between AddDdayDialog and EditDdayDialog
 export interface DDayFormData {
-    title: string; // event title; required field for form validation
-    group: string; // event category/group; used for color coding and filtering
-    description: string; // event description; optional field for additional details
-    date?: Date; // start date; used by calendar grid and date calculations
-    endDate?: Date; // end date for mult;day events; used by layout system
-    isAnnual: boolean; // whether event repeats annually; used by useDDays hook for filtering
-    connectedUsers: string[]; // array of connected user emails; used for user connections
+    title: string;
+    group: string; // event category/group for color and filtering
+    description: string;
+    date?: Date; // start date
+    endDate?: Date; // end date for mult;day events
+    isAnnual: boolean;
+    connectedUsers: string[];
     imageUrl?: string;
 }
 
 // props for the shared event form component; used by AddDdayDialog and EditDdayDialog
 export interface DDayFormProps {
-    initialData?: Partial<DDay>; // prepopulated form data; from existing event or user input
-    onSubmit: (data: DDayFormData) => Promise<boolean>; // form submission handler; passed from parent dialog
-    uploadImage?: (file: File) => Promise<string | null>; // image upload handler
-    onCancel?: () => void; // cancel button handler; passed from parent dialog
-    onDelete?: () => void; // delete button handler; passed from parent dialog
-    submitLabel?: string; // text for submit button; customizable by parent dialog
-    cancelLabel?: string; // text for cancel button; customizable by parent dialog
-    deleteLabel?: string; // text for delete button; customizable by parent dialog
-    isSubmitting?: boolean; // whether form is currently submitting; from parent dialog state
-    isDeleting?: boolean; // whether delete action is currently in progress; from parent dialog state
+    initialData?: Partial<DDay>; // prepopulated form data from existing event or user input
+    onSubmit: (data: DDayFormData) => Promise<boolean>;
+    uploadImage?: (file: File) => Promise<string | null>;
+    onCancel?: () => void;
+    onDelete?: () => void;
+    submitLabel?: string;
+    cancelLabel?: string;
+    deleteLabel?: string;
+    isSubmitting?: boolean;
+    isDeleting?: boolean;
 }
 
 // props for the show all events dialog component; used by CalendarGrid only when there are 4+ events on a day
 export interface ShowAllEventsProps {
-    ddays: DDay[]; // array of events to display; from CalendarGrid day events
+    ddays: DDay[]; // array of events to display
     updateDDay: (
         id: string,
         updates: Partial<Omit<DDay, "id" | "days">>
-    ) => Promise<boolean>; // update function; from useDDays hook
-    deleteDDay: (id: string) => Promise<boolean>; // delete function; from useDDays hook
-    uploadDDayImage?: (file: File) => Promise<string | null>; // image upload function; from useDDays hook
+    ) => Promise<boolean>;
+    deleteDDay: (id: string) => Promise<boolean>;
+    uploadDDayImage?: (file: File) => Promise<string | null>;
 }
+
+export type DDaySheetProps = {
+    ddays: DDay[]; // array of events to display from useDDays hook
+    updateDDay: (
+        id: string,
+        updates: Partial<Omit<any, "id" | "days">>
+    ) => Promise<boolean>;
+    deleteDDay: (id: string) => Promise<boolean>;
+};

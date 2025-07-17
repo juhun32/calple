@@ -1,19 +1,16 @@
 "use client";
 
 import { useState } from "react";
+
+// components
 import * as Card from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Settings, Save } from "lucide-react";
-import { UpdateCycleSettingsRequest } from "@/lib/types/periods";
 
-interface CycleSettingsFormProps {
-    cycleLength: number;
-    periodLength: number;
-    onSave: (settings: UpdateCycleSettingsRequest) => Promise<void>;
-    isLoading?: boolean;
-}
+// types
+import { CycleSettingsFormProps } from "@/lib/types/periods";
 
 export function CycleSettingsForm({
     cycleLength,
