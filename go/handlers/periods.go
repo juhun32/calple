@@ -14,16 +14,17 @@ import (
 
 // PeriodDay represents a single period day entry with tracking data
 type PeriodDay struct {
-	ID         string    `json:"id"`
-	UserID     string    `json:"userId"`
-	Date       string    `json:"date"`     // Format: YYYY-MM-DD
-	IsPeriod   bool      `json:"isPeriod"` // Whether this is a period day
-	Symptoms   []string  `json:"symptoms"`
-	Mood       []string  `json:"mood"`
-	Activities []string  `json:"activities"`
-	Notes      string    `json:"notes"`
-	CreatedAt  time.Time `json:"createdAt"`
-	UpdatedAt  time.Time `json:"updatedAt"`
+	ID          string    `json:"id"`
+	UserID      string    `json:"userId"`
+	Date        string    `json:"date"`     // Format: YYYY-MM-DD
+	IsPeriod    bool      `json:"isPeriod"` // Whether this is a period day
+	Symptoms    []string  `json:"symptoms"`
+	Mood        []string  `json:"mood"`
+	Activities  []string  `json:"activities"`
+	SexActivity []string  `json:"sexActivity"`
+	Notes       string    `json:"notes"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
 // CycleSettings represents user's cycle configuration
@@ -70,16 +71,17 @@ func GetPeriodDays(c *gin.Context) {
 	for _, doc := range docs {
 		data := doc.Data()
 		periodDays = append(periodDays, PeriodDay{
-			ID:         doc.Ref.ID,
-			UserID:     uid.(string),
-			Date:       data["date"].(string),
-			IsPeriod:   data["isPeriod"].(bool),
-			Symptoms:   util.ToStringSlice(data["symptoms"]),
-			Mood:       util.ToStringSlice(data["mood"]),
-			Activities: util.ToStringSlice(data["activities"]),
-			Notes:      data["notes"].(string),
-			CreatedAt:  data["createdAt"].(time.Time),
-			UpdatedAt:  data["updatedAt"].(time.Time),
+			ID:          doc.Ref.ID,
+			UserID:      uid.(string),
+			Date:        data["date"].(string),
+			IsPeriod:    data["isPeriod"].(bool),
+			Symptoms:    util.ToStringSlice(data["symptoms"]),
+			Mood:        util.ToStringSlice(data["mood"]),
+			Activities:  util.ToStringSlice(data["activities"]),
+			SexActivity: util.ToStringSlice(data["sexActivity"]),
+			Notes:       data["notes"].(string),
+			CreatedAt:   data["createdAt"].(time.Time),
+			UpdatedAt:   data["updatedAt"].(time.Time),
 		})
 	}
 
@@ -183,16 +185,17 @@ func GetPartnerPeriodDays(c *gin.Context) {
 
 		// Show all partner data regardless of user sex
 		periodDays = append(periodDays, PeriodDay{
-			ID:         doc.Ref.ID,
-			UserID:     partnerUID,
-			Date:       data["date"].(string),
-			IsPeriod:   data["isPeriod"].(bool),
-			Symptoms:   util.ToStringSlice(data["symptoms"]),
-			Mood:       util.ToStringSlice(data["mood"]),
-			Activities: util.ToStringSlice(data["activities"]),
-			Notes:      data["notes"].(string),
-			CreatedAt:  data["createdAt"].(time.Time),
-			UpdatedAt:  data["updatedAt"].(time.Time),
+			ID:          doc.Ref.ID,
+			UserID:      partnerUID,
+			Date:        data["date"].(string),
+			IsPeriod:    data["isPeriod"].(bool),
+			Symptoms:    util.ToStringSlice(data["symptoms"]),
+			Mood:        util.ToStringSlice(data["mood"]),
+			Activities:  util.ToStringSlice(data["activities"]),
+			SexActivity: util.ToStringSlice(data["sexActivity"]),
+			Notes:       data["notes"].(string),
+			CreatedAt:   data["createdAt"].(time.Time),
+			UpdatedAt:   data["updatedAt"].(time.Time),
 		})
 	}
 
@@ -246,6 +249,7 @@ func CreatePeriodDay(c *gin.Context) {
 			{Path: "symptoms", Value: periodDay.Symptoms},
 			{Path: "mood", Value: periodDay.Mood},
 			{Path: "activities", Value: periodDay.Activities},
+			{Path: "sexActivity", Value: periodDay.SexActivity},
 			{Path: "notes", Value: periodDay.Notes},
 			{Path: "updatedAt", Value: time.Now()},
 		})
@@ -273,14 +277,15 @@ func CreatePeriodDay(c *gin.Context) {
 
 	// Create new period day
 	docRef, _, err := fsClient.Collection("users").Doc(uid.(string)).Collection("periodDays").Add(ctx, map[string]interface{}{
-		"date":       periodDay.Date,
-		"isPeriod":   periodDay.IsPeriod,
-		"symptoms":   periodDay.Symptoms,
-		"mood":       periodDay.Mood,
-		"activities": periodDay.Activities,
-		"notes":      periodDay.Notes,
-		"createdAt":  time.Now(),
-		"updatedAt":  time.Now(),
+		"date":        periodDay.Date,
+		"isPeriod":    periodDay.IsPeriod,
+		"symptoms":    periodDay.Symptoms,
+		"mood":        periodDay.Mood,
+		"activities":  periodDay.Activities,
+		"sexActivity": periodDay.SexActivity,
+		"notes":       periodDay.Notes,
+		"createdAt":   time.Now(),
+		"updatedAt":   time.Now(),
 	})
 
 	if err != nil {
@@ -289,16 +294,17 @@ func CreatePeriodDay(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, PeriodDay{
-		ID:         docRef.ID,
-		UserID:     uid.(string),
-		Date:       periodDay.Date,
-		IsPeriod:   periodDay.IsPeriod,
-		Symptoms:   periodDay.Symptoms,
-		Mood:       periodDay.Mood,
-		Activities: periodDay.Activities,
-		Notes:      periodDay.Notes,
-		CreatedAt:  time.Now(),
-		UpdatedAt:  time.Now(),
+		ID:          docRef.ID,
+		UserID:      uid.(string),
+		Date:        periodDay.Date,
+		IsPeriod:    periodDay.IsPeriod,
+		Symptoms:    periodDay.Symptoms,
+		Mood:        periodDay.Mood,
+		Activities:  periodDay.Activities,
+		SexActivity: periodDay.SexActivity,
+		Notes:       periodDay.Notes,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
 	})
 }
 

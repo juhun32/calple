@@ -72,6 +72,7 @@ export function usePeriods() {
                     symptoms: [],
                     mood: [],
                     activities: [],
+                    sexActivity: [],
                     notes: "",
                 };
                 await createPeriodDay(newPeriodDay);
@@ -134,6 +135,7 @@ export function usePeriods() {
                 symptoms: string[];
                 mood: string[];
                 activities: string[];
+                sexActivity: string[];
                 notes: string;
             }
         ) => {
@@ -145,7 +147,7 @@ export function usePeriods() {
                     ...data,
                 };
                 await createPeriodDay(updateData);
-                await loadData(); // Reload data to get the updated list
+                await loadData();
                 toast.success("Period day updated successfully");
             } catch (err) {
                 const errorMessage =

@@ -32,6 +32,9 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
     const [selectedActivities, setSelectedActivities] = useState<string[]>(
         existingLog?.activities || []
     );
+    const [selectedSexActivities, setSelectedSexActivities] = useState<
+        string[]
+    >(existingLog?.sexActivity || []);
     const [notes, setNotes] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -39,6 +42,7 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
         setSelectedSymptoms(existingLog?.symptoms || []);
         setSelectedMoods(existingLog?.mood || []);
         setSelectedActivities(existingLog?.activities || []);
+        setSelectedSexActivities(existingLog?.sexActivity || []);
         setNotes(existingLog?.notes || "");
     }, [existingLog]);
 
@@ -66,6 +70,14 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
         );
     };
 
+    const handleSexActivityToggle = (activity: string) => {
+        setSelectedSexActivities((prev) =>
+            prev.includes(activity)
+                ? prev.filter((a) => a !== activity)
+                : [...prev, activity]
+        );
+    };
+
     const handleSubmit = async () => {
         setIsSubmitting(true);
         try {
@@ -79,6 +91,7 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                 symptoms: selectedSymptoms,
                 mood: selectedMoods,
                 activities: selectedActivities,
+                sexActivity: selectedSexActivities,
                 notes: notes,
             };
 
@@ -219,25 +232,25 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                     </Label>
                     <p className="text-xs text-muted-foreground">Protection</p>
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
-                        {sexualActivities.map((activity) => (
+                        {sexualActivities.map((sexactivity) => (
                             <div
-                                key={activity}
+                                key={sexactivity}
                                 className="flex items-center space-x-2"
                             >
                                 <Checkbox
-                                    id={activity}
-                                    checked={selectedActivities.includes(
-                                        activity
+                                    id={sexactivity}
+                                    checked={selectedSexActivities.includes(
+                                        sexactivity
                                     )}
                                     onCheckedChange={() =>
-                                        handleActivityToggle(activity)
+                                        handleSexActivityToggle(sexactivity)
                                     }
                                 />
                                 <Label
-                                    htmlFor={activity}
+                                    htmlFor={sexactivity}
                                     className="text-sm px-1"
                                 >
-                                    {activity}
+                                    {sexactivity}
                                 </Label>
                             </div>
                         ))}
@@ -252,7 +265,7 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                         placeholder="Additional notes..."
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
-                        className="mt-2 flex-1"
+                        className="mt-2 flex-1 bg-background inset-shadow-sm"
                         rows={3}
                     />
                 </div>

@@ -17,6 +17,8 @@ export function SelectedDateDetails({
         periodData &&
         (periodData.symptoms.length > 0 ||
             periodData.mood.length > 0 ||
+            periodData.sexActivity.length > 0 ||
+            periodData.notes ||
             periodData.activities.length > 0);
 
     return (
@@ -85,6 +87,27 @@ export function SelectedDateDetails({
                                     <h4 className="text-sm mb-2">Activities</h4>
                                     <div className="flex flex-wrap gap-2">
                                         {periodData.activities.map(
+                                            (activity) => (
+                                                <Badge
+                                                    key={activity}
+                                                    variant="secondary"
+                                                    className="bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300"
+                                                >
+                                                    {activity}
+                                                </Badge>
+                                            )
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {periodData.sexActivity.length > 0 && (
+                                <div>
+                                    <h4 className="text-sm mb-2">
+                                        Sexual Activity
+                                    </h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {periodData.sexActivity.map(
                                             (activity) => (
                                                 <Badge
                                                     key={activity}

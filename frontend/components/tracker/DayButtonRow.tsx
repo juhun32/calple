@@ -293,8 +293,9 @@ export const DayButtonRow = memo(function DayButtonRow({
                                     className +=
                                         " border border-dashed border-blue-400 text-blue-400";
                                 } else if (isSelectedDay) {
-                                    buttonVariant = "default";
-                                    className += " bg-secondary text-primary";
+                                    buttonVariant = "secondary";
+                                    className +=
+                                        " bg-secondary text-primary border border-accent";
                                 } else if (isCurrentDay) {
                                     buttonVariant = "secondary";
                                 }
@@ -344,8 +345,7 @@ export const DayButtonRow = memo(function DayButtonRow({
                                         <CircleSmall
                                             className={cn(
                                                 "h-2 w-2",
-                                                isSexual &&
-                                                    "text-purple-500 fill-current",
+                                                isSexual && "text-purple-500",
                                                 !isSexual && "text-transparent"
                                             )}
                                         />

@@ -11,6 +11,7 @@ import { Settings, Save } from "lucide-react";
 
 // types
 import { CycleSettingsFormProps } from "@/lib/types/periods";
+import { cn } from "@/lib/utils";
 
 export function CycleSettingsForm({
     cycleLength,
@@ -82,7 +83,7 @@ export function CycleSettingsForm({
     return (
         <Card.Card className="w-full gap-4">
             <Card.CardHeader>
-                <div className="p-4 inset-shadow-sm rounded-lg bg-card">
+                <div className="p-4 inset-shadow-sm rounded-lg bg-background inset-shadow-sm">
                     <Card.CardTitle className="flex items-center gap-2">
                         <Settings className="w-4 h-4" />
                         Cycle Settings
@@ -113,9 +114,9 @@ export function CycleSettingsForm({
                                     )
                                 }
                                 placeholder="28"
-                                className={
-                                    errors.cycleLength ? "border-red-500" : ""
-                                }
+                                className={cn("bg-background inset-shadow-sm", {
+                                    "border-red-500": errors.cycleLength,
+                                })}
                             />
                             {errors.cycleLength && (
                                 <p className="text-sm text-red-500 mt-1">
@@ -145,9 +146,9 @@ export function CycleSettingsForm({
                                     )
                                 }
                                 placeholder="5"
-                                className={
-                                    errors.periodLength ? "border-red-500" : ""
-                                }
+                                className={cn("bg-background inset-shadow-sm", {
+                                    "border-red-500": errors.periodLength,
+                                })}
                             />
                             {errors.periodLength && (
                                 <p className="text-sm text-red-500 mt-1">

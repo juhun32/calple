@@ -47,10 +47,14 @@ function DDayRow({
                 />
             </Table.TableCell>
             <Table.TableCell className="text-muted-foreground">
-                {dday.date ? dday.date.toLocaleDateString() : "(No Date)"}
+                <p className=" bg-background inset-shadow-sm rounded px-2 text-sm text-foreground">
+                    {dday.date ? dday.date.toLocaleDateString() : "(No Date)"}
+                </p>
             </Table.TableCell>
             <Table.TableCell className="text-right">
-                {dday.date ? dday.days : "-"}
+                <p className=" bg-background inset-shadow-sm rounded px-2 text-sm text-foreground">
+                    {dday.date ? dday.days : "-"}
+                </p>
             </Table.TableCell>
         </Table.TableRow>
     );

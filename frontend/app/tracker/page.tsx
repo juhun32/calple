@@ -264,27 +264,10 @@ export default function Tracker() {
         loadPartnerData();
     }, [hasPartner]);
 
-    // refresh partner data every 30s
-    useEffect(() => {
-        if (!hasPartner) return;
-
-        const interval = setInterval(() => {
-            loadPartnerData();
-        }, 30000); // 30 seconds
-
-        return () => clearInterval(interval);
-    }, [hasPartner]);
-
     const sexualActivityDays = useMemo(() => {
         const activityDays = new Set<string>();
-        const sexualActivityKeywords = ["Used Protection", "Unprotected"];
         for (const day of allLogDataSet.values()) {
-            if (
-                day.activities &&
-                day.activities.some((activity) =>
-                    sexualActivityKeywords.includes(activity)
-                )
-            ) {
+            if (day.sexActivity && day.sexActivity.length > 0) {
                 activityDays.add(day.date);
             }
         }
@@ -559,12 +542,14 @@ export default function Tracker() {
         symptoms: string[];
         mood: string[];
         activities: string[];
+        sexActivity: string[];
         notes: string;
     }) => {
         await updatePeriodDay(log.date, {
             symptoms: log.symptoms,
             mood: log.mood,
             activities: log.activities,
+            sexActivity: log.sexActivity,
             notes: log.notes,
         });
     };
@@ -574,12 +559,14 @@ export default function Tracker() {
         symptoms: string[];
         mood: string[];
         activities: string[];
+        sexActivity: string[];
         notes: string;
     }) => {
         await updatePeriodDay(log.date, {
             symptoms: log.symptoms,
             mood: log.mood,
             activities: log.activities,
+            sexActivity: log.sexActivity,
             notes: log.notes,
         });
     };

@@ -168,19 +168,25 @@ export function NavBar() {
                                     onClick={() => setTheme("pink")}
                                 >
                                     <Flower className="mr-2 h-4 w-4" />
-                                    Rose
+                                    Rose Light
+                                </DropdownMenu.DropdownMenuItem>
+                                <DropdownMenu.DropdownMenuItem
+                                    onClick={() => setTheme("pinkdark")}
+                                >
+                                    <Flower className="mr-2 h-4 w-4" />
+                                    Rose Dark
                                 </DropdownMenu.DropdownMenuItem>
                                 <DropdownMenu.DropdownMenuItem
                                     onClick={() => setTheme("light")}
                                 >
                                     <Sun className="mr-2 h-4 w-4" />
-                                    Light
+                                    Default Light
                                 </DropdownMenu.DropdownMenuItem>
                                 <DropdownMenu.DropdownMenuItem
                                     onClick={() => setTheme("dark")}
                                 >
                                     <Moon className="mr-2 h-4 w-4" />
-                                    Dark
+                                    Default Dark
                                 </DropdownMenu.DropdownMenuItem>
                             </DropdownMenu.DropdownMenuContent>
                         </DropdownMenu.DropdownMenu>

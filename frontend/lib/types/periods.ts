@@ -6,6 +6,7 @@ export interface PeriodDay {
     symptoms: string[];
     mood: string[];
     activities: string[];
+    sexActivity: string[];
     notes: string;
     createdAt: string;
     updatedAt: string;
@@ -26,6 +27,7 @@ export interface CreatePeriodDayRequest {
     symptoms: string[];
     mood: string[];
     activities: string[];
+    sexActivity: string[];
     notes: string;
 }
 
@@ -105,6 +107,7 @@ export interface LogFormProps {
         symptoms: string[];
         mood: string[];
         activities: string[];
+        sexActivity: string[];
         notes: string;
     }) => Promise<void>;
     onUpdate: (log: {
@@ -112,6 +115,7 @@ export interface LogFormProps {
         symptoms: string[];
         mood: string[];
         activities: string[];
+        sexActivity: string[];
         notes: string;
     }) => Promise<void>;
 }

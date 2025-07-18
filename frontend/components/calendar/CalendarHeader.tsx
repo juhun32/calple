@@ -41,7 +41,7 @@ export function CalendarHeader({
     return (
         <div className="flex items-center gap-2">
             <Button
-                className="rounded-full w-16 h-8 flex items-center gap-2 hover:cursor-pointer bg-card dark:bg-card"
+                className="rounded-full w-14 h-8 flex items-center gap-2 hover:cursor-pointer bg-card dark:bg-card"
                 variant={"outline"}
                 onClick={goToToday}
             >

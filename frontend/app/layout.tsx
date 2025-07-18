@@ -68,7 +68,7 @@ export default async function RootLayout({
 
     return (
         <html lang="en" suppressHydrationWarning className="h-full font-serif">
-            <body className={`${lora.variable} font-sans h-full flex flex-col`}>
+            <body className={`${lora.variable} h-full flex flex-col`}>
                 <ThemeProvider
                     attribute="class"
                     defaultTheme="system"
