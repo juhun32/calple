@@ -14,6 +14,7 @@ module.exports = {
             // It will apply the utility when an ancestor has the '.pink' class.
             // e.g., pink:bg-background becomes .pink .bg-background { ... }
             addVariant("pink", ".pink &");
+            addVariant("pinkdark", ".pink.dark &");
         }),
     ],
 };

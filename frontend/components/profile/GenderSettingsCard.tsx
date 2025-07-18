@@ -31,11 +31,10 @@ export const GenderSettingsCard = ({
                 <div className="flex gap-2 mb-2">
                     <Button
                         variant={"outline"}
-                        size="sm"
                         onClick={() => onSexChange("female")}
                         disabled={isLoading}
                         className={cn(
-                            `flex items-center gap-2`,
+                            `flex items-center gap-2 rounded-full`,
                             userSex === "female"
                                 ? "bg-accent dark:bg-accent"
                                 : "bg-background dark:bg-background"
@@ -46,11 +45,10 @@ export const GenderSettingsCard = ({
                     </Button>
                     <Button
                         variant={"outline"}
-                        size="sm"
                         onClick={() => onSexChange("male")}
                         disabled={isLoading}
                         className={cn(
-                            `flex items-center gap-2`,
+                            `flex items-center gap-2 rounded-full`,
                             userSex === "male"
                                 ? "bg-accent dark:bg-accent"
                                 : "bg-background dark:bg-background"

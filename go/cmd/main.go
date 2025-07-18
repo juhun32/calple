@@ -202,6 +202,10 @@ func main() {
 		// debug route
 		api.GET("/debug/connection", handlers.DebugConnection)
 
+		// feedback routes
+		api.POST("/feedback", handlers.SubmitFeedback)
+		api.GET("/feedback", handlers.GetUserFeedback)
+
 		// user acc delete
 		api.DELETE("/user", handlers.DeleteUser)
 	}

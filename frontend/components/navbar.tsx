@@ -28,6 +28,7 @@ import {
     Calendar,
     SquareCheckBig,
     Droplets,
+    MessageSquarePlus,
 } from "lucide-react";
 
 export function NavBar() {
@@ -260,12 +261,17 @@ export function NavBar() {
                                             <Settings className="h-4 w-4" />
                                             Settings
                                         </DropdownMenu.DropdownMenuItem> */}
+
+                                        <DropdownMenu.DropdownMenuItem
+                                            onClick={() =>
+                                                (window.location.href =
+                                                    "/feedback")
+                                            }
+                                        >
+                                            <MessageSquarePlus className="h-4 w-4" />
+                                            Feedback
+                                        </DropdownMenu.DropdownMenuItem>
                                     </DropdownMenu.DropdownMenuGroup>
-                                    {/* <DropdownMenu.DropdownMenuSeparator />
-                                    <DropdownMenu.DropdownMenuItem disabled>
-                                        <Siren className="h-4 w-4" />
-                                        Support
-                                    </DropdownMenu.DropdownMenuItem> */}
                                     <DropdownMenu.DropdownMenuSeparator />
                                     <DropdownMenu.DropdownMenuItem
                                         onClick={logout}
@@ -301,12 +307,11 @@ export function NavBar() {
                                             <Settings className="h-4 w-4" />
                                             Settings
                                         </DropdownMenu.DropdownMenuItem> */}
+                                        <DropdownMenu.DropdownMenuItem disabled>
+                                            <MessageSquarePlus className="h-4 w-4" />
+                                            Feedback
+                                        </DropdownMenu.DropdownMenuItem>
                                     </DropdownMenu.DropdownMenuGroup>
-                                    {/* <DropdownMenu.DropdownMenuSeparator />
-                                    <DropdownMenu.DropdownMenuItem disabled>
-                                        <Siren className="h-4 w-4" />
-                                        Support
-                                    </DropdownMenu.DropdownMenuItem> */}
                                 </DropdownMenu.DropdownMenuContent>
                             </DropdownMenu.DropdownMenu>
                         )}

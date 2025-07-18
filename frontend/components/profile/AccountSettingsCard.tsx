@@ -18,10 +18,13 @@ export const AccountSettingsCard = ({
     return (
         <Card.Card className="gap-4">
             <Card.CardHeader>
-                <Card.CardTitle className="flex items-center gap-2">
+                <Card.CardTitle className="flex items-center gap-2 mb-2">
                     <Shield className="w-4 h-4" />
                     Account Settings
                 </Card.CardTitle>
+                <Card.CardDescription>
+                    Manage your account.
+                </Card.CardDescription>
             </Card.CardHeader>
             <Card.CardContent>
                 <div className="flex flex-row gap-2">
@@ -29,7 +32,6 @@ export const AccountSettingsCard = ({
                         <AlertDialog.AlertDialogTrigger asChild>
                             <Button
                                 variant="outline"
-                                size="sm"
                                 className="w-fit rounded-full bg-background dark:bg-background"
                             >
                                 <DoorOpen className="w-4 h-4" />
@@ -65,7 +67,6 @@ export const AccountSettingsCard = ({
 
                     <Button
                         variant="outline"
-                        size="sm"
                         className="w-fit rounded-full bg-background dark:bg-background"
                         onClick={onLogout}
                     >
