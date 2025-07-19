@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import * as Card from "@/components/ui/card";
-import * as AlertDialog from "../ui/alert-dialog";
+import * as AlertDialog from "@/components/ui/alert-dialog";
 
 // types
 import { Connection, Invitation } from "@/lib/types/connection";

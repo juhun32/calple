@@ -151,11 +151,12 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
                 | "outline"
                 | "ghost"
                 | "link" = "ghost";
-            let className = "h-9 w-full text-xs font-medium"; // Base classes, radius will be added below
+            let className = "h-9 w-full text-xs font-medium";
 
             if (isPeriod) {
                 buttonVariant = "ghost";
-                className += " bg-rose-500 text-white hover:bg-rose-500";
+                className +=
+                    " bg-rose-400 text-white hover:bg-rose-500 hover:text-card";
                 if (prevDayIsPeriod && nextDayIsPeriod)
                     className += " rounded-none";
                 else if (prevDayIsPeriod)
@@ -204,7 +205,7 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
                 >
                     <Button
                         variant={buttonVariant}
-                        className={`${className} flex justify-center items-center text-base p-0`}
+                        className={`${className} flex justify-center items-center text-base h-10 w-10`}
                         onClick={() =>
                             handlePeriodToggle(
                                 new Date(
@@ -224,7 +225,7 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
                         <div className="flex flex-col items-center justify-center">
                             <span>{day}</span>
                             {isSexual && (
-                                <div className="h-1 w-1 rounded-full bg-purple-500"></div>
+                                <div className="h-1 w-1 rounded-full bg-purple-600 mb-1"></div>
                             )}
                         </div>
                     </Button>

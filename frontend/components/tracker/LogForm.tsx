@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
+import { Slider } from "@/components/ui/slider";
 
 // types
 import { LogFormProps } from "@/lib/types/periods";
@@ -26,6 +27,9 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
     const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>(
         existingLog?.symptoms || []
     );
+    const [selectedCrampIntensity, setSelectedCrampIntensity] = useState(
+        existingLog?.crampIntensity || 0
+    );
     const [selectedMoods, setSelectedMoods] = useState<string[]>(
         existingLog?.mood || []
     );
@@ -42,6 +46,7 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
         setSelectedSymptoms(existingLog?.symptoms || []);
         setSelectedMoods(existingLog?.mood || []);
         setSelectedActivities(existingLog?.activities || []);
+        setSelectedCrampIntensity(existingLog?.crampIntensity || 0);
         setSelectedSexActivities(existingLog?.sexActivity || []);
         setNotes(existingLog?.notes || "");
     }, [existingLog]);
@@ -89,6 +94,7 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
             const logData = {
                 date: dateString,
                 symptoms: selectedSymptoms,
+                crampIntensity: selectedCrampIntensity,
                 mood: selectedMoods,
                 activities: selectedActivities,
                 sexActivity: selectedSexActivities,
@@ -150,19 +156,46 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                     </div>
                 </div>
 
+                {selectedSymptoms.includes("Cramps") && (
+                    <div>
+                        <Label
+                            htmlFor="cramp-intensity"
+                            className="text-sm text-muted-foreground px-0"
+                        >
+                            Cramp Intensity
+                        </Label>
+                        <div className="flex items-center gap-2 mt-2">
+                            <Slider
+                                id="cramp-intensity"
+                                min={0}
+                                max={10}
+                                step={1}
+                                value={[selectedCrampIntensity]}
+                                onValueChange={(value) =>
+                                    setSelectedCrampIntensity(value[0])
+                                }
+                                className="hover:cursor-pointer"
+                            />
+                            <span className="text-sm font-medium">
+                                {selectedCrampIntensity}
+                            </span>
+                        </div>
+                    </div>
+                )}
+
                 <div>
                     <Label className="text-base text-muted-foreground px-0">
                         Mood
                     </Label>
                     <div className="text-xs flex items-center gap-2">
-                        <p className="text-emerald-700">Positive</p> -{" "}
-                        <p className="text-orange-700">Negative</p>
+                        <p className="text-positive">Positive</p> -{" "}
+                        <p className="text-negative">Negative</p>
                     </div>
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
                         {moodsPositive.map((mood) => (
                             <div
                                 key={mood}
-                                className="flex items-center space-x-2 text-emerald-700"
+                                className="flex items-center space-x-2 text-positive dark:text-positive pinkdark:text-positive"
                             >
                                 <Checkbox
                                     id={mood}
@@ -179,7 +212,7 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                         {moodsNegative.map((mood) => (
                             <div
                                 key={mood}
-                                className="flex items-center space-x-2 text-orange-700"
+                                className="flex items-center space-x-2 text-negative dark:text-negative pinkdark:text-negative"
                             >
                                 <Checkbox
                                     id={mood}

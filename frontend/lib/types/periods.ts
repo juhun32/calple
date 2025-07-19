@@ -4,6 +4,7 @@ export interface PeriodDay {
     date: string; // Format: YYYY-MM-DD
     isPeriod: boolean;
     symptoms: string[];
+    crampIntensity?: number;
     mood: string[];
     activities: string[];
     sexActivity: string[];
@@ -25,6 +26,7 @@ export interface CreatePeriodDayRequest {
     date: string;
     isPeriod: boolean;
     symptoms: string[];
+    crampIntensity: number;
     mood: string[];
     activities: string[];
     sexActivity: string[];
@@ -105,6 +107,7 @@ export interface LogFormProps {
     onSave: (log: {
         date: string;
         symptoms: string[];
+        crampIntensity: number;
         mood: string[];
         activities: string[];
         sexActivity: string[];
@@ -113,6 +116,7 @@ export interface LogFormProps {
     onUpdate: (log: {
         date: string;
         symptoms: string[];
+        crampIntensity: number;
         mood: string[];
         activities: string[];
         sexActivity: string[];

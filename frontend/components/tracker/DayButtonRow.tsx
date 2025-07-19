@@ -281,9 +281,11 @@ export const DayButtonRow = memo(function DayButtonRow({
                                     "w-7 sm:w-10 md:w-12 h-24 rounded-lg text-xs font-medium flex flex-col items-center justify-center p-0 has-[>svg]:px-0";
 
                                 if (isPeriod) {
-                                    buttonVariant = "default";
+                                    buttonVariant = "outline";
                                     className +=
-                                        " bg-rose-400 text-white hover:bg-rose-600";
+                                        " bg-rose-400 text-white hover:bg-rose-500 border-rose-400 " +
+                                        " pink:bg-pink-500 pink:border-pink-500 pink:hover:bg-pink-600 " +
+                                        " pinkdark:bg-primary pinkdark:border-primary pinkdark:hover:bg-rose-600";
                                 } else if (isPredicted) {
                                     buttonVariant = "ghost";
                                     className +=

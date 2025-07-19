@@ -71,6 +71,7 @@ export function usePeriods() {
                     isPeriod,
                     symptoms: [],
                     mood: [],
+                    crampIntensity: 0,
                     activities: [],
                     sexActivity: [],
                     notes: "",
@@ -133,6 +134,7 @@ export function usePeriods() {
             date: string,
             data: {
                 symptoms: string[];
+                crampIntensity: number;
                 mood: string[];
                 activities: string[];
                 sexActivity: string[];
@@ -141,11 +143,16 @@ export function usePeriods() {
         ) => {
             try {
                 const existingDay = periodDays.find((pd) => pd.date === date);
+
+                console.log("updatePeriodDay - incoming data:", data);
+
                 const updateData: CreatePeriodDayRequest = {
+                    ...existingDay,
                     date,
                     isPeriod: existingDay?.isPeriod || false,
                     ...data,
                 };
+
                 await createPeriodDay(updateData);
                 await loadData();
                 toast.success("Period day updated successfully");

@@ -540,6 +540,7 @@ export default function Tracker() {
     const handleSaveLog = async (log: {
         date: string;
         symptoms: string[];
+        crampIntensity: number;
         mood: string[];
         activities: string[];
         sexActivity: string[];
@@ -547,6 +548,7 @@ export default function Tracker() {
     }) => {
         await updatePeriodDay(log.date, {
             symptoms: log.symptoms,
+            crampIntensity: log.crampIntensity,
             mood: log.mood,
             activities: log.activities,
             sexActivity: log.sexActivity,
@@ -557,6 +559,7 @@ export default function Tracker() {
     const handleUpdateLog = async (log: {
         date: string;
         symptoms: string[];
+        crampIntensity: number;
         mood: string[];
         activities: string[];
         sexActivity: string[];
@@ -564,6 +567,7 @@ export default function Tracker() {
     }) => {
         await updatePeriodDay(log.date, {
             symptoms: log.symptoms,
+            crampIntensity: log.crampIntensity,
             mood: log.mood,
             activities: log.activities,
             sexActivity: log.sexActivity,

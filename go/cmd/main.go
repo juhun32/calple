@@ -189,8 +189,6 @@ func main() {
 		api.PUT("/periods/settings", handlers.UpdateCycleSettings)
 
 		// user metadata routes
-		api.GET("/periods/metadata", handlers.GetUserMetadata)
-		api.PUT("/periods/metadata", handlers.UpdateUserMetadata)
 		api.GET("/periods/partner/metadata", handlers.GetPartnerMetadata)
 
 		// checkin routes

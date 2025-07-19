@@ -12,41 +12,38 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// PeriodDay represents a single period day entry with tracking data
 type PeriodDay struct {
-	ID          string    `json:"id"`
-	UserID      string    `json:"userId"`
-	Date        string    `json:"date"`     // Format: YYYY-MM-DD
-	IsPeriod    bool      `json:"isPeriod"` // Whether this is a period day
-	Symptoms    []string  `json:"symptoms"`
-	Mood        []string  `json:"mood"`
-	Activities  []string  `json:"activities"`
-	SexActivity []string  `json:"sexActivity"`
-	Notes       string    `json:"notes"`
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
+	ID             string    `json:"id"`
+	UserID         string    `json:"userId"`
+	Date           string    `json:"date"`
+	IsPeriod       bool      `json:"isPeriod"`
+	Symptoms       []string  `json:"symptoms"`
+	CrampIntensity int64     `json:"crampIntensity"`
+	Mood           []string  `json:"mood"`
+	Activities     []string  `json:"activities"`
+	SexActivity    []string  `json:"sexActivity"`
+	Notes          string    `json:"notes"`
+	CreatedAt      time.Time `json:"createdAt"`
+	UpdatedAt      time.Time `json:"updatedAt"`
 }
 
-// CycleSettings represents user's cycle configuration
 type CycleSettings struct {
 	ID           string    `json:"id"`
 	UserID       string    `json:"userId"`
-	CycleLength  int       `json:"cycleLength"`  // Average cycle length in days
-	PeriodLength int       `json:"periodLength"` // Average period length in days
+	CycleLength  int64     `json:"cycleLength"`
+	PeriodLength int64     `json:"periodLength"`
 	CreatedAt    time.Time `json:"createdAt"`
 	UpdatedAt    time.Time `json:"updatedAt"`
 }
 
-// UserMetadata represents user's personal metadata including sex
 type UserMetadata struct {
 	ID        string    `json:"id"`
 	UserID    string    `json:"userId"`
-	Sex       string    `json:"sex"` // "male" or "female"
+	Sex       string    `json:"sex"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
-// GetPeriodDays fetches all period days for the current user
 func GetPeriodDays(c *gin.Context) {
 	session := sessions.Default(c)
 	uid := session.Get("user_id")
@@ -58,7 +55,6 @@ func GetPeriodDays(c *gin.Context) {
 	fsClient := c.MustGet("firestore").(*firestore.Client)
 	ctx := context.Background()
 
-	// Query period days for the user (as subcollection)
 	docs, err := fsClient.Collection("users").Doc(uid.(string)).Collection("periodDays").
 		Documents(ctx).GetAll()
 
@@ -70,25 +66,33 @@ func GetPeriodDays(c *gin.Context) {
 	periodDays := []PeriodDay{}
 	for _, doc := range docs {
 		data := doc.Data()
+
+		var crampIntensity int64
+		if val, ok := data["crampIntensity"]; ok {
+			if intensity, ok := val.(int64); ok {
+				crampIntensity = intensity
+			}
+		}
+
 		periodDays = append(periodDays, PeriodDay{
-			ID:          doc.Ref.ID,
-			UserID:      uid.(string),
-			Date:        data["date"].(string),
-			IsPeriod:    data["isPeriod"].(bool),
-			Symptoms:    util.ToStringSlice(data["symptoms"]),
-			Mood:        util.ToStringSlice(data["mood"]),
-			Activities:  util.ToStringSlice(data["activities"]),
-			SexActivity: util.ToStringSlice(data["sexActivity"]),
-			Notes:       data["notes"].(string),
-			CreatedAt:   data["createdAt"].(time.Time),
-			UpdatedAt:   data["updatedAt"].(time.Time),
+			ID:             doc.Ref.ID,
+			UserID:         uid.(string),
+			Date:           data["date"].(string),
+			IsPeriod:       data["isPeriod"].(bool),
+			Symptoms:       util.ToStringSlice(data["symptoms"]),
+			CrampIntensity: crampIntensity,
+			Mood:           util.ToStringSlice(data["mood"]),
+			Activities:     util.ToStringSlice(data["activities"]),
+			SexActivity:    util.ToStringSlice(data["sexActivity"]),
+			Notes:          data["notes"].(string),
+			CreatedAt:      data["createdAt"].(time.Time),
+			UpdatedAt:      data["updatedAt"].(time.Time),
 		})
 	}
 
 	c.JSON(http.StatusOK, gin.H{"periodDays": periodDays})
 }
 
-// GetPartnerPeriodDays fetches period days for the connected partner
 func GetPartnerPeriodDays(c *gin.Context) {
 	session := sessions.Default(c)
 	uid := session.Get("user_id")
@@ -100,7 +104,6 @@ func GetPartnerPeriodDays(c *gin.Context) {
 	fsClient := c.MustGet("firestore").(*firestore.Client)
 	ctx := context.Background()
 
-	// Get user email
 	userDoc, err := fsClient.Collection("users").Doc(uid.(string)).Get(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve user"})
@@ -108,7 +111,6 @@ func GetPartnerPeriodDays(c *gin.Context) {
 	}
 	userEmail := userDoc.Data()["email"].(string)
 
-	// Find active connection
 	connectionDocs, err := fsClient.Collection("connections").
 		Where("status", "==", "active").
 		Where("user1", "==", userEmail).
@@ -126,7 +128,6 @@ func GetPartnerPeriodDays(c *gin.Context) {
 		return
 	}
 
-	// Get partner email
 	connectionData := connectionDocs[0].Data()
 	var partnerEmail string
 	if connectionData["user1"] == userEmail {
@@ -135,7 +136,6 @@ func GetPartnerPeriodDays(c *gin.Context) {
 		partnerEmail = connectionData["user1"].(string)
 	}
 
-	// Find partner's user ID
 	partnerDocs, err := fsClient.Collection("users").
 		Where("email", "==", partnerEmail).
 		Documents(ctx).GetAll()
@@ -148,7 +148,6 @@ func GetPartnerPeriodDays(c *gin.Context) {
 	partnerUID := partnerDocs[0].Ref.ID
 	fmt.Printf("DEBUG: GetPartnerPeriodDays - userEmail: %s, partnerEmail: %s, partnerUID: %s\n", userEmail, partnerEmail, partnerUID)
 
-	// Get user's sex to determine what data to show
 	var userSex string
 	userDoc, userErr := fsClient.Collection("users").Doc(uid.(string)).Get(ctx)
 	if userErr == nil {
@@ -157,7 +156,6 @@ func GetPartnerPeriodDays(c *gin.Context) {
 		}
 	}
 
-	// Get partner's sex
 	var partnerSex string
 	partnerDoc, partnerErr := fsClient.Collection("users").Doc(partnerUID).Get(ctx)
 	if partnerErr == nil {
@@ -168,7 +166,6 @@ func GetPartnerPeriodDays(c *gin.Context) {
 
 	fmt.Printf("DEBUG: User sex: %s, Partner sex: %s\n", userSex, partnerSex)
 
-	// Query partner's period days
 	docs, err := fsClient.Collection("users").Doc(partnerUID).Collection("periodDays").
 		Documents(ctx).GetAll()
 
@@ -183,19 +180,26 @@ func GetPartnerPeriodDays(c *gin.Context) {
 	for _, doc := range docs {
 		data := doc.Data()
 
-		// Show all partner data regardless of user sex
+		var crampIntensity int64
+		if val, ok := data["crampIntensity"]; ok {
+			if intensity, ok := val.(int64); ok {
+				crampIntensity = intensity
+			}
+		}
+
 		periodDays = append(periodDays, PeriodDay{
-			ID:          doc.Ref.ID,
-			UserID:      partnerUID,
-			Date:        data["date"].(string),
-			IsPeriod:    data["isPeriod"].(bool),
-			Symptoms:    util.ToStringSlice(data["symptoms"]),
-			Mood:        util.ToStringSlice(data["mood"]),
-			Activities:  util.ToStringSlice(data["activities"]),
-			SexActivity: util.ToStringSlice(data["sexActivity"]),
-			Notes:       data["notes"].(string),
-			CreatedAt:   data["createdAt"].(time.Time),
-			UpdatedAt:   data["updatedAt"].(time.Time),
+			ID:             doc.Ref.ID,
+			UserID:         partnerUID,
+			Date:           data["date"].(string),
+			IsPeriod:       data["isPeriod"].(bool),
+			Symptoms:       util.ToStringSlice(data["symptoms"]),
+			CrampIntensity: crampIntensity,
+			Mood:           util.ToStringSlice(data["mood"]),
+			Activities:     util.ToStringSlice(data["activities"]),
+			SexActivity:    util.ToStringSlice(data["sexActivity"]),
+			Notes:          data["notes"].(string),
+			CreatedAt:      data["createdAt"].(time.Time),
+			UpdatedAt:      data["updatedAt"].(time.Time),
 		})
 	}
 
@@ -207,7 +211,6 @@ func GetPartnerPeriodDays(c *gin.Context) {
 	})
 }
 
-// CreatePeriodDay creates a new period day entry
 func CreatePeriodDay(c *gin.Context) {
 	session := sessions.Default(c)
 	uid := session.Get("user_id")
@@ -219,20 +222,17 @@ func CreatePeriodDay(c *gin.Context) {
 	fsClient := c.MustGet("firestore").(*firestore.Client)
 	ctx := context.Background()
 
-	// Parse request body
 	var periodDay PeriodDay
 	if err := c.ShouldBindJSON(&periodDay); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
 	}
 
-	// Validate date format (YYYY-MM-DD)
 	if len(periodDay.Date) != 10 || periodDay.Date[4] != '-' || periodDay.Date[7] != '-' {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Use YYYY-MM-DD"})
 		return
 	}
 
-	// Check if period day already exists for this date
 	existingDocs, err := fsClient.Collection("users").Doc(uid.(string)).Collection("periodDays").
 		Where("date", "==", periodDay.Date).
 		Documents(ctx).GetAll()
@@ -243,49 +243,50 @@ func CreatePeriodDay(c *gin.Context) {
 	}
 
 	if len(existingDocs) > 0 {
-		// Update existing period day
-		_, err = existingDocs[0].Ref.Update(ctx, []firestore.Update{
-			{Path: "isPeriod", Value: periodDay.IsPeriod},
-			{Path: "symptoms", Value: periodDay.Symptoms},
-			{Path: "mood", Value: periodDay.Mood},
-			{Path: "activities", Value: periodDay.Activities},
-			{Path: "sexActivity", Value: periodDay.SexActivity},
-			{Path: "notes", Value: periodDay.Notes},
-			{Path: "updatedAt", Value: time.Now()},
-		})
+		updateData := map[string]interface{}{
+			"isPeriod":       periodDay.IsPeriod,
+			"symptoms":       periodDay.Symptoms,
+			"mood":           periodDay.Mood,
+			"crampIntensity": periodDay.CrampIntensity,
+			"activities":     periodDay.Activities,
+			"sexActivity":    periodDay.SexActivity,
+			"notes":          periodDay.Notes,
+			"updatedAt":      time.Now(),
+		}
+
+		_, err = existingDocs[0].Ref.Set(ctx, updateData, firestore.MergeAll)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update period day"})
 			return
 		}
 
-		// Return updated period day
-		updatedData := existingDocs[0].Data()
-		c.JSON(http.StatusOK, PeriodDay{
-			ID:         existingDocs[0].Ref.ID,
-			UserID:     uid.(string),
-			Date:       periodDay.Date,
-			IsPeriod:   periodDay.IsPeriod,
-			Symptoms:   periodDay.Symptoms,
-			Mood:       periodDay.Mood,
-			Activities: periodDay.Activities,
-			Notes:      periodDay.Notes,
-			CreatedAt:  updatedData["createdAt"].(time.Time),
-			UpdatedAt:  time.Now(),
-		})
+		updatedDoc, err := existingDocs[0].Ref.Get(ctx)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve updated period day"})
+			return
+		}
+
+		var updatedPeriodDay PeriodDay
+		updatedDoc.DataTo(&updatedPeriodDay)
+		updatedPeriodDay.ID = updatedDoc.Ref.ID
+		updatedPeriodDay.UserID = uid.(string)
+
+		c.JSON(http.StatusOK, updatedPeriodDay)
 		return
 	}
 
-	// Create new period day
+	now := time.Now()
 	docRef, _, err := fsClient.Collection("users").Doc(uid.(string)).Collection("periodDays").Add(ctx, map[string]interface{}{
-		"date":        periodDay.Date,
-		"isPeriod":    periodDay.IsPeriod,
-		"symptoms":    periodDay.Symptoms,
-		"mood":        periodDay.Mood,
-		"activities":  periodDay.Activities,
-		"sexActivity": periodDay.SexActivity,
-		"notes":       periodDay.Notes,
-		"createdAt":   time.Now(),
-		"updatedAt":   time.Now(),
+		"date":           periodDay.Date,
+		"isPeriod":       periodDay.IsPeriod,
+		"symptoms":       periodDay.Symptoms,
+		"crampIntensity": periodDay.CrampIntensity,
+		"mood":           periodDay.Mood,
+		"activities":     periodDay.Activities,
+		"sexActivity":    periodDay.SexActivity,
+		"notes":          periodDay.Notes,
+		"createdAt":      now,
+		"updatedAt":      now,
 	})
 
 	if err != nil {
@@ -294,21 +295,21 @@ func CreatePeriodDay(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, PeriodDay{
-		ID:          docRef.ID,
-		UserID:      uid.(string),
-		Date:        periodDay.Date,
-		IsPeriod:    periodDay.IsPeriod,
-		Symptoms:    periodDay.Symptoms,
-		Mood:        periodDay.Mood,
-		Activities:  periodDay.Activities,
-		SexActivity: periodDay.SexActivity,
-		Notes:       periodDay.Notes,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+		ID:             docRef.ID,
+		UserID:         uid.(string),
+		Date:           periodDay.Date,
+		IsPeriod:       periodDay.IsPeriod,
+		Symptoms:       periodDay.Symptoms,
+		CrampIntensity: periodDay.CrampIntensity,
+		Mood:           periodDay.Mood,
+		Activities:     periodDay.Activities,
+		SexActivity:    periodDay.SexActivity,
+		Notes:          periodDay.Notes,
+		CreatedAt:      now,
+		UpdatedAt:      now,
 	})
 }
 
-// DeletePeriodDay deletes a period day entry
 func DeletePeriodDay(c *gin.Context) {
 	session := sessions.Default(c)
 	uid := session.Get("user_id")
@@ -326,7 +327,6 @@ func DeletePeriodDay(c *gin.Context) {
 		return
 	}
 
-	// Find and delete the period day
 	docs, err := fsClient.Collection("users").Doc(uid.(string)).Collection("periodDays").
 		Where("date", "==", date).
 		Documents(ctx).GetAll()
@@ -341,7 +341,6 @@ func DeletePeriodDay(c *gin.Context) {
 		return
 	}
 
-	// Delete the document
 	_, err = docs[0].Ref.Delete(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete period day"})
@@ -351,7 +350,6 @@ func DeletePeriodDay(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Period day deleted successfully"})
 }
 
-// GetCycleSettings fetches cycle settings for the current user
 func GetCycleSettings(c *gin.Context) {
 	session := sessions.Default(c)
 	uid := session.Get("user_id")
@@ -363,7 +361,6 @@ func GetCycleSettings(c *gin.Context) {
 	fsClient := c.MustGet("firestore").(*firestore.Client)
 	ctx := context.Background()
 
-	// Query cycle settings for the user (as subcollection)
 	docs, err := fsClient.Collection("users").Doc(uid.(string)).Collection("cycleSettings").
 		Documents(ctx).GetAll()
 
@@ -373,7 +370,6 @@ func GetCycleSettings(c *gin.Context) {
 	}
 
 	if len(docs) == 0 {
-		// Return default settings if none exist
 		c.JSON(http.StatusOK, gin.H{
 			"cycleSettings": CycleSettings{
 				UserID:       uid.(string),
@@ -384,13 +380,12 @@ func GetCycleSettings(c *gin.Context) {
 		return
 	}
 
-	// Return the first (and should be only) settings document
 	data := docs[0].Data()
 	settings := CycleSettings{
 		ID:           docs[0].Ref.ID,
 		UserID:       uid.(string),
-		CycleLength:  int(data["cycleLength"].(int64)),
-		PeriodLength: int(data["periodLength"].(int64)),
+		CycleLength:  int64(data["cycleLength"].(int64)),
+		PeriodLength: int64(data["periodLength"].(int64)),
 		CreatedAt:    data["createdAt"].(time.Time),
 		UpdatedAt:    data["updatedAt"].(time.Time),
 	}
@@ -398,7 +393,6 @@ func GetCycleSettings(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"cycleSettings": settings})
 }
 
-// UpdateCycleSettings updates or creates cycle settings for the current user
 func UpdateCycleSettings(c *gin.Context) {
 	session := sessions.Default(c)
 	uid := session.Get("user_id")
@@ -410,14 +404,12 @@ func UpdateCycleSettings(c *gin.Context) {
 	fsClient := c.MustGet("firestore").(*firestore.Client)
 	ctx := context.Background()
 
-	// Parse request body
 	var settings CycleSettings
 	if err := c.ShouldBindJSON(&settings); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
 	}
 
-	// Validate cycle settings
 	if settings.CycleLength < 20 || settings.CycleLength > 45 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Cycle length must be between 20 and 45 days"})
 		return
@@ -428,7 +420,6 @@ func UpdateCycleSettings(c *gin.Context) {
 		return
 	}
 
-	// Check if settings already exist
 	docs, err := fsClient.Collection("users").Doc(uid.(string)).Collection("cycleSettings").
 		Documents(ctx).GetAll()
 
@@ -439,7 +430,6 @@ func UpdateCycleSettings(c *gin.Context) {
 
 	now := time.Now()
 	if len(docs) > 0 {
-		// Update existing settings
 		_, err = docs[0].Ref.Update(ctx, []firestore.Update{
 			{Path: "cycleLength", Value: settings.CycleLength},
 			{Path: "periodLength", Value: settings.PeriodLength},
@@ -450,7 +440,6 @@ func UpdateCycleSettings(c *gin.Context) {
 			return
 		}
 	} else {
-		// Create new settings
 		docRef, _, err := fsClient.Collection("users").Doc(uid.(string)).Collection("cycleSettings").Add(ctx, map[string]interface{}{
 			"cycleLength":  settings.CycleLength,
 			"periodLength": settings.PeriodLength,
@@ -470,152 +459,6 @@ func UpdateCycleSettings(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"cycleSettings": settings})
 }
 
-// GetUserMetadata fetches user metadata including sex for the current user
-func GetUserMetadata(c *gin.Context) {
-	session := sessions.Default(c)
-	uid := session.Get("user_id")
-	if uid == nil {
-		fmt.Printf("DEBUG: GetUserMetadata - No user_id in session\n")
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
-
-	fsClient := c.MustGet("firestore").(*firestore.Client)
-	ctx := context.Background()
-
-	userID := uid.(string)
-	fmt.Printf("DEBUG: GetUserMetadata - User ID: %s\n", userID)
-
-	// Get user document directly
-	userDoc, err := fsClient.Collection("users").Doc(userID).Get(ctx)
-	if err != nil {
-		fmt.Printf("DEBUG: GetUserMetadata - Error fetching user: %v\n", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user data"})
-		return
-	}
-
-	if !userDoc.Exists() {
-		fmt.Printf("DEBUG: GetUserMetadata - User document does not exist for ID: %s\n", userID)
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
-		return
-	}
-
-	userData := userDoc.Data()
-	fmt.Printf("DEBUG: GetUserMetadata - User data keys: %v\n", util.GetMapKeys(userData))
-
-	// Safely extract sex field
-	sex := ""
-	if userData["sex"] != nil {
-		if sexStr, ok := userData["sex"].(string); ok {
-			sex = sexStr
-		} else {
-			fmt.Printf("DEBUG: GetUserMetadata - Sex field is not a string: %T\n", userData["sex"])
-		}
-	}
-
-	// Handle optional timestamp fields with safe type assertions
-	createdAt := time.Now()
-	if userData["created_at"] != nil {
-		if createdTime, ok := userData["created_at"].(time.Time); ok {
-			createdAt = createdTime
-		} else {
-			fmt.Printf("DEBUG: GetUserMetadata - created_at field is not time.Time: %T\n", userData["created_at"])
-		}
-	}
-
-	updatedAt := time.Now()
-	if userData["last_login_at"] != nil {
-		if updatedTime, ok := userData["last_login_at"].(time.Time); ok {
-			updatedAt = updatedTime
-		} else {
-			fmt.Printf("DEBUG: GetUserMetadata - last_login_at field is not time.Time: %T\n", userData["last_login_at"])
-		}
-	}
-
-	metadata := UserMetadata{
-		ID:        userDoc.Ref.ID,
-		UserID:    userID,
-		Sex:       sex,
-		CreatedAt: createdAt,
-		UpdatedAt: updatedAt,
-	}
-
-	fmt.Printf("DEBUG: GetUserMetadata - Successfully created metadata for user: %s\n", userID)
-	c.JSON(http.StatusOK, gin.H{"userMetadata": metadata})
-}
-
-// UpdateUserMetadata updates user sex in the users collection
-func UpdateUserMetadata(c *gin.Context) {
-	session := sessions.Default(c)
-	uid := session.Get("user_id")
-	if uid == nil {
-		fmt.Printf("DEBUG: UpdateUserMetadata - No user_id in session\n")
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
-
-	fsClient := c.MustGet("firestore").(*firestore.Client)
-	ctx := context.Background()
-
-	// Parse request body
-	var metadata UserMetadata
-	if err := c.ShouldBindJSON(&metadata); err != nil {
-		fmt.Printf("DEBUG: UpdateUserMetadata - Invalid request body: %v\n", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
-		return
-	}
-
-	// Validate sex value
-	if metadata.Sex != "male" && metadata.Sex != "female" {
-		fmt.Printf("DEBUG: UpdateUserMetadata - Invalid sex value: %s\n", metadata.Sex)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Sex must be either 'male' or 'female'"})
-		return
-	}
-
-	userID := uid.(string)
-	fmt.Printf("DEBUG: UpdateUserMetadata - Updating metadata for user: %s, sex: %s\n", userID, metadata.Sex)
-
-	// Update user document directly
-	_, err := fsClient.Collection("users").Doc(userID).Update(ctx, []firestore.Update{
-		{Path: "sex", Value: metadata.Sex},
-		{Path: "last_login_at", Value: time.Now()},
-	})
-
-	if err != nil {
-		fmt.Printf("DEBUG: UpdateUserMetadata - Error updating user: %v\n", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user metadata"})
-		return
-	}
-
-	// Get updated user data
-	userDoc, err := fsClient.Collection("users").Doc(userID).Get(ctx)
-	if err != nil {
-		fmt.Printf("DEBUG: UpdateUserMetadata - Error fetching updated user data: %v\n", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch updated user data"})
-		return
-	}
-
-	userData := userDoc.Data()
-	metadata.ID = userDoc.Ref.ID
-	metadata.UserID = userID
-
-	// Safely extract updated timestamp
-	if userData["last_login_at"] != nil {
-		if updatedTime, ok := userData["last_login_at"].(time.Time); ok {
-			metadata.UpdatedAt = updatedTime
-		} else {
-			fmt.Printf("DEBUG: UpdateUserMetadata - last_login_at field is not time.Time: %T\n", userData["last_login_at"])
-			metadata.UpdatedAt = time.Now()
-		}
-	} else {
-		metadata.UpdatedAt = time.Now()
-	}
-
-	fmt.Printf("DEBUG: UpdateUserMetadata - Successfully updated metadata for user: %s\n", userID)
-	c.JSON(http.StatusOK, gin.H{"userMetadata": metadata})
-}
-
-// GetPartnerMetadata fetches partner's metadata for connected users
 func GetPartnerMetadata(c *gin.Context) {
 	session := sessions.Default(c)
 	uid := session.Get("user_id")
@@ -627,7 +470,6 @@ func GetPartnerMetadata(c *gin.Context) {
 	fsClient := c.MustGet("firestore").(*firestore.Client)
 	ctx := context.Background()
 
-	// Get current user's email
 	userDoc, err := fsClient.Collection("users").Doc(uid.(string)).Get(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user data"})
@@ -635,7 +477,6 @@ func GetPartnerMetadata(c *gin.Context) {
 	}
 	userEmail := userDoc.Data()["email"].(string)
 
-	// First, get the user's connection to find their partner
 	connectionDocs, err := fsClient.Collection("connections").
 		Where("status", "==", "active").
 		Where("user1", "==", userEmail).
@@ -646,7 +487,6 @@ func GetPartnerMetadata(c *gin.Context) {
 		return
 	}
 
-	// If no connection found as user1, check as user2
 	if len(connectionDocs) == 0 {
 		connectionDocs, err = fsClient.Collection("connections").
 			Where("status", "==", "active").
@@ -663,7 +503,6 @@ func GetPartnerMetadata(c *gin.Context) {
 		return
 	}
 
-	// Determine partner's email
 	connectionData := connectionDocs[0].Data()
 	var partnerEmail string
 	if connectionData["user1"] == userEmail {
@@ -672,7 +511,6 @@ func GetPartnerMetadata(c *gin.Context) {
 		partnerEmail = connectionData["user1"].(string)
 	}
 
-	// Get partner's user document by email
 	partnerUserDocs, err := fsClient.Collection("users").
 		Where("email", "==", partnerEmail).
 		Documents(ctx).GetAll()
@@ -688,7 +526,6 @@ func GetPartnerMetadata(c *gin.Context) {
 		partnerSex = partnerUserData["sex"].(string)
 	}
 
-	// Handle optional timestamp fields
 	createdAt := time.Now()
 	if partnerUserData["created_at"] != nil {
 		createdAt = partnerUserData["created_at"].(time.Time)
@@ -710,7 +547,6 @@ func GetPartnerMetadata(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"partnerMetadata": metadata})
 }
 
-// DebugConnection is a test endpoint to verify connection status
 func DebugConnection(c *gin.Context) {
 	session := sessions.Default(c)
 	uid := session.Get("user_id")
@@ -722,7 +558,6 @@ func DebugConnection(c *gin.Context) {
 	fsClient := c.MustGet("firestore").(*firestore.Client)
 	ctx := context.Background()
 
-	// Get current user's email
 	userDoc, err := fsClient.Collection("users").Doc(uid.(string)).Get(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user data"})
@@ -730,7 +565,6 @@ func DebugConnection(c *gin.Context) {
 	}
 	userEmail := userDoc.Data()["email"].(string)
 
-	// Check for active connections
 	connectionDocs, err := fsClient.Collection("connections").
 		Where("status", "==", "active").
 		Where("user1", "==", userEmail).
@@ -741,7 +575,6 @@ func DebugConnection(c *gin.Context) {
 		return
 	}
 
-	// If no connection found as user1, check as user2
 	if len(connectionDocs) == 0 {
 		connectionDocs, err = fsClient.Collection("connections").
 			Where("status", "==", "active").
