@@ -188,8 +188,11 @@ func main() {
 		api.GET("/periods/settings", handlers.GetCycleSettings)
 		api.PUT("/periods/settings", handlers.UpdateCycleSettings)
 
-		// user metadata routes
-		api.GET("/periods/partner/metadata", handlers.GetPartnerMetadata)
+		// user routes
+		api.GET("/user/metadata", handlers.GetUserMetadata)
+		api.PUT("/user/metadata", handlers.UpdateUserMetadata)
+		api.GET("/user/partner/metadata", handlers.GetPartnerMetadata)
+		api.DELETE("/user", handlers.DeleteUser)
 
 		// checkin routes
 		api.POST("/checkin", handlers.CreateCheckin)
@@ -203,9 +206,6 @@ func main() {
 		// feedback routes
 		api.POST("/feedback", handlers.SubmitFeedback)
 		api.GET("/feedback", handlers.GetUserFeedback)
-
-		// user acc delete
-		api.DELETE("/user", handlers.DeleteUser)
 	}
 
 	// run server

@@ -78,6 +78,10 @@ export default function Tracker() {
         const loadMetadata = async () => {
             try {
                 const userMeta = await getUserMetadata();
+                if (!userMeta) {
+                    toast.error("Failed to load user metadata");
+                    return;
+                }
                 setUserSex(userMeta.sex as "male" | "female");
 
                 try {

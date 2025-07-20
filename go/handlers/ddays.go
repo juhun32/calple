@@ -92,26 +92,13 @@ func GetDDays(c *gin.Context) {
 	fmt.Printf("DEBUG: GetDDays - userEmail: %s, viewMonthStartStr: %s, viewMonthEndStr: %s\n", userEmail, viewMonthStartStr, viewMonthEndStr)
 
 	// debug: if user has any active connections
-	connectionDocs, err := fsClient.Collection("connections").
+	connectionDocs, err := fsClient.Collection("users").Doc(uid.(string)).Collection("connections").
 		Where("status", "==", "active").
-		Where("user1", "==", userEmail).
 		Documents(ctx).GetAll()
-
-	if err == nil && len(connectionDocs) == 0 {
-		connectionDocs, err = fsClient.Collection("connections").
-			Where("status", "==", "active").
-			Where("user2", "==", userEmail).
-			Documents(ctx).GetAll()
-	}
 
 	if err == nil && len(connectionDocs) > 0 {
 		connectionData := connectionDocs[0].Data()
-		var partnerEmail string
-		if connectionData["user1"] == userEmail {
-			partnerEmail = connectionData["user2"].(string)
-		} else {
-			partnerEmail = connectionData["user1"].(string)
-		}
+		partnerEmail := connectionData["partnerEmail"].(string)
 		fmt.Printf("DEBUG: User %s has active connection with %s\n", userEmail, partnerEmail)
 	} else {
 		fmt.Printf("DEBUG: User %s has no active connections\n", userEmail)
@@ -270,28 +257,14 @@ func CreateDDay(c *gin.Context) {
 
 	fmt.Printf("DEBUG: CreateDDay - userEmail: %s, original connectedUsers: %v\n", userEmail, dday.ConnectedUsers)
 
-	// Get connected user's email
 	connectedUsers := dday.ConnectedUsers
-	connectionDocs, err := fsClient.Collection("connections").
+	connectionDocs, err := fsClient.Collection("users").Doc(uid.(string)).Collection("connections").
 		Where("status", "==", "active").
-		Where("user1", "==", userEmail).
 		Documents(context.Background()).GetAll()
-
-	if err == nil && len(connectionDocs) == 0 {
-		connectionDocs, err = fsClient.Collection("connections").
-			Where("status", "==", "active").
-			Where("user2", "==", userEmail).
-			Documents(context.Background()).GetAll()
-	}
 
 	if err == nil && len(connectionDocs) > 0 {
 		connectionData := connectionDocs[0].Data()
-		var partnerEmail string
-		if connectionData["user1"] == userEmail {
-			partnerEmail = connectionData["user2"].(string)
-		} else {
-			partnerEmail = connectionData["user1"].(string)
-		}
+		partnerEmail := connectionData["partnerEmail"].(string)
 
 		fmt.Printf("DEBUG: CreateDDay - found partner: %s\n", partnerEmail)
 

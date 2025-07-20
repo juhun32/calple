@@ -15,17 +15,16 @@ import (
 type CheckinData struct {
 	ID           string    `json:"id"`
 	UserID       string    `json:"userId"`
-	Date         string    `json:"date"`         // Format: YYYY-MM-DD
-	Mood         string    `json:"mood"`         // "great", "good", "okay", "bad", "terrible"
-	Energy       string    `json:"energy"`       // "high", "medium", "low"
-	PeriodStatus string    `json:"periodStatus"` // "on", "off", "starting", "ending"
-	SexualMood   string    `json:"sexualMood"`   // "very_horny", "horny", "interested", "neutral", "not_interested"
+	Date         string    `json:"date"`
+	Mood         string    `json:"mood"`
+	Energy       string    `json:"energy"`
+	PeriodStatus string    `json:"periodStatus"`
+	SexualMood   string    `json:"sexualMood"`
 	Note         string    `json:"note"`
 	CreatedAt    time.Time `json:"createdAt"`
 	UpdatedAt    time.Time `json:"updatedAt"`
 }
 
-// PartnerCheckin represents partner's checkin data
 type PartnerCheckin struct {
 	ID           string    `json:"id"`
 	UserID       string    `json:"userId"`
@@ -41,7 +40,6 @@ type PartnerCheckin struct {
 	CreatedAt    time.Time `json:"createdAt"`
 }
 
-// CreateCheckin creates or updates a checkin for the specified date
 func CreateCheckin(c *gin.Context) {
 	session := sessions.Default(c)
 	uid := session.Get("user_id")
@@ -59,7 +57,6 @@ func CreateCheckin(c *gin.Context) {
 		return
 	}
 
-	// Validate required fields
 	if checkinData.Date == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Date is required"})
 		return
@@ -75,7 +72,7 @@ func CreateCheckin(c *gin.Context) {
 		return
 	}
 
-	// Validate date format (YYYY-MM-DD)
+	// YYYY-MM-DD format validation
 	if len(checkinData.Date) != 10 || checkinData.Date[4] != '-' || checkinData.Date[7] != '-' {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Use YYYY-MM-DD"})
 		return
@@ -83,7 +80,6 @@ func CreateCheckin(c *gin.Context) {
 
 	userID := uid.(string)
 
-	// Check if checkin already exists for this date
 	existingDocs, err := fsClient.Collection("users").Doc(userID).Collection("checkins").
 		Where("date", "==", checkinData.Date).
 		Documents(ctx).GetAll()
@@ -97,14 +93,11 @@ func CreateCheckin(c *gin.Context) {
 	var docRef *firestore.DocumentRef
 
 	if len(existingDocs) > 0 {
-		// Update existing checkin
 		docRef = existingDocs[0].Ref
 	} else {
-		// Create new checkin
 		docRef = fsClient.Collection("users").Doc(userID).Collection("checkins").NewDoc()
 	}
 
-	// Prepare data for Firestore
 	firestoreData := map[string]interface{}{
 		"userId":    userID,
 		"date":      checkinData.Date,
@@ -113,7 +106,6 @@ func CreateCheckin(c *gin.Context) {
 		"updatedAt": now,
 	}
 
-	// Add optional fields if provided
 	if checkinData.PeriodStatus != "" {
 		firestoreData["periodStatus"] = checkinData.PeriodStatus
 	}
@@ -124,22 +116,18 @@ func CreateCheckin(c *gin.Context) {
 		firestoreData["note"] = checkinData.Note
 	}
 
-	// Set createdAt only for new documents
 	if len(existingDocs) == 0 {
 		firestoreData["createdAt"] = now
 	} else {
-		// Keep existing createdAt for updates
 		firestoreData["createdAt"] = existingDocs[0].Data()["createdAt"]
 	}
 
-	// Save to Firestore
 	_, err = docRef.Set(ctx, firestoreData)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save checkin"})
 		return
 	}
 
-	// Get the saved document to return
 	savedDoc, err := docRef.Get(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch saved checkin"})
@@ -168,7 +156,6 @@ func CreateCheckin(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"checkin": responseCheckin})
 }
 
-// GetTodayCheckin fetches the checkin for the specified date
 func GetTodayCheckin(c *gin.Context) {
 	session := sessions.Default(c)
 	uid := session.Get("user_id")
@@ -186,7 +173,7 @@ func GetTodayCheckin(c *gin.Context) {
 		return
 	}
 
-	// Validate date format (YYYY-MM-DD)
+	// YYYY-MM-DD format validation
 	if len(date) != 10 || date[4] != '-' || date[7] != '-' {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Use YYYY-MM-DD"})
 		return
@@ -194,7 +181,6 @@ func GetTodayCheckin(c *gin.Context) {
 
 	userID := uid.(string)
 
-	// Find the checkin document for the specified date
 	checkinDocs, err := fsClient.Collection("users").Doc(userID).Collection("checkins").
 		Where("date", "==", date).
 		Documents(ctx).GetAll()
@@ -209,7 +195,6 @@ func GetTodayCheckin(c *gin.Context) {
 		return
 	}
 
-	// Return the checkin data
 	data := checkinDocs[0].Data()
 	createdAt := time.Now()
 	if data["createdAt"] != nil {
@@ -232,7 +217,6 @@ func GetTodayCheckin(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"checkin": checkin})
 }
 
-// GetPartnerCheckin fetches the partner's checkin for the specified date
 func GetPartnerCheckin(c *gin.Context) {
 	session := sessions.Default(c)
 	uid := session.Get("user_id")
@@ -250,18 +234,8 @@ func GetPartnerCheckin(c *gin.Context) {
 		return
 	}
 
-	// Get current user's email
-	userDoc, err := fsClient.Collection("users").Doc(uid.(string)).Get(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user data"})
-		return
-	}
-	userEmail := userDoc.Data()["email"].(string)
-
-	// First, get the user's connection to find their partner
-	connectionDocs, err := fsClient.Collection("connections").
+	connectionDocs, err := fsClient.Collection("users").Doc(uid.(string)).Collection("connections").
 		Where("status", "==", "active").
-		Where("user1", "==", userEmail).
 		Documents(ctx).GetAll()
 
 	if err != nil {
@@ -269,33 +243,16 @@ func GetPartnerCheckin(c *gin.Context) {
 		return
 	}
 
-	// If no connection found as user1, check as user2
-	if len(connectionDocs) == 0 {
-		connectionDocs, err = fsClient.Collection("connections").
-			Where("status", "==", "active").
-			Where("user2", "==", userEmail).
-			Documents(ctx).GetAll()
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch connection"})
-			return
-		}
-	}
-
 	if len(connectionDocs) == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"error": "No partner connection found"})
 		return
 	}
 
-	// Determine partner's email
 	connectionData := connectionDocs[0].Data()
-	var partnerEmail string
-	if connectionData["user1"] == userEmail {
-		partnerEmail = connectionData["user2"].(string)
-	} else {
-		partnerEmail = connectionData["user1"].(string)
-	}
+	partnerEmail := connectionData["partnerEmail"].(string)
 
-	// Get partner's user info by email
+	// decided to use partner's email to fetch their checkin,
+	// this is more reliable cause partner's id can change if they delete their account
 	partnerUserDocs, err := fsClient.Collection("users").
 		Where("email", "==", partnerEmail).
 		Documents(ctx).GetAll()
@@ -314,13 +271,11 @@ func GetPartnerCheckin(c *gin.Context) {
 	partnerName := partnerUserData["name"].(string)
 	partnerID := partnerUserDocs[0].Ref.ID
 
-	// Get partner's sex from user document
 	partnerSex := ""
 	if partnerUserData["sex"] != nil {
 		partnerSex = partnerUserData["sex"].(string)
 	}
 
-	// Get partner's checkin for the date
 	checkinDocs, err := fsClient.Collection("users").Doc(partnerID).Collection("checkins").
 		Where("date", "==", date).
 		Documents(ctx).GetAll()
@@ -335,10 +290,9 @@ func GetPartnerCheckin(c *gin.Context) {
 		return
 	}
 
-	// Return partner's checkin
 	data := checkinDocs[0].Data()
 
-	// Handle optional timestamp fields
+	// optional timestamp fields
 	createdAt := time.Now()
 	if data["createdAt"] != nil {
 		createdAt = data["createdAt"].(time.Time)
@@ -362,7 +316,6 @@ func GetPartnerCheckin(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"partnerCheckin": partnerCheckin})
 }
 
-// DeleteCheckin deletes a checkin for the specified date
 func DeleteCheckin(c *gin.Context) {
 	session := sessions.Default(c)
 	uid := session.Get("user_id")
@@ -380,7 +333,7 @@ func DeleteCheckin(c *gin.Context) {
 		return
 	}
 
-	// Validate date format (YYYY-MM-DD)
+	// YYYY-MM-DD
 	if len(date) != 10 || date[4] != '-' || date[7] != '-' {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Use YYYY-MM-DD"})
 		return
@@ -388,7 +341,7 @@ func DeleteCheckin(c *gin.Context) {
 
 	userID := uid.(string)
 
-	// Find the checkin document for the specified date in the user's checkins subcollection
+	// find the checkin document for the specified date
 	checkinDocs, err := fsClient.Collection("users").Doc(userID).Collection("checkins").
 		Where("date", "==", date).
 		Documents(ctx).GetAll()
@@ -403,7 +356,7 @@ func DeleteCheckin(c *gin.Context) {
 		return
 	}
 
-	// Delete the checkin document
+	// delete checkin document
 	checkinDoc := checkinDocs[0]
 	_, err = checkinDoc.Ref.Delete(ctx)
 	if err != nil {

@@ -114,7 +114,6 @@ func Callback(c *gin.Context) {
 	userData := map[string]interface{}{
 		"email": userinfo.Email,
 		"name":  userinfo.Name,
-		"sex":   "female", // Default sex field to female for new users
 		"tokens": map[string]interface{}{
 			"access_token":  token.AccessToken,
 			"refresh_token": token.RefreshToken,
@@ -126,6 +125,8 @@ func Callback(c *gin.Context) {
 
 	if !isReturningUser {
 		userData["created_at"] = time.Now()
+		userData["sex"] = "female"
+		userData["startedDating"] = nil
 	}
 
 	_, err = userDocRef.Set(context.Background(), userData, firestore.MergeAll)

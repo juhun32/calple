@@ -19,6 +19,7 @@ export interface UserMetadata {
     id: string;
     userId: string;
     sex: "male" | "female";
+    startedDating?: string;
     createdAt: string;
     updatedAt: string;
 }
@@ -29,6 +30,7 @@ export interface PartnerCheckin {
     userName: string;
     userEmail: string;
     userSex: "male" | "female";
+
     date: string;
     mood: "great" | "good" | "okay" | "bad" | "terrible";
     energy: "high" | "medium" | "low";
@@ -46,11 +48,15 @@ export interface PartnerCheckin {
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 // get user metadata (sex)
-export const getUserMetadata = async (): Promise<UserMetadata> => {
+export const getUserMetadata = async (): Promise<UserMetadata | null> => {
     try {
-        const response = await fetch(`${BACKEND_URL}/api/periods/metadata`, {
+        const response = await fetch(`${BACKEND_URL}/api/user/metadata`, {
             credentials: "include",
         });
+
+        if (response.status === 404) {
+            return null;
+        }
 
         if (!response.ok) {
             const errorText = await response.text();
@@ -59,20 +65,7 @@ export const getUserMetadata = async (): Promise<UserMetadata> => {
                 statusText: response.statusText,
                 body: errorText,
             });
-
-            if (response.status === 401) {
-                throw new Error(
-                    "Authentication required. Please log in again."
-                );
-            } else if (response.status === 404) {
-                throw new Error("User not found. Please contact support.");
-            } else if (response.status === 500) {
-                throw new Error("Server error. Please try again later.");
-            } else {
-                throw new Error(
-                    `Failed to fetch user metadata: ${response.status} ${response.statusText}`
-                );
-            }
+            throw new Error("Failed to fetch user metadata");
         }
 
         const data = await response.json();
@@ -82,46 +75,49 @@ export const getUserMetadata = async (): Promise<UserMetadata> => {
         if (error instanceof Error) {
             throw error;
         } else {
-            throw new Error("Failed to fetch user metadata");
+            throw new Error(
+                "An unknown error occurred while fetching user metadata."
+            );
         }
     }
 };
 
-// update user metadata (sex)
+// update user metadata (sex, startedDating)
 export const updateUserMetadata = async (
-    sex: "male" | "female"
+    data: Partial<{ sex: "male" | "female"; startedDating: string }>
 ): Promise<UserMetadata> => {
-    const response = await fetch(`${BACKEND_URL}/api/periods/metadata`, {
+    const response = await fetch(`${BACKEND_URL}/api/user/metadata`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ sex }),
+        body: JSON.stringify(data),
     });
 
     if (!response.ok) {
         throw new Error("Failed to update user metadata");
     }
 
-    const data = await response.json();
-    return data.userMetadata;
+    const data_1 = await response.json();
+    return data_1.userMetadata;
 };
 
 // get partner metadata
-export const getPartnerMetadata = async (): Promise<UserMetadata> => {
-    const response = await fetch(
-        `${BACKEND_URL}/api/periods/partner/metadata`,
-        {
-            credentials: "include",
-        }
-    );
+export const getPartnerMetadata = async (): Promise<UserMetadata | null> => {
+    const response = await fetch(`${BACKEND_URL}/api/user/partner/metadata`, {
+        credentials: "include",
+    });
+
+    if (response.status === 404) {
+        return null; // No partner or metadata found
+    }
 
     if (!response.ok) {
         try {
             const errorData = await response.json();
             if (errorData.error === "No partner connection found") {
-                throw new Error("No partner connection found");
+                return null; // This is a valid state, not an error
             }
         } catch (e) {
             // continue with the original error if cant parse error

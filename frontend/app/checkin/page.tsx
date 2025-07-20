@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { redirect } from "next/navigation";
+
+// api
 import {
     CheckinData,
     PartnerCheckin,
@@ -64,16 +66,33 @@ export default function Checkin() {
         }
     };
 
-    const loadPartnerData = useCallback(async (date?: string) => {
+    const loadPartnerData = useCallback(async (isManualRefresh = false) => {
         setIsRefreshingPartner(true);
         try {
-            await getPartnerMetadata();
-            setHasPartner(true);
-            const partnerData = await getPartnerCheckinAPI(date);
-            setPartnerCheckin(partnerData || null);
+            const metadata = await getPartnerMetadata();
+            if (metadata) {
+                setHasPartner(true);
+                const todayStr = new Date().toLocaleDateString("en-CA");
+                const partnerData = await getPartnerCheckinAPI(todayStr);
+                if (partnerData) {
+                    setPartnerCheckin(partnerData);
+                } else {
+                    setPartnerCheckin(null);
+                    if (isManualRefresh) {
+                        toast.info("Your partner hasn't checked in yet today.");
+                    }
+                }
+            } else {
+                setHasPartner(false);
+                setPartnerCheckin(null);
+                if (isManualRefresh) {
+                    toast.error("You are not connected to a partner.");
+                }
+            }
         } catch (error) {
             setHasPartner(false);
             setPartnerCheckin(null);
+            toast.error("Could not refresh partner data.");
         } finally {
             setIsRefreshingPartner(false);
         }
@@ -148,12 +167,12 @@ export default function Checkin() {
                         <PartnerCheckinCard
                             partnerCheckin={partnerCheckin}
                             isRefreshingPartner={isRefreshingPartner}
-                            loadPartnerData={loadPartnerData}
+                            loadPartnerData={() => loadPartnerData(true)}
                         />
                     ) : (
                         <WaitingForPartnerCard
                             isRefreshingPartner={isRefreshingPartner}
-                            loadPartnerData={loadPartnerData}
+                            loadPartnerData={() => loadPartnerData(true)}
                         />
                     )
                 ) : (

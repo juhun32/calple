@@ -36,14 +36,6 @@ type CycleSettings struct {
 	UpdatedAt    time.Time `json:"updatedAt"`
 }
 
-type UserMetadata struct {
-	ID        string    `json:"id"`
-	UserID    string    `json:"userId"`
-	Sex       string    `json:"sex"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
-}
-
 func GetPeriodDays(c *gin.Context) {
 	session := sessions.Default(c)
 	uid := session.Get("user_id")
@@ -111,17 +103,9 @@ func GetPartnerPeriodDays(c *gin.Context) {
 	}
 	userEmail := userDoc.Data()["email"].(string)
 
-	connectionDocs, err := fsClient.Collection("connections").
+	connectionDocs, err := fsClient.Collection("users").Doc(uid.(string)).Collection("connections").
 		Where("status", "==", "active").
-		Where("user1", "==", userEmail).
 		Documents(ctx).GetAll()
-
-	if err == nil && len(connectionDocs) == 0 {
-		connectionDocs, err = fsClient.Collection("connections").
-			Where("status", "==", "active").
-			Where("user2", "==", userEmail).
-			Documents(ctx).GetAll()
-	}
 
 	if err != nil || len(connectionDocs) == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"error": "No active connection found"})
@@ -129,12 +113,7 @@ func GetPartnerPeriodDays(c *gin.Context) {
 	}
 
 	connectionData := connectionDocs[0].Data()
-	var partnerEmail string
-	if connectionData["user1"] == userEmail {
-		partnerEmail = connectionData["user2"].(string)
-	} else {
-		partnerEmail = connectionData["user1"].(string)
-	}
+	partnerEmail := connectionData["partnerEmail"].(string)
 
 	partnerDocs, err := fsClient.Collection("users").
 		Where("email", "==", partnerEmail).
@@ -207,7 +186,7 @@ func GetPartnerPeriodDays(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"periodDays": periodDays,
-		"partnerSex": partnerSex,
+		"partnerSex": userSex,
 	})
 }
 
@@ -459,94 +438,6 @@ func UpdateCycleSettings(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"cycleSettings": settings})
 }
 
-func GetPartnerMetadata(c *gin.Context) {
-	session := sessions.Default(c)
-	uid := session.Get("user_id")
-	if uid == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
-
-	fsClient := c.MustGet("firestore").(*firestore.Client)
-	ctx := context.Background()
-
-	userDoc, err := fsClient.Collection("users").Doc(uid.(string)).Get(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user data"})
-		return
-	}
-	userEmail := userDoc.Data()["email"].(string)
-
-	connectionDocs, err := fsClient.Collection("connections").
-		Where("status", "==", "active").
-		Where("user1", "==", userEmail).
-		Documents(ctx).GetAll()
-
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch connection"})
-		return
-	}
-
-	if len(connectionDocs) == 0 {
-		connectionDocs, err = fsClient.Collection("connections").
-			Where("status", "==", "active").
-			Where("user2", "==", userEmail).
-			Documents(ctx).GetAll()
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch connection"})
-			return
-		}
-	}
-
-	if len(connectionDocs) == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "No partner connection found"})
-		return
-	}
-
-	connectionData := connectionDocs[0].Data()
-	var partnerEmail string
-	if connectionData["user1"] == userEmail {
-		partnerEmail = connectionData["user2"].(string)
-	} else {
-		partnerEmail = connectionData["user1"].(string)
-	}
-
-	partnerUserDocs, err := fsClient.Collection("users").
-		Where("email", "==", partnerEmail).
-		Documents(ctx).GetAll()
-
-	if err != nil || len(partnerUserDocs) == 0 {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch partner data"})
-		return
-	}
-
-	partnerUserData := partnerUserDocs[0].Data()
-	partnerSex := ""
-	if partnerUserData["sex"] != nil {
-		partnerSex = partnerUserData["sex"].(string)
-	}
-
-	createdAt := time.Now()
-	if partnerUserData["created_at"] != nil {
-		createdAt = partnerUserData["created_at"].(time.Time)
-	}
-
-	updatedAt := time.Now()
-	if partnerUserData["last_login_at"] != nil {
-		updatedAt = partnerUserData["last_login_at"].(time.Time)
-	}
-
-	metadata := UserMetadata{
-		ID:        partnerUserDocs[0].Ref.ID,
-		UserID:    partnerUserDocs[0].Ref.ID,
-		Sex:       partnerSex,
-		CreatedAt: createdAt,
-		UpdatedAt: updatedAt,
-	}
-
-	c.JSON(http.StatusOK, gin.H{"partnerMetadata": metadata})
-}
-
 func DebugConnection(c *gin.Context) {
 	session := sessions.Default(c)
 	uid := session.Get("user_id")
@@ -565,25 +456,13 @@ func DebugConnection(c *gin.Context) {
 	}
 	userEmail := userDoc.Data()["email"].(string)
 
-	connectionDocs, err := fsClient.Collection("connections").
+	connectionDocs, err := fsClient.Collection("users").Doc(uid.(string)).Collection("connections").
 		Where("status", "==", "active").
-		Where("user1", "==", userEmail).
 		Documents(ctx).GetAll()
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch connections"})
 		return
-	}
-
-	if len(connectionDocs) == 0 {
-		connectionDocs, err = fsClient.Collection("connections").
-			Where("status", "==", "active").
-			Where("user2", "==", userEmail).
-			Documents(ctx).GetAll()
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch connections"})
-			return
-		}
 	}
 
 	debugInfo := map[string]interface{}{

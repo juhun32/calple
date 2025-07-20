@@ -11,6 +11,7 @@ import { ProfileInfoCard } from "@/components/profile/ProfileInfoCard";
 import { ConnectionCard } from "@/components/profile/ConnectionCard";
 import { GenderSettingsCard } from "@/components/profile/GenderSettingsCard";
 import { AccountSettingsCard } from "@/components/profile/AccountSettingsCard";
+import { DatingInfoCard } from "@/components/profile/DatingInfoCard";
 
 // api
 import { getUserMetadata, updateUserMetadata } from "@/lib/api/checkin";
@@ -20,7 +21,8 @@ import { logout } from "@/lib/utils";
 
 export default function Profile() {
     const { authState } = useAuth();
-    const [userSex, setUserSex] = useState<"male" | "female" | null>(null);
+    const [userSex, setUserSex] = useState<"male" | "female">("female");
+    const [startedDating, setStartedDating] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
@@ -32,7 +34,12 @@ export default function Profile() {
         const loadUserMetadata = async () => {
             try {
                 const metadata = await getUserMetadata();
-                setUserSex(metadata.sex as "male" | "female");
+                if (metadata) {
+                    setUserSex(metadata.sex as "male" | "female");
+                    if (metadata.startedDating) {
+                        setStartedDating(metadata.startedDating);
+                    }
+                }
             } catch (error) {
                 console.error("Failed to load user metadata:", error);
             }
@@ -44,12 +51,30 @@ export default function Profile() {
     const handleSexChange = async (sex: "male" | "female") => {
         setIsLoading(true);
         try {
-            await updateUserMetadata(sex);
+            await updateUserMetadata({ sex });
             setUserSex(sex);
             toast("Gender setting updated successfully");
         } catch (error) {
             console.error("Failed to update Gender setting:", error);
             toast("Failed to update Gender setting");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleUpdateDatingDate = async (date: string) => {
+        setIsLoading(true);
+        try {
+            const updatedMetadata = await updateUserMetadata({
+                startedDating: date,
+            });
+            if (updatedMetadata.startedDating) {
+                setStartedDating(updatedMetadata.startedDating);
+            }
+            toast.success("Dating date updated successfully");
+        } catch (error) {
+            console.error("Failed to update dating date:", error);
+            toast.error("Failed to update dating date");
         } finally {
             setIsLoading(false);
         }
@@ -88,6 +113,11 @@ export default function Profile() {
 
             <div className="flex flex-col gap-4">
                 <ProfileInfoCard email={authState.user?.email} />
+                <DatingInfoCard
+                    startedDating={startedDating}
+                    onUpdate={handleUpdateDatingDate}
+                    isLoading={isLoading}
+                />
                 <ConnectionCard />
                 <GenderSettingsCard
                     userSex={userSex}

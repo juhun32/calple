@@ -35,17 +35,9 @@ func GetConnection(c *gin.Context) {
 	// this should be set in main.go when initializing the app
 	// before calling this handler
 	fsClient := c.MustGet("firestore").(*firestore.Client)
-	userDoc, _ := fsClient.Collection("users").Doc(uid.(string)).Get(context.Background())
-	userEmail := userDoc.Data()["email"].(string)
 
-	// find active connection
-	// check if user is user1 or user2 in active connections
-	conns, _ := fsClient.Collection("connections").Where("status", "==", "active").Where("user1", "==", userEmail).Documents(context.Background()).GetAll()
-
-	// if no connections found, check the other direction
-	if len(conns) == 0 {
-		conns, _ = fsClient.Collection("connections").Where("status", "==", "active").Where("user2", "==", userEmail).Documents(context.Background()).GetAll()
-	}
+	// find active connection in the user's subcollection
+	conns, _ := fsClient.Collection("users").Doc(uid.(string)).Collection("connections").Where("status", "==", "active").Documents(context.Background()).GetAll()
 
 	// if still no connections found, return false
 	if len(conns) == 0 {
@@ -57,14 +49,14 @@ func GetConnection(c *gin.Context) {
 	conn := conns[0]
 	data := conn.Data()
 
-	// if user is user1, partner is user2, and vice versa
-	partner := data["user1"].(string)
-	if partner == userEmail {
-		partner = data["user2"].(string)
+	partnerEmail, ok := data["partnerEmail"].(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid connection data"})
+		return
 	}
 
 	// fetch partner info
-	partnerDocs, _ := fsClient.Collection("users").Where("email", "==", partner).Documents(context.Background()).GetAll()
+	partnerDocs, _ := fsClient.Collection("users").Where("email", "==", partnerEmail).Documents(context.Background()).GetAll()
 	var partnerInfo map[string]interface{}
 	if len(partnerDocs) > 0 {
 		partnerInfo = partnerDocs[0].Data()
@@ -124,31 +116,50 @@ func InviteConnection(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
+	targetUser := targets[0]
+	targetID := targetUser.Ref.ID
 
-	// check if connection already exists
-	// check both directions: user1 -> user2 and user2 -> user1
-	existing, _ := fsClient.Collection("connections").Where("user1", "==", userEmail).Where("user2", "==", target).Documents(context.Background()).GetAll()
-	if len(existing) == 0 {
-		existing, _ = fsClient.Collection("connections").Where("user1", "==", target).Where("user2", "==", userEmail).Documents(context.Background()).GetAll()
-	}
+	// check if connection already exists in either user's subcollection
+	existing, _ := fsClient.Collection("users").Doc(uid.(string)).Collection("connections").Where("partnerEmail", "==", target).Documents(context.Background()).GetAll()
 	if len(existing) > 0 {
 		status := existing[0].Data()["status"].(string)
 		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Connection %s already", status)})
 		return
 	}
 
-	// create a new connection document
-	// with status "pending"
+	// create a new connection document in both users' subcollections
 	now := time.Now()
-	connRef := fsClient.Collection("connections").NewDoc()
-	connRef.Set(context.Background(), map[string]interface{}{
-		"user1":     userEmail,
-		"user2":     target,
-		"status":    "pending",
-		"createdAt": now,
-		"updatedAt": now,
+	initiatorConnRef := fsClient.Collection("users").Doc(uid.(string)).Collection("connections").NewDoc()
+
+	err := fsClient.RunTransaction(context.Background(), func(ctx context.Context, tx *firestore.Transaction) error {
+		// document for initiator
+		if err := tx.Set(initiatorConnRef, map[string]interface{}{
+			"partnerEmail": target,
+			"role":         "initiator", // user1
+			"status":       "pending",
+			"createdAt":    now,
+			"updatedAt":    now,
+		}); err != nil {
+			return err
+		}
+
+		// document for target
+		targetConnRef := fsClient.Collection("users").Doc(targetID).Collection("connections").Doc(initiatorConnRef.ID)
+		return tx.Set(targetConnRef, map[string]interface{}{
+			"partnerEmail": userEmail,
+			"role":         "receiver", // user2
+			"status":       "pending",
+			"createdAt":    now,
+			"updatedAt":    now,
+		})
 	})
-	c.JSON(http.StatusOK, gin.H{"message": "Invitation sent", "connectionId": connRef.ID})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send invitation"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Invitation sent", "connectionId": initiatorConnRef.ID})
 }
 
 // list invitation for current user
@@ -161,18 +172,15 @@ func GetPendingInvitations(c *gin.Context) {
 		return
 	}
 	fsClient := c.MustGet("firestore").(*firestore.Client)
-	userDoc, _ := fsClient.Collection("users").Doc(uid.(string)).Get(context.Background())
-	userEmail := userDoc.Data()["email"].(string)
 
-	// find all pending connections where user2 is the current user
-	// this means the other user has invited the current user
-	pending, _ := fsClient.Collection("connections").Where("status", "==", "pending").Where("user2", "==", userEmail).Documents(context.Background()).GetAll()
+	// find all pending connections where the current user is the receiver
+	pending, _ := fsClient.Collection("users").Doc(uid.(string)).Collection("connections").Where("status", "==", "pending").Where("role", "==", "receiver").Documents(context.Background()).GetAll()
 	invites := []Invitation{}
 
 	// iterate over pending connections and build the response
 	for _, doc := range pending {
 		data := doc.Data()
-		inviter := data["user1"].(string)
+		inviter := data["partnerEmail"].(string)
 		userDocs, _ := fsClient.Collection("users").Where("email", "==", inviter).Documents(context.Background()).GetAll()
 		inviterName := ""
 		if len(userDocs) > 0 {
@@ -202,10 +210,9 @@ func AcceptInvitation(c *gin.Context) {
 	userDoc, _ := fsClient.Collection("users").Doc(uid.(string)).Get(context.Background())
 	userEmail := userDoc.Data()["email"].(string)
 
-	// check if user is user2 in the connection
-	// this means the user has been invited by user1
+	// get the connection from the current user's subcollection
 	connID := c.Param("id")
-	connRef := fsClient.Collection("connections").Doc(connID)
+	connRef := fsClient.Collection("users").Doc(uid.(string)).Collection("connections").Doc(connID)
 	connSnap, err := connRef.Get(context.Background())
 	// check if connection exists
 	if err != nil || !connSnap.Exists() {
@@ -214,22 +221,51 @@ func AcceptInvitation(c *gin.Context) {
 	}
 
 	data := connSnap.Data()
-	if data["user2"].(string) != userEmail {
+	// check if user is the receiver of the invitation
+	if data["role"].(string) != "receiver" {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized"})
 		return
 	}
 
-	// update the connection status to "active"
-	connRef.Update(context.Background(), []firestore.Update{
-		{Path: "status", Value: "active"},
-		{Path: "updatedAt", Value: time.Now()},
+	inviterEmail := data["partnerEmail"].(string)
+	// find inviter's user document to get their ID
+	inviterDocs, _ := fsClient.Collection("users").Where("email", "==", inviterEmail).Documents(context.Background()).GetAll()
+	if len(inviterDocs) == 0 {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Inviting user not found"})
+		return
+	}
+	inviterID := inviterDocs[0].Ref.ID
+
+	// using transaction to update both connection documents atomically
+	now := time.Now()
+	err = fsClient.RunTransaction(context.Background(), func(ctx context.Context, tx *firestore.Transaction) error {
+		// update the current user's connection document
+		if err := tx.Update(connRef, []firestore.Update{
+			{Path: "status", Value: "active"},
+			{Path: "updatedAt", Value: now},
+			{Path: "partnerUID", Value: inviterID},
+		}); err != nil {
+			return err
+		}
+
+		// update the inviter's connection document
+		inviterConnRef := fsClient.Collection("users").Doc(inviterID).Collection("connections").Doc(connID)
+		return tx.Update(inviterConnRef, []firestore.Update{
+			{Path: "status", Value: "active"},
+			{Path: "updatedAt", Value: now},
+			{Path: "partnerUID", Value: uid.(string)},
+		})
 	})
 
-	inviter := data["user1"].(string)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to accept invitation"})
+		return
+	}
+
 	// give access to each others events
 	// = add the userEmail to the connectedUsers array in each others events
 	// inviters events
-	it1, _ := fsClient.Collection("ddays").Where("createdBy", "==", inviter).Documents(context.Background()).GetAll()
+	it1, _ := fsClient.Collection("ddays").Where("createdBy", "==", inviterEmail).Documents(context.Background()).GetAll()
 	for _, doc := range it1 {
 		d := doc.Data()
 		users := util.ToStringSlice(d["connectedUsers"])
@@ -244,8 +280,8 @@ func AcceptInvitation(c *gin.Context) {
 	for _, doc := range it2 {
 		d := doc.Data()
 		users := util.ToStringSlice(d["connectedUsers"])
-		if !util.Contains(users, inviter) {
-			users = append(users, inviter)
+		if !util.Contains(users, inviterEmail) {
+			users = append(users, inviterEmail)
 			fsClient.Collection("ddays").Doc(doc.Ref.ID).Update(context.Background(), []firestore.Update{{Path: "connectedUsers", Value: users}})
 		}
 	}
@@ -271,15 +307,24 @@ func RejectInvitation(c *gin.Context) {
 	}
 
 	connID := c.Param("id")
-	connRef := fsClient.Collection("connections").Doc(connID)
+	// get connection from the current user's subcollection
+	connRef := fsClient.Collection("users").Doc(uid.(string)).Collection("connections").Doc(connID)
 	connSnap, err := connRef.Get(context.Background())
 	if err != nil || !connSnap.Exists() {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Invitation not found"})
 		return
 	}
 	data := connSnap.Data()
-	user1 := data["user1"].(string)
-	user2 := data["user2"].(string)
+	partnerEmail := data["partnerEmail"].(string)
+
+	var user1, user2 string
+	if data["role"].(string) == "initiator" {
+		user1 = userEmail
+		user2 = partnerEmail
+	} else {
+		user1 = partnerEmail
+		user2 = userEmail
+	}
 
 	// remove access from each others events
 	// remove userEmail from connectedUsers array in each other's events
@@ -297,7 +342,32 @@ func RejectInvitation(c *gin.Context) {
 	removeFromEvents(user1, user2)
 	removeFromEvents(user2, user1)
 
-	// delete the connection document
-	connRef.Delete(context.Background())
+	// find partner's user document to get ID
+	partnerDocs, _ := fsClient.Collection("users").Where("email", "==", partnerEmail).Documents(context.Background()).GetAll()
+	if len(partnerDocs) == 0 {
+		// Partner not found, just delete current user's doc
+		connRef.Delete(context.Background())
+		c.JSON(http.StatusOK, gin.H{"message": "Connection removed"})
+		return
+	}
+	partnerID := partnerDocs[0].Ref.ID
+
+	// delete the connection document from both users' subcollections atomically
+	err = fsClient.RunTransaction(context.Background(), func(ctx context.Context, tx *firestore.Transaction) error {
+		// current user's connection doc
+		if err := tx.Delete(connRef); err != nil {
+			return err
+		}
+
+		// partner's connection doc
+		partnerConnRef := fsClient.Collection("users").Doc(partnerID).Collection("connections").Doc(connID)
+		return tx.Delete(partnerConnRef)
+	})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to remove connection"})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "Connection removed"})
 }
