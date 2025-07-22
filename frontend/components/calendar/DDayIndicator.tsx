@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 
 // internal components
 import { EditDdayDialog } from "./EditDdayDialog";
-import { cn, getBorderColorFromGroup, getColorFromGroup } from "@/lib/utils";
+import { getBorderColorFromGroup, getColorFromGroup } from "@/lib/utils";
 
 // types
 import { type DDayIndicatorProps } from "@/lib/types/calendar";

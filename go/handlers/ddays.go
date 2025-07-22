@@ -190,7 +190,7 @@ func GetDDays(c *gin.Context) {
 			connectedUsers := util.ToStringSlice(data["connectedUsers"])
 			fmt.Printf("DEBUG: Event '%s' - createdBy: %s, connectedUsers: %v\n", title, createdBy, connectedUsers)
 
-			editable := false
+			editable := true
 			if val, ok := data["editable"]; ok {
 				if b, ok := val.(bool); ok {
 					editable = b

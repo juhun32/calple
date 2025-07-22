@@ -118,14 +118,12 @@ export function useDDays(currentDate: Date = new Date()) {
                 credentials: "include",
             });
 
-            console.log("response", response);
-
             if (!response.ok) {
                 throw new Error(`Failed to fetch D-days: ${response.status}`);
             }
 
             const data = await response.json();
-            // transform API data to DDay format with calculated dday counts
+
             const formattedDdays = data.ddays.map((dday: any) => ({
                 id: dday.id,
                 title: dday.title,
@@ -145,6 +143,8 @@ export function useDDays(currentDate: Date = new Date()) {
                 editable: dday.editable,
             }));
 
+            console.log("Fetched D-days:", formattedDdays);
+
             setDdays(formattedDdays);
             setEventLayout(calculateEventLayout(formattedDdays));
             setError(null);
@@ -163,28 +163,30 @@ export function useDDays(currentDate: Date = new Date()) {
 
     // get all events for a specific day
     // used by CalendarGrid to display events in day cells
+    // this is responsible for multi day events showing indicators.
+    // this is also responsible for annual events showing in the correct month
     const getDDaysForDay = (day: number | null, currentDate: Date) => {
         if (!day) return [];
 
         return ddays.filter((dday) => {
             if (!dday.date) return false;
 
-            const isAnnual = dday.isAnnual;
-            const eventDate = dday.date;
+            const eventStart = dday.date;
+            const eventEnd = dday.endDate || dday.date;
+            const cellDate = new Date(
+                currentDate.getFullYear(),
+                currentDate.getMonth(),
+                day
+            );
 
-            if (isAnnual) {
-                // month, day
+            if (dday.isAnnual) {
                 return (
-                    eventDate.getMonth() === currentDate.getMonth() &&
-                    eventDate.getDate() === day
+                    cellDate.getMonth() === eventStart.getMonth() &&
+                    cellDate.getDate() >= eventStart.getDate() &&
+                    cellDate.getDate() <= eventEnd.getDate()
                 );
             } else {
-                // year, month, day
-                return (
-                    eventDate.getFullYear() === currentDate.getFullYear() &&
-                    eventDate.getMonth() === currentDate.getMonth() &&
-                    eventDate.getDate() === day
-                );
+                return cellDate >= eventStart && cellDate <= eventEnd;
             }
         });
     };
@@ -197,8 +199,6 @@ export function useDDays(currentDate: Date = new Date()) {
     ): (DDay | null)[] => {
         const eventsForDay = getDDaysForDay(day, currentDate);
         const renderableEvents: (DDay | null)[] = [];
-
-        console.log("eventsForDay", eventsForDay);
 
         eventsForDay.forEach((event) => {
             const row = eventLayout.get(event.id);
