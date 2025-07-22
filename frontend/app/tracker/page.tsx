@@ -22,7 +22,7 @@ import { toast } from "sonner";
 import { usePeriods } from "@/lib/hooks/usePeriod";
 
 // api
-import { getUserMetadata } from "@/lib/api/checkin";
+import { getUserMetadata } from "@/lib/api/profile";
 import { getPartnerPeriodDays } from "@/lib/api/periods";
 
 const formatDateKey = (date: Date) => {

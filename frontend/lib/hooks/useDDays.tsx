@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { EventPosition, type DDay } from "@/lib/types/calendar";
 import { toast } from "sonner";
+import { calculateDDay } from "@/lib/utils";
 
 // main hook for managing calendar events
 export function useDDays(currentDate: Date = new Date()) {
@@ -17,21 +18,6 @@ export function useDDays(currentDate: Date = new Date()) {
     const [eventLayout, setEventLayout] = useState<Map<string, number>>(
         new Map()
     );
-
-    // calculate the D-day count (days until/since an event)
-    const calculateDDay = (targetDate: Date): string => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const target = new Date(targetDate);
-        target.setHours(0, 0, 0, 0);
-
-        const diffTime = target.getTime() - today.getTime();
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-        if (diffDays === 0) return "Today";
-        if (diffDays > 0) return `D-${diffDays}`;
-        return `D+${Math.abs(diffDays)}`;
-    };
 
     // parse date string from API format (YYYYMMDD) to Date object
     const parseDateString = (dateStr: string): Date => {
@@ -132,6 +118,8 @@ export function useDDays(currentDate: Date = new Date()) {
                 credentials: "include",
             });
 
+            console.log("response", response);
+
             if (!response.ok) {
                 throw new Error(`Failed to fetch D-days: ${response.status}`);
             }
@@ -154,6 +142,7 @@ export function useDDays(currentDate: Date = new Date()) {
                 isAnnual: dday.isAnnual,
                 createdBy: dday.createdBy,
                 connectedUsers: dday.connectedUsers || [],
+                editable: dday.editable,
             }));
 
             setDdays(formattedDdays);
@@ -177,32 +166,26 @@ export function useDDays(currentDate: Date = new Date()) {
     const getDDaysForDay = (day: number | null, currentDate: Date) => {
         if (!day) return [];
 
-        const targetDate = new Date(
-            currentDate.getFullYear(),
-            currentDate.getMonth(),
-            day
-        );
-        targetDate.setHours(0, 0, 0, 0);
-
         return ddays.filter((dday) => {
             if (!dday.date) return false;
 
-            const startDate = new Date(dday.date);
-            startDate.setHours(0, 0, 0, 0);
+            const isAnnual = dday.isAnnual;
+            const eventDate = dday.date;
 
-            // handle annual events (same day/month, any year)
-            if (dday.isAnnual) {
+            if (isAnnual) {
+                // month, day
                 return (
-                    startDate.getDate() === day &&
-                    startDate.getMonth() === currentDate.getMonth()
+                    eventDate.getMonth() === currentDate.getMonth() &&
+                    eventDate.getDate() === day
+                );
+            } else {
+                // year, month, day
+                return (
+                    eventDate.getFullYear() === currentDate.getFullYear() &&
+                    eventDate.getMonth() === currentDate.getMonth() &&
+                    eventDate.getDate() === day
                 );
             }
-
-            // handle regular and multiday events
-            const endDate = dday.endDate ? new Date(dday.endDate) : startDate;
-            endDate.setHours(0, 0, 0, 0);
-
-            return targetDate >= startDate && targetDate <= endDate;
         });
     };
 
@@ -214,6 +197,8 @@ export function useDDays(currentDate: Date = new Date()) {
     ): (DDay | null)[] => {
         const eventsForDay = getDDaysForDay(day, currentDate);
         const renderableEvents: (DDay | null)[] = [];
+
+        console.log("eventsForDay", eventsForDay);
 
         eventsForDay.forEach((event) => {
             const row = eventLayout.get(event.id);

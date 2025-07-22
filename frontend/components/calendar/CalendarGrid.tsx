@@ -44,6 +44,7 @@ function GridDDayItem({
     uploadDDayImage?: CalendarGridProps["uploadDDayImage"];
 }) {
     const isEventBeingDragged = activeDDay && activeDDay.id === dday.id;
+    console.log(dday);
 
     return (
         <div className={cn("w-full", isEventBeingDragged ? "invisible" : "")}>

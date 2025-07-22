@@ -11,6 +11,7 @@ export type DDay = {
     createdBy: string; // user id
     connectedUsers?: string[];
     imageUrl?: string;
+    editable?: boolean; // if the event can be edited by the user
 };
 
 // defines the visual position of an event in a multiday layout (DDayIndicator, calendar grid)

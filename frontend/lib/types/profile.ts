@@ -18,3 +18,9 @@ export interface AccountSettingsCardProps {
     onDeleteAccount: () => void;
     onLogout: () => void;
 }
+
+export interface DatingInfoCardProps {
+    startedDating: string | null;
+    onUpdate: (date: string) => Promise<void>;
+    isLoading: boolean;
+}

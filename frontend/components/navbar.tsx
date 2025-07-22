@@ -5,7 +5,7 @@ import { useTheme } from "next-themes";
 import { useAuth } from "@/components/auth-provider";
 
 // utils
-import { logout } from "@/lib/utils";
+import { calculateDDay, logout } from "@/lib/utils";
 
 // ui
 import { Button } from "@/components/ui/button";
@@ -31,9 +31,32 @@ import {
     MessageSquarePlus,
 } from "lucide-react";
 
+// api
+import { getUserMetadata } from "@/lib/api/profile";
+
+import { useEffect, useState } from "react";
+
 export function NavBar() {
     const { setTheme } = useTheme();
     const { authState } = useAuth();
+
+    const [startedDating, setStartedDating] = useState<Date | null>(null);
+
+    useEffect(() => {
+        async function fetchMetadata() {
+            const metadata = await getUserMetadata();
+            if (metadata && metadata.startedDating) {
+                setStartedDating(new Date(metadata.startedDating));
+            } else {
+                setStartedDating(null);
+            }
+        }
+        fetchMetadata();
+    }, []);
+
+    const startedDatingDday = startedDating
+        ? calculateDDay(startedDating)
+        : null;
 
     return (
         <>
@@ -43,6 +66,7 @@ export function NavBar() {
                         <a href="/" className="hidden sm:flex mr-4 sm:mr-8">
                             <Calple />
                         </a>
+
                         <div className="flex flex-row gap-1 sm:gap-2">
                             <Button
                                 variant="outline"
@@ -78,18 +102,7 @@ export function NavBar() {
                                 <Calendar strokeWidth={1.7} />
                                 <span className="flex text-xs">Calendar</span>
                             </Button>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className="flex sm:hidden rounded-full px-3 w-8 h-8 w-fit h-6"
-                                onClick={() => {
-                                    window.location.href = "/calendar";
-                                }}
-                                disabled
-                            >
-                                <Download strokeWidth={1.7} />
-                                <span className="flex text-xs">IPhone</span>
-                            </Button>
+
                             <Button
                                 variant="outline"
                                 size="sm"
@@ -130,6 +143,19 @@ export function NavBar() {
                                     Map
                                 </span>
                             </Button> */}
+
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="flex sm:hidden rounded-full px-3 w-8 h-8 w-fit h-6"
+                                onClick={() => {
+                                    window.location.href = "/calendar";
+                                }}
+                                disabled
+                            >
+                                <Download strokeWidth={1.7} />
+                                <span className="flex text-xs">IPhone</span>
+                            </Button>
                         </div>
                     </div>
                     <a
@@ -140,7 +166,7 @@ export function NavBar() {
                     </a>
 
                     <div className="flex items-center gap-2">
-                        <Button
+                        {/* <Button
                             variant="outline"
                             size="sm"
                             className="hidden sm:flex rounded-full px-3 w-8 h-8 w-fit"
@@ -151,7 +177,18 @@ export function NavBar() {
                         >
                             <Download />
                             <span className="flex text-xs">IPhone</span>
-                        </Button>
+                        </Button> */}
+
+                        <div className="hidden sm:flex items-center gap-2">
+                            {startedDatingDday && (
+                                <a
+                                    href="/profile"
+                                    className="border rounded-full w-fit px-3 h-8 flex items-center justify-center text-sm"
+                                >
+                                    {startedDatingDday}
+                                </a>
+                            )}
+                        </div>
 
                         <DropdownMenu.DropdownMenu>
                             <DropdownMenu.DropdownMenuTrigger asChild>
@@ -205,6 +242,20 @@ export function NavBar() {
                                     <DropdownMenu.DropdownMenuLabel>
                                         {authState.user?.name}
                                     </DropdownMenu.DropdownMenuLabel>
+                                    <DropdownMenu.DropdownMenuItem className="flex sm:hidden items-center gap-2">
+                                        {startedDatingDday ? (
+                                            <a
+                                                href="/profile"
+                                                className="border rounded-full w-fit px-3 h-6 flex items-center justify-center text-sm"
+                                            >
+                                                {startedDatingDday}
+                                            </a>
+                                        ) : (
+                                            <span className="text-sm text-muted-foreground">
+                                                Anniversary not set
+                                            </span>
+                                        )}
+                                    </DropdownMenu.DropdownMenuItem>
                                     <DropdownMenu.DropdownMenuSeparator />
                                     <DropdownMenu.DropdownMenuGroup>
                                         <DropdownMenu.DropdownMenuItem

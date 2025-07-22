@@ -32,7 +32,7 @@ export const AccountSettingsCard = ({
                         <AlertDialog.AlertDialogTrigger asChild>
                             <Button
                                 variant="outline"
-                                className="w-fit rounded-full bg-background dark:bg-background"
+                                className="w-fit rounded-full bg-background dark:bg-background border-none"
                             >
                                 <DoorOpen className="w-4 h-4" />
                                 Delete Account
@@ -67,7 +67,7 @@ export const AccountSettingsCard = ({
 
                     <Button
                         variant="outline"
-                        className="w-fit rounded-full bg-background dark:bg-background"
+                        className="w-fit rounded-full bg-background dark:bg-background border-none"
                         onClick={onLogout}
                     >
                         <LogOut className="w-4 h-4" />

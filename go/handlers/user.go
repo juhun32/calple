@@ -15,7 +15,7 @@ type UserMetadata struct {
 	ID            string    `json:"id"`
 	UserID        string    `json:"userId"`
 	Sex           string    `json:"sex"`
-	StartedDating time.Time `json:"startedDating,omitempty"`
+	StartedDating string    `json:"startedDating,omitempty"`
 	CreatedAt     time.Time `json:"createdAt"`
 	UpdatedAt     time.Time `json:"updatedAt"`
 }
@@ -69,6 +69,15 @@ func UpdateUserMetadata(c *gin.Context) {
 	ctx := context.Background()
 	uidStr := uid.(string)
 
+	// fetch previous startedDating value
+	// this is needed to determine if we need to create or update event
+	userDoc, err := fsClient.Collection("users").Doc(uidStr).Get(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve user"})
+		return
+	}
+	prevStartedDating, _ := userDoc.Data()["startedDating"].(string)
+
 	updateData := []firestore.Update{
 		{Path: "updatedAt", Value: time.Now()},
 	}
@@ -82,20 +91,61 @@ func UpdateUserMetadata(c *gin.Context) {
 	}
 
 	if req.StartedDating != nil {
-		parsedDate, err := time.Parse("2006-01-02", *req.StartedDating)
+		_, err := time.Parse("01/02/2006", *req.StartedDating)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format for startedDating. Use YYYY-MM-DD"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format for startedDating. Use MM/DD/YYYY"})
 			return
 		}
-		updateData = append(updateData, firestore.Update{Path: "startedDating", Value: parsedDate})
+		updateData = append(updateData, firestore.Update{Path: "startedDating", Value: *req.StartedDating})
 	}
 
 	userDocRef := fsClient.Collection("users").Doc(uidStr)
-	_, err := userDocRef.Update(ctx, updateData)
-
+	_, err = userDocRef.Update(ctx, updateData)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user metadata"})
 		return
+	}
+
+	// event handling for startedDating
+	if req.StartedDating != nil && *req.StartedDating != prevStartedDating {
+		userEmail := userDoc.Data()["email"].(string)
+		ddayTitle := "Anniversary"
+		ddayDate := ""
+		t, _ := time.Parse("01/02/2006", *req.StartedDating)
+		ddayDate = t.Format("20060102")
+
+		ddayQuery := fsClient.Collection("ddays").
+			Where("createdBy", "==", userEmail).
+			Where("title", "==", ddayTitle).
+			Limit(1)
+		ddayDocs, err := ddayQuery.Documents(ctx).GetAll()
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check existing event"})
+			return
+		}
+
+		if strings.TrimSpace(prevStartedDating) == "" && *req.StartedDating != "" {
+			newDDay := map[string]interface{}{
+				"title":          ddayTitle,
+				"group":          "important",
+				"description":    "The day everything started",
+				"date":           ddayDate,
+				"isAnnual":       true,
+				"createdBy":      userEmail,
+				"connectedUsers": []string{},
+				"createdAt":      time.Now(),
+				"updatedAt":      time.Now(),
+				"editable":       false,
+			}
+			_, _, _ = fsClient.Collection("ddays").Add(ctx, newDDay)
+		} else if prevStartedDating != "" && *req.StartedDating != "" && len(ddayDocs) > 0 {
+			ddayRef := ddayDocs[0].Ref
+			_, _ = ddayRef.Update(ctx, []firestore.Update{
+				{Path: "date", Value: ddayDate},
+				{Path: "updatedAt", Value: time.Now()},
+			})
+		}
 	}
 
 	// if startedDating updated, also update for partner
@@ -107,7 +157,7 @@ func UpdateUserMetadata(c *gin.Context) {
 			connectionData := connectionDocs[0].Data()
 			if partnerUID, ok := connectionData["partnerUID"].(string); ok && partnerUID != "" {
 				partnerDocRef := fsClient.Collection("users").Doc(partnerUID)
-				parsedDate, _ := time.Parse("2006-01-02", *req.StartedDating)
+				parsedDate := *req.StartedDating
 				partnerDocRef.Update(ctx, []firestore.Update{
 					{Path: "startedDating", Value: parsedDate},
 					{Path: "updatedAt", Value: time.Now()},

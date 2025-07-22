@@ -8,12 +8,13 @@ import { redirect } from "next/navigation";
 import {
     CheckinData,
     PartnerCheckin,
-    getPartnerMetadata,
     getTodayCheckin,
     createCheckin,
     deleteCheckin,
     getPartnerCheckin as getPartnerCheckinAPI,
 } from "@/lib/api/checkin";
+
+import { getPartnerMetadata } from "@/lib/api/profile";
 
 // components
 import { toast } from "sonner";

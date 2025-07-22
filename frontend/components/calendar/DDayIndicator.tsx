@@ -221,6 +221,7 @@ export function DDayIndicator({
                             variant="outline"
                             className="sm:mr-2 rounded-full w-20"
                             onClick={handleEditClick}
+                            disabled={!dday.editable}
                         >
                             Edit
                         </Button>

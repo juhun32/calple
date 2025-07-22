@@ -18,6 +18,7 @@ type Invitation struct {
 	ID        string    `json:"id"`
 	FromEmail string    `json:"from_email"`
 	FromName  string    `json:"from_name"`
+	Role      string    `json:"role"`
 	CreatedAt time.Time `json:"createdAt"`
 }
 
@@ -174,7 +175,7 @@ func GetPendingInvitations(c *gin.Context) {
 	fsClient := c.MustGet("firestore").(*firestore.Client)
 
 	// find all pending connections where the current user is the receiver
-	pending, _ := fsClient.Collection("users").Doc(uid.(string)).Collection("connections").Where("status", "==", "pending").Where("role", "==", "receiver").Documents(context.Background()).GetAll()
+	pending, _ := fsClient.Collection("users").Doc(uid.(string)).Collection("connections").Where("status", "==", "pending").Documents(context.Background()).GetAll()
 	invites := []Invitation{}
 
 	// iterate over pending connections and build the response
@@ -190,6 +191,7 @@ func GetPendingInvitations(c *gin.Context) {
 			ID:        doc.Ref.ID,
 			FromEmail: inviter,
 			FromName:  inviterName,
+			Role:      data["role"].(string),
 			CreatedAt: data["createdAt"].(time.Time),
 		})
 	}

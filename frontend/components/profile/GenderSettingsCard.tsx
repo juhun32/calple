@@ -28,13 +28,13 @@ export const GenderSettingsCard = ({
                 </Card.CardDescription>
             </Card.CardHeader>
             <Card.CardContent>
-                <div className="flex gap-2 mb-2">
+                <div className="flex gap-4 mb-2">
                     <Button
                         variant={"outline"}
                         onClick={() => onSexChange("female")}
                         disabled={isLoading}
                         className={cn(
-                            `flex items-center gap-2 rounded-full`,
+                            `flex items-center gap-2 rounded-full border-none`,
                             userSex === "female"
                                 ? "bg-accent dark:bg-accent"
                                 : "bg-background dark:bg-background"
@@ -48,7 +48,7 @@ export const GenderSettingsCard = ({
                         onClick={() => onSexChange("male")}
                         disabled={isLoading}
                         className={cn(
-                            `flex items-center gap-2 rounded-full`,
+                            `flex items-center gap-2 rounded-full border-none`,
                             userSex === "male"
                                 ? "bg-accent dark:bg-accent"
                                 : "bg-background dark:bg-background"

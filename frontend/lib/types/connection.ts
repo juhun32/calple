@@ -2,6 +2,7 @@ export interface Invitation {
     id: string;
     from_email: string;
     from_name: string | null;
+    role: "receiver" | "initiator";
     createdAt: string;
 }
 

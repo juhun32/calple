@@ -36,6 +36,7 @@ type DDay struct {
 	ConnectedUsers []string  `json:"connectedUsers"`
 	CreatedAt      time.Time `json:"createdAt"`
 	UpdatedAt      time.Time `json:"updatedAt"`
+	Editable       bool      `json:"editable,omitempty"` // if the event can be edited by the user
 }
 
 type UploadRequest struct {
@@ -114,6 +115,11 @@ func GetDDays(c *gin.Context) {
 		fsClient.Collection("ddays").
 			Where("connectedUsers", "array-contains", userEmail).
 			Where("date", "<=", viewMonthEndStr),
+
+		// Q3: annual events created by the user
+		fsClient.Collection("ddays").
+			Where("createdBy", "==", userEmail).
+			Where("isAnnual", "==", true),
 	}
 
 	for i, q := range queries {
@@ -146,25 +152,27 @@ func GetDDays(c *gin.Context) {
 				endDateStr = dateStr
 			}
 
-			// filter out events that end before our view starts.
-			// event is visible if its end date is on or after the first day of the month.
-			if endDateStr < viewMonthStartStr {
-				continue // skip this event
-			}
-
-			seen[doc.Ref.ID] = true
-
 			var isAnnual bool
 			if val, ok := data["isAnnual"].(bool); ok {
 				isAnnual = val
 			}
 
-			// for annual events, check if the month matches.
 			if isAnnual {
-				if len(dateStr) >= 6 && dateStr[4:6] != viewDate[4:6] {
+				// only compare month for annual events ignore year and endDate filter
+				if len(dateStr) >= 8 && len(viewDate) >= 6 {
+					if dateStr[4:6] != viewDate[4:6] {
+						continue
+					}
+				}
+			} else {
+				// filter out events that end before our view starts.
+				// event is visible if its end date is on or after the first day of the month.
+				if endDateStr < viewMonthStartStr {
 					continue
 				}
 			}
+
+			seen[doc.Ref.ID] = true
 
 			title, _ := data["title"].(string)
 			group, _ := data["group"].(string)
@@ -182,6 +190,13 @@ func GetDDays(c *gin.Context) {
 			connectedUsers := util.ToStringSlice(data["connectedUsers"])
 			fmt.Printf("DEBUG: Event '%s' - createdBy: %s, connectedUsers: %v\n", title, createdBy, connectedUsers)
 
+			editable := false
+			if val, ok := data["editable"]; ok {
+				if b, ok := val.(bool); ok {
+					editable = b
+				}
+			}
+
 			events = append(events, DDay{
 				ID:             doc.Ref.ID,
 				Title:          title,
@@ -195,6 +210,7 @@ func GetDDays(c *gin.Context) {
 				ConnectedUsers: connectedUsers,
 				CreatedAt:      createdAt,
 				UpdatedAt:      updatedAt,
+				Editable:       editable,
 			})
 		}
 	}
@@ -297,6 +313,7 @@ func CreateDDay(c *gin.Context) {
 		"connectedUsers": connectedUsers,
 		"createdAt":      now,
 		"updatedAt":      now,
+		"editable":       dday.Editable || true,
 	}
 
 	// add document to Firestore

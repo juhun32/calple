@@ -60,6 +60,7 @@ export function ConnectionManager() {
 
             if (response.ok) {
                 const data = await response.json();
+                console.log("Pending invitations:", data);
                 setPendingInvitations(data.invitations || []);
             }
         } catch (error) {
@@ -103,7 +104,9 @@ export function ConnectionManager() {
             } else {
                 const errorData = await response.json();
                 console.error("Invitation error:", errorData);
-                toast(`Failed: ${errorData.error || "Unknown error"}`);
+                toast(
+                    `Invitation Failed: ${errorData.error || "Unknown error"}`
+                );
             }
         } catch (error) {
             toast("Failed to send invitation");
@@ -186,7 +189,7 @@ export function ConnectionManager() {
                 <Dialog.DialogTrigger asChild>
                     <Button
                         variant="outline"
-                        className="w-fit sm:w-auto rounded-full bg-background dark:bg-background hover:cursor-pointer"
+                        className="w-fit border-none sm:w-auto rounded-full bg-background dark:bg-background hover:cursor-pointer"
                     >
                         <Blend className="w-4 h-4" />
                         Manage Connection
@@ -195,10 +198,10 @@ export function ConnectionManager() {
                 <Dialog.DialogContent>
                     <Dialog.DialogHeader>
                         <Dialog.DialogTitle>
-                            Calendar Connection
+                            Calple Connection
                         </Dialog.DialogTitle>
                         <Dialog.DialogDescription>
-                            Connect with a partner.
+                            Connect with your partner
                         </Dialog.DialogDescription>
                     </Dialog.DialogHeader>
 
@@ -244,12 +247,12 @@ export function ConnectionManager() {
                                         <Card.CardTitle>
                                             Connected Partner
                                         </Card.CardTitle>
-                                        <Card.CardDescription>
+                                        <Card.CardDescription className="pt-2">
                                             You are sharing with:
                                         </Card.CardDescription>
                                     </Card.CardHeader>
                                     <Card.CardContent>
-                                        <div className="flex flex-col space-y-2">
+                                        <div className="flex flex-col bg-background dark:bg-background inset-shadow-sm p-4 rounded-md">
                                             <p className="font-medium">
                                                 {connection.partner?.name ||
                                                     "Unknown"}
@@ -261,7 +264,7 @@ export function ConnectionManager() {
                                     </Card.CardContent>
                                 </Card.Card>
                             ) : (
-                                <Card.Card className="gap-8">
+                                <Card.Card className="gap-4">
                                     <Card.CardHeader className="gap-2">
                                         <Card.CardTitle>
                                             No Connection
@@ -289,13 +292,16 @@ export function ConnectionManager() {
                                                             e.target.value
                                                         )
                                                     }
-                                                    className="rounded-full"
-                                                    disabled={isLoading}
+                                                    className="rounded-full bg-background dark:bg-background inset-shadow-sm"
+                                                    disabled={
+                                                        isLoading ||
+                                                        pendingInvitations.length !==
+                                                            0
+                                                    }
                                                 />
                                                 <Button
                                                     onClick={handleInvite}
-                                                    size={"sm"}
-                                                    className="rounded-full"
+                                                    className="rounded-full bg-background dark:bg-background inset-shadow-sm text-foreground"
                                                     disabled={
                                                         isLoading ||
                                                         !inviteEmail.trim()
@@ -315,7 +321,7 @@ export function ConnectionManager() {
                         <TabsContent value="invitations">
                             {pendingInvitations.length === 0 ? (
                                 <Card.Card>
-                                    <Card.CardHeader className="gap-4">
+                                    <Card.CardHeader className="gap-2">
                                         <Card.CardTitle>
                                             No Pending Invitations
                                         </Card.CardTitle>
@@ -327,55 +333,82 @@ export function ConnectionManager() {
                                 </Card.Card>
                             ) : (
                                 <div className="space-y-4">
-                                    {pendingInvitations.map((invitation) => (
-                                        <Card.Card key={invitation.id}>
-                                            <Card.CardHeader>
-                                                <Card.CardTitle>
-                                                    Calendar Invitation
-                                                </Card.CardTitle>
-                                                <Card.CardDescription>
-                                                    {invitation.from_name ||
-                                                        invitation.from_email ||
-                                                        "Someone"}{" "}
-                                                    wants to connect
-                                                </Card.CardDescription>
-                                            </Card.CardHeader>
-                                            <Card.CardContent>
-                                                <p className="text-sm">
-                                                    {invitation.from_email}
-                                                </p>
-                                                <p className="text-xs text-muted-foreground mt-1">
-                                                    Sent on{" "}
-                                                    {new Date(
-                                                        invitation.createdAt
-                                                    ).toLocaleDateString()}
-                                                </p>
-                                            </Card.CardContent>
-                                            <Card.CardFooter className="flex justify-between">
-                                                <Button
-                                                    variant="destructive"
-                                                    onClick={() =>
-                                                        handleCancelInvitation(
-                                                            invitation.id
-                                                        )
-                                                    }
-                                                    disabled={isLoading}
-                                                >
-                                                    Reject
-                                                </Button>
-                                                <Button
-                                                    onClick={() =>
-                                                        handleAcceptInvitation(
-                                                            invitation.id
-                                                        )
-                                                    }
-                                                    disabled={isLoading}
-                                                >
-                                                    Accept
-                                                </Button>
-                                            </Card.CardFooter>
-                                        </Card.Card>
-                                    ))}
+                                    {pendingInvitations.map((invitation) => {
+                                        const isReceiver =
+                                            invitation.role === "receiver";
+                                        console.log(invitation);
+                                        console.log(isReceiver);
+
+                                        return (
+                                            <Card.Card key={invitation.id}>
+                                                <Card.CardHeader>
+                                                    <Card.CardTitle className="pb-2">
+                                                        Calple Invitation
+                                                    </Card.CardTitle>
+                                                    <Card.CardDescription>
+                                                        {isReceiver ? (
+                                                            <div className="flex gap-2 items-center">
+                                                                <p className="bg-background dark:bg-background inset-shadow-sm px-2 rounded-md">
+                                                                    {invitation.from_name
+                                                                        ? invitation.from_name
+                                                                        : invitation.from_email}
+                                                                </p>
+                                                                <p>
+                                                                    wants to
+                                                                    connect
+                                                                </p>
+                                                            </div>
+                                                        ) : (
+                                                            <p>
+                                                                Pending
+                                                                invitation
+                                                            </p>
+                                                        )}
+                                                    </Card.CardDescription>
+                                                </Card.CardHeader>
+                                                <Card.CardContent className="pt-2">
+                                                    <div className="bg-background dark:bg-background inset-shadow-sm p-4 rounded-md">
+                                                        <p className="text-sm">
+                                                            {
+                                                                invitation.from_email
+                                                            }
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground mt-1">
+                                                            Sent on{" "}
+                                                            {new Date(
+                                                                invitation.createdAt
+                                                            ).toLocaleDateString()}
+                                                        </p>
+                                                    </div>
+                                                </Card.CardContent>
+                                                {isReceiver && (
+                                                    <Card.CardFooter className="flex justify-between pt-2">
+                                                        <Button
+                                                            variant="destructive"
+                                                            onClick={() =>
+                                                                handleCancelInvitation(
+                                                                    invitation.id
+                                                                )
+                                                            }
+                                                            disabled={isLoading}
+                                                        >
+                                                            Reject
+                                                        </Button>
+                                                        <Button
+                                                            onClick={() =>
+                                                                handleAcceptInvitation(
+                                                                    invitation.id
+                                                                )
+                                                            }
+                                                            disabled={isLoading}
+                                                        >
+                                                            Accept
+                                                        </Button>
+                                                    </Card.CardFooter>
+                                                )}
+                                            </Card.Card>
+                                        );
+                                    })}
                                 </div>
                             )}
                         </TabsContent>
@@ -388,6 +421,7 @@ export function ConnectionManager() {
                                     <Button
                                         variant="destructive"
                                         disabled={isLoading}
+                                        className="rounded-full inset-shadow-sm"
                                     >
                                         Disconnect
                                     </Button>
@@ -425,7 +459,7 @@ export function ConnectionManager() {
                         <Button
                             variant="outline"
                             onClick={() => setOpen(false)}
-                            className="rounded-full"
+                            className="rounded-full border-none inset-shadow-sm bg-card dark:bg-card text-foreground"
                             disabled={isLoading}
                         >
                             Close

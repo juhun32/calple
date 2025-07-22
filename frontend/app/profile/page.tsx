@@ -7,14 +7,13 @@ import { redirect } from "next/navigation";
 // components
 import { toast } from "sonner";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
-import { ProfileInfoCard } from "@/components/profile/ProfileInfoCard";
 import { ConnectionCard } from "@/components/profile/ConnectionCard";
 import { GenderSettingsCard } from "@/components/profile/GenderSettingsCard";
 import { AccountSettingsCard } from "@/components/profile/AccountSettingsCard";
 import { DatingInfoCard } from "@/components/profile/DatingInfoCard";
 
 // api
-import { getUserMetadata, updateUserMetadata } from "@/lib/api/checkin";
+import { getUserMetadata, updateUserMetadata } from "@/lib/api/profile";
 
 // utils
 import { logout } from "@/lib/utils";
@@ -105,14 +104,13 @@ export default function Profile() {
     };
 
     return (
-        <div className="container mx-auto max-w-4xl flex flex-col pt-20 pb-12 lg:pb-16 px-4 lg:px-8 gap-4">
+        <div className="container mx-auto max-w-5xl flex flex-col pt-20 pb-12 lg:pb-16 px-4 lg:px-8 gap-4">
             <ProfileHeader
                 name={authState.user?.name}
                 email={authState.user?.email}
             />
 
-            <div className="flex flex-col gap-4">
-                <ProfileInfoCard email={authState.user?.email} />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <DatingInfoCard
                     startedDating={startedDating}
                     onUpdate={handleUpdateDatingDate}
