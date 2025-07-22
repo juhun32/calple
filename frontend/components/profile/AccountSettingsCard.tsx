@@ -56,7 +56,7 @@ export const AccountSettingsCard = ({
                                     onClick={onDeleteAccount}
                                     disabled={isDeleting}
                                     className={cn(
-                                        "bg-destructive text-card hover:bg-destructive/90 inset-shadow-sm"
+                                        "bg-destructive hover:bg-destructive/90 inset-shadow-sm"
                                     )}
                                 >
                                     {isDeleting ? "Deleting..." : "Continue"}
