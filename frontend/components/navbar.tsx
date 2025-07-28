@@ -1,15 +1,18 @@
 "use client";
+
+import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 
 // components
 import { useAuth } from "@/components/auth-provider";
 
 // utils
-import { calculateDDay, logout } from "@/lib/utils";
+import { calculateDDay, login, logout } from "@/lib/utils";
 
 // ui
 import { Button } from "@/components/ui/button";
 import * as DropdownMenu from "@/components/ui/dropdown-menu";
+import { Separator } from "@/components/ui/separator";
 
 // assets
 import { Calple } from "@/lib/assets/calple";
@@ -29,14 +32,11 @@ import {
     SquareCheckBig,
     Droplets,
     MessageSquarePlus,
-    MapPinned,
+    MapPinnedIcon,
 } from "lucide-react";
 
 // api
 import { getUserMetadata } from "@/lib/api/profile";
-
-import { useEffect, useState } from "react";
-import { Separator } from "@/components/ui/separator";
 
 export function NavBar() {
     const { setTheme } = useTheme();
@@ -65,7 +65,10 @@ export function NavBar() {
             <div className="fixed z-50 h-14 w-full border-b flex justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 font-sans">
                 <div className="container flex justify-between sm:grid sm:grid-cols-[1fr_auto] w-full px-4 md:px-8 py-2">
                     <div className="flex items-center">
-                        <a href="/" className="hidden sm:flex mr-4 sm:mr-8">
+                        <a
+                            href="/"
+                            className="hidden sm:flex absolute left-1/2 -translate-x-1/2 sm:relative sm:left-0 sm:-translate-x-0 mr-4 sm:mr-8"
+                        >
                             <Calple />
                         </a>
 
@@ -73,7 +76,7 @@ export function NavBar() {
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                className="hidden sm:flex rounded-full px-3 w-8 h-8 hover:cursor-pointer [&_svg:not([class*='size-'])]:size-3.5"
+                                className="hidden md:flex rounded-full px-3 w-8 h-8 hover:cursor-pointer [&_svg:not([class*='size-'])]:size-3.5"
                                 onClick={() => {
                                     window.location.href = "/";
                                 }}
@@ -81,7 +84,7 @@ export function NavBar() {
                                 <Home strokeWidth={2} />
                             </Button>
 
-                            <div className="h-4">
+                            <div className="hidden md:flex h-4">
                                 <Separator orientation="vertical" />
                             </div>
 
@@ -99,7 +102,7 @@ export function NavBar() {
                                 </span>
                             </Button>
 
-                            <div className="h-4">
+                            <div className="hidden md:flex h-4">
                                 <Separator orientation="vertical" />
                             </div>
 
@@ -112,10 +115,12 @@ export function NavBar() {
                                 }}
                             >
                                 {/* <Calendar strokeWidth={1.7} /> */}
-                                <span className="flex text-sm">Calendar</span>
+                                <span className="hidden md:flex text-sm">
+                                    Calendar
+                                </span>
                             </Button>
 
-                            <div className="h-4">
+                            <div className="hidden md:flex h-4">
                                 <Separator orientation="vertical" />
                             </div>
 
@@ -133,21 +138,7 @@ export function NavBar() {
                                 </span>
                             </Button>
 
-                            {/* <Button
-                                variant="ghost"
-                                size="sm"
-                                className="rounded-full px-3 w-8 h-8 sm:w-fit"
-                                onClick={() => {
-                                    window.location.href = "/roulette";
-                                }}
-                            >
-                                <Dices />
-                                <span className="hidden md:flex text-sm">
-                                    Roulette
-                                </span>
-                            </Button> */}
-
-                            <div className="h-4">
+                            <div className="hidden md:flex h-4">
                                 <Separator orientation="vertical" />
                             </div>
 
@@ -166,9 +157,9 @@ export function NavBar() {
                             </Button>
 
                             <Button
-                                variant="ghost"
+                                variant="outline"
                                 size="sm"
-                                className="flex sm:hidden rounded-full px-3 w-8 h-8 w-fit h-4"
+                                className="flex sm:hidden rounded-full has-[>svg]:px-2 w-8 h-8 w-fit h-6"
                                 onClick={() => {
                                     window.location.href = "/calendar";
                                 }}
@@ -211,7 +202,7 @@ export function NavBar() {
                             )}
                         </div>
 
-                        <div className="h-4 mx-2">
+                        <div className="hidden sm:flex h-4 mx-2">
                             <Separator orientation="vertical" />
                         </div>
 
@@ -283,7 +274,7 @@ export function NavBar() {
                                         {startedDatingDday ? (
                                             <a
                                                 href="/profile"
-                                                className="border rounded-full w-fit px-3 h-6 flex items-center justify-center text-sm font-serif"
+                                                className="border rounded-full w-fit px-3 h-6 flex items-center justify-center text-sm"
                                             >
                                                 {startedDatingDday}
                                             </a>
@@ -331,14 +322,14 @@ export function NavBar() {
                                             Cycle
                                         </DropdownMenu.DropdownMenuItem>
 
-                                        {/* <DropdownMenu.DropdownMenuItem
+                                        <DropdownMenu.DropdownMenuItem
                                             onClick={() =>
                                                 (window.location.href = "/map")
                                             }
                                         >
-                                            <Map className="h-4 w-4" />
+                                            <MapPinnedIcon className="h-4 w-4" />
                                             Map
-                                        </DropdownMenu.DropdownMenuItem> */}
+                                        </DropdownMenu.DropdownMenuItem>
                                     </DropdownMenu.DropdownMenuGroup>
                                     <DropdownMenu.DropdownMenuSeparator />
                                     <DropdownMenu.DropdownMenuGroup>
@@ -351,10 +342,6 @@ export function NavBar() {
                                             <User className="h-4 w-4" />
                                             Profile
                                         </DropdownMenu.DropdownMenuItem>
-                                        {/* <DropdownMenu.DropdownMenuItem disabled>
-                                            <Settings className="h-4 w-4" />
-                                            Settings
-                                        </DropdownMenu.DropdownMenuItem> */}
 
                                         <DropdownMenu.DropdownMenuItem
                                             onClick={() =>
@@ -379,7 +366,7 @@ export function NavBar() {
                             <DropdownMenu.DropdownMenu>
                                 <DropdownMenu.DropdownMenuTrigger asChild>
                                     <Button
-                                        variant="ghost"
+                                        variant="outline"
                                         className="h-8 w-8 rounded-full"
                                     >
                                         <Menu className="h-4" />
@@ -397,15 +384,18 @@ export function NavBar() {
                                             <User className="h-4 w-4" />
                                             Profile
                                         </DropdownMenu.DropdownMenuItem>
-                                        {/* <DropdownMenu.DropdownMenuItem disabled>
-                                            <Settings className="h-4 w-4" />
-                                            Settings
-                                        </DropdownMenu.DropdownMenuItem> */}
                                         <DropdownMenu.DropdownMenuItem disabled>
                                             <MessageSquarePlus className="h-4 w-4" />
                                             Feedback
                                         </DropdownMenu.DropdownMenuItem>
                                     </DropdownMenu.DropdownMenuGroup>
+                                    <DropdownMenu.DropdownMenuSeparator />
+                                    <DropdownMenu.DropdownMenuItem
+                                        onClick={login}
+                                    >
+                                        <LogOut className="h-4 w-4" />
+                                        <span>Login</span>
+                                    </DropdownMenu.DropdownMenuItem>
                                 </DropdownMenu.DropdownMenuContent>
                             </DropdownMenu.DropdownMenu>
                         )}

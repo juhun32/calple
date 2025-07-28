@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Plus, X } from "lucide-react";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
@@ -21,8 +22,19 @@ export function MapHeader({
                 onClick={() => setAddingPin(!addingPin)}
                 size="sm"
                 variant={"outline"}
+                className="rounded-full bg-card dark:bg-card"
             >
-                {addingPin ? "Cancel" : "Click to add pin"}
+                {addingPin ? (
+                    <p className="flex items-center gap-2">
+                        <X />
+                        Cancel
+                    </p>
+                ) : (
+                    <p className="flex items-center gap-2">
+                        <Plus />
+                        Add New Pin
+                    </p>
+                )}
             </Button>
         </div>
     );

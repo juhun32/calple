@@ -12,7 +12,6 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-// Pin is the Firestore model for a map pin.
 type Pin struct {
 	ID          string    `json:"id" firestore:"-"`
 	Lat         float64   `json:"lat" firestore:"lat"`
@@ -25,17 +24,15 @@ type Pin struct {
 	UpdatedAt   time.Time `json:"updatedAt" firestore:"updatedAt"`
 }
 
-// PinRequest is the JSON payload for creating/updating a pin.
 type PinRequest struct {
 	Lat         float64 `json:"lat" binding:"required"`
 	Lng         float64 `json:"lng" binding:"required"`
 	Title       string  `json:"title" binding:"required"`
 	Description string  `json:"description"`
 	Location    string  `json:"location"`
-	Date        string  `json:"date" binding:"required"` // expect "YYYY-MM-DD"
+	Date        string  `json:"date" binding:"required"` // YYYY-MM-DD
 }
 
-// GetPins returns the current user’s pins and, if connected, their partner’s pins.
 func GetPins(c *gin.Context) {
 	session := sessions.Default(c)
 	uidInter := session.Get("user_id")
@@ -109,7 +106,6 @@ func GetPins(c *gin.Context) {
 	})
 }
 
-// CreatePin stores a new pin in the user’s subcollection.
 func CreatePin(c *gin.Context) {
 	session := sessions.Default(c)
 	uidInter := session.Get("user_id")
@@ -152,7 +148,6 @@ func CreatePin(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"id": docRef.ID})
 }
 
-// UpdatePin modifies an existing pin by ID.
 func UpdatePin(c *gin.Context) {
 	session := sessions.Default(c)
 	uidInter := session.Get("user_id")

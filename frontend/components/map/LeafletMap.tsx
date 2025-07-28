@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { MapContainer, TileLayer, useMapEvents, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { MapHeader } from "./MapHeader";
 import { MapPins } from "./MapPins";
 import { ViewPinDialog, EditPinDialog } from "./PinDialogs";
 import { DatePin } from "@/lib/types/map";
@@ -34,15 +33,19 @@ function Recenter({ latlng, zoom = 13 }: RecenterProps) {
 export default function LeafletMap({
     addingPin,
     setAddingPin,
+    selectedPin,
+    setSelectedPin,
+    pins,
+    reloadPins,
 }: {
     addingPin: boolean;
     setAddingPin: (v: boolean) => void;
+    selectedPin: DatePin | null;
+    setSelectedPin: (pin: DatePin | null) => void;
+    pins: DatePin[];
+    reloadPins: () => Promise<void>;
 }) {
-    const [pins, setPins] = useState<DatePin[]>([]);
-
     const [isEditing, setIsEditing] = useState(false);
-    const [selectedPin, setSelectedPin] = useState<DatePin | null>(null);
-
     const [formData, setFormData] = useState<Omit<DatePin, "id">>({
         lat: 0,
         lng: 0,
@@ -51,7 +54,6 @@ export default function LeafletMap({
         location: "",
         date: new Date(),
     });
-
     const [userPosition, setUserPosition] = useState<[number, number] | null>(
         null
     );
@@ -70,21 +72,6 @@ export default function LeafletMap({
             );
         }
     }, []);
-
-    console.log("userPosition", userPosition);
-
-    const fetchPinsCallback = useCallback(async () => {
-        try {
-            const all = await fetchPins();
-            setPins(all);
-        } catch (err) {
-            console.error(err);
-        }
-    }, []);
-
-    useEffect(() => {
-        fetchPinsCallback();
-    }, [fetchPinsCallback]);
 
     // attach click handler inside the map
     function MapClickHandler() {
@@ -121,7 +108,7 @@ export default function LeafletMap({
             await savePin(payload, selectedPin ?? undefined);
             setIsEditing(false);
             setSelectedPin(null);
-            fetchPinsCallback();
+            reloadPins();
         } catch (err) {
             console.error("savePin error", err);
         }
@@ -132,7 +119,7 @@ export default function LeafletMap({
             await deletePin(id);
             setSelectedPin(null);
             setIsEditing(false);
-            fetchPinsCallback();
+            reloadPins();
         } catch (err) {
             console.error("deletePin error", err);
         }
@@ -153,8 +140,8 @@ export default function LeafletMap({
     }
 
     return (
-        <div className="h-full w-full flex flex-col">
-            <div className="flex-1 relative inset-shadow-sm rounded-lg">
+        <div className="h-90 lg:h-full lg:w-full flex flex-col">
+            <div className="flex-1 relative inset-shadow-sm rounded-lg shadow-md">
                 <MapContainer
                     // key is for forcing remount only when userPosition changes
                     // it was causing appendChild issues when remounts the map with same DOM node
@@ -173,6 +160,14 @@ export default function LeafletMap({
                         <Recenter latlng={userPosition} zoom={13} />
                     )}
 
+                    {/* recenter map on selected pin */}
+                    {selectedPin && (
+                        <Recenter
+                            latlng={[selectedPin.lat, selectedPin.lng]}
+                            zoom={13}
+                        />
+                    )}
+
                     <MapClickHandler />
                     <MapPins
                         pins={pins}
@@ -184,7 +179,6 @@ export default function LeafletMap({
                         isEditing={isEditing}
                         setSelectedPin={setSelectedPin}
                         editPin={editPin}
-                        deletePin={handleDeletePin}
                     />
                     <EditPinDialog
                         isEditing={isEditing}
@@ -194,6 +188,7 @@ export default function LeafletMap({
                         formData={formData}
                         setFormData={setFormData}
                         savePin={handleSavePin}
+                        deletePin={handleDeletePin}
                     />
                 </MapContainer>
             </div>

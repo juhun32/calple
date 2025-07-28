@@ -210,7 +210,7 @@ export function DDayForm({
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     className={cn(
-                        "rounded-md text-sm w-full focus:text-foreground rounded-full px-4",
+                        "rounded-md text-sm w-full focus:text-foreground rounded-full px-4 bg-card",
                         !title ? "text-muted-foreground" : "text-foreground"
                     )}
                     placeholder="Title"
@@ -229,7 +229,7 @@ export function DDayForm({
                     value={group || "others"}
                     onValueChange={setGroup}
                 >
-                    <Select.SelectTrigger className="border-none inset-shadow-sm w-full text-sm rounded-full px-4">
+                    <Select.SelectTrigger className="border-none inset-shadow-sm w-full text-sm rounded-full px-4 bg-card shadow-none">
                         <Select.SelectValue placeholder="Others" />
                     </Select.SelectTrigger>
                     <Select.SelectContent className="w-full">
@@ -238,7 +238,7 @@ export function DDayForm({
                                 <Select.SelectItem
                                     key={selectGroup.value}
                                     value={selectGroup.value}
-                                    className="cursor-pointer text-xs"
+                                    className="cursor-pointer text-sm"
                                 >
                                     <CircleSmall
                                         className={selectGroup.color}
@@ -268,7 +268,7 @@ export function DDayForm({
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     className={cn(
-                        "rounded-md text-sm w-full focus:text-foreground rounded-full px-4",
+                        "rounded-md text-sm w-full focus:text-foreground rounded-full px-4 bg-card",
                         !description
                             ? "text-muted-foreground"
                             : "text-foreground"
@@ -292,7 +292,7 @@ export function DDayForm({
                         <Button
                             variant="outline"
                             className={cn(
-                                "border-none inset-shadow-sm justify-start text-left font-normal w-full text-foreground rounded-full px-4",
+                                "border-none inset-shadow-sm justify-start text-left font-normal w-full text-foreground rounded-full px-4 bg-card",
                                 !dateRange?.from && "text-muted-foreground"
                             )}
                         >
@@ -366,7 +366,7 @@ export function DDayForm({
                                     }
                                 }
                             }}
-                            className="h-6 px-2 text-xs"
+                            className="h-6 px-2 text-xs bg-card"
                         >
                             Multi-day {isMultiDay ? "✓" : ""}
                         </Button>
@@ -384,7 +384,7 @@ export function DDayForm({
                                 );
                                 setIsAnnual(!isAnnual);
                             }}
-                            className="h-6 px-2 text-xs"
+                            className="h-6 px-2 text-xs bg-card"
                         >
                             Annual {isAnnual ? "✓" : ""}
                         </Button>
@@ -432,7 +432,7 @@ export function DDayForm({
                         />
                         <Label
                             htmlFor="event-image"
-                            className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50"
+                            className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 bg-card inset-shadow-sm"
                         >
                             <div className="flex flex-col items-center justify-center gap-2">
                                 <ImageDown className="w-7 h-7 text-muted-foreground" />

@@ -5,7 +5,7 @@ import { MapPin } from "lucide-react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 const LucideIcon = divIcon({
-    className: "text-primary",
+    className: "text-pink-500",
     html: renderToStaticMarkup(<MapPin size={32} strokeWidth={2} />),
     iconSize: [32, 32],
     iconAnchor: [16, 32],

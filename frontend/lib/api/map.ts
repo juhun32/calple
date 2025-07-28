@@ -5,11 +5,17 @@ export async function fetchPins(): Promise<DatePin[]> {
     const res = await fetch(`${BACKEND_URL}/api/pins`, {
         credentials: "include",
     });
+
     if (!res.ok) throw new Error("Failed to fetch pins");
+
     const { pins: userPins, partnerPins } = await res.json();
+
+    const checkUserPins = Array.isArray(userPins) ? userPins : [];
+    const checkPartnerPins = Array.isArray(partnerPins) ? partnerPins : [];
+
     return [
-        ...userPins.map((p: any) => ({ ...p, date: new Date(p.date) })),
-        ...(partnerPins ?? []).map((p: any) => ({
+        ...checkUserPins.map((p: any) => ({ ...p, date: new Date(p.date) })),
+        ...(checkPartnerPins ?? []).map((p: any) => ({
             ...p,
             date: new Date(p.date),
         })),
@@ -31,5 +37,8 @@ export async function savePin(payload: any, selectedPin?: DatePin) {
 }
 
 export async function deletePin(id: string) {
-    await fetch(`${BACKEND_URL}/api/pins/${id}`, { method: "DELETE" });
+    await fetch(`${BACKEND_URL}/api/pins/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+    });
 }
