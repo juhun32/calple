@@ -20,7 +20,7 @@ export const AccountSettingsCard = ({
             <Card.CardHeader>
                 <Card.CardTitle className="flex items-center gap-2 mb-2">
                     <Shield className="w-4 h-4" />
-                    Account Settings
+                    Manage your account
                 </Card.CardTitle>
                 <Card.CardDescription>
                     Manage your account.

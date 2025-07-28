@@ -167,7 +167,8 @@ func GetDDays(c *gin.Context) {
 			} else {
 				// filter out events that end before our view starts.
 				// event is visible if its end date is on or after the first day of the month.
-				if endDateStr < viewMonthStartStr {
+				// endDateStr != "" is for undated events it needs this to be visible from client side
+				if endDateStr != "" && endDateStr < viewMonthStartStr {
 					continue
 				}
 			}

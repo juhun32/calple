@@ -4,7 +4,7 @@ export const Calple = () => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
         width="100"
-        height="33"
+        height="32"
         viewBox="35 30 330 115"
     >
         <g id="svgg">

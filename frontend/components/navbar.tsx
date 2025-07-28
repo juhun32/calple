@@ -29,12 +29,14 @@ import {
     SquareCheckBig,
     Droplets,
     MessageSquarePlus,
+    MapPinned,
 } from "lucide-react";
 
 // api
 import { getUserMetadata } from "@/lib/api/profile";
 
 import { useEffect, useState } from "react";
+import { Separator } from "@/components/ui/separator";
 
 export function NavBar() {
     const { setTheme } = useTheme();
@@ -60,64 +62,79 @@ export function NavBar() {
 
     return (
         <>
-            <div className="fixed h-12 w-full border-b flex justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="fixed z-50 h-14 w-full border-b flex justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 font-sans">
                 <div className="container flex justify-between sm:grid sm:grid-cols-[1fr_auto] w-full px-4 md:px-8 py-2">
                     <div className="flex items-center">
                         <a href="/" className="hidden sm:flex mr-4 sm:mr-8">
                             <Calple />
                         </a>
 
-                        <div className="flex flex-row gap-1 sm:gap-2">
+                        <div className="flex flex-row gap-1 sm:gap-2 items-center">
                             <Button
-                                variant="outline"
+                                variant="ghost"
                                 size="sm"
-                                className="hidden sm:flex rounded-full px-3 w-8 h-8"
+                                className="hidden sm:flex rounded-full px-3 w-8 h-8 hover:cursor-pointer [&_svg:not([class*='size-'])]:size-3.5"
                                 onClick={() => {
                                     window.location.href = "/";
                                 }}
                             >
-                                <Home strokeWidth={1.7} />
+                                <Home strokeWidth={2} />
                             </Button>
+
+                            <div className="h-4">
+                                <Separator orientation="vertical" />
+                            </div>
+
                             <Button
-                                variant="outline"
+                                variant="ghost"
                                 size="sm"
-                                className="hidden sm:flex rounded-full px-3 w-8 h-8 sm:w-fit"
+                                className="hidden sm:flex rounded-full px-3 w-8 h-6 sm:w-fit hover:cursor-pointer"
                                 onClick={() => {
                                     window.location.href = "/checkin";
                                 }}
                             >
-                                <SquareCheckBig strokeWidth={1.7} />
-                                <span className="hidden md:flex text-xs">
+                                {/* <SquareCheckBig strokeWidth={1.7} /> */}
+                                <span className="hidden md:flex text-sm">
                                     Check-In
                                 </span>
                             </Button>
+
+                            <div className="h-4">
+                                <Separator orientation="vertical" />
+                            </div>
+
                             <Button
-                                variant="outline"
+                                variant="ghost"
                                 size="sm"
-                                className="hidden sm:flex rounded-full px-3 h-8 w-fit"
+                                className="hidden sm:flex rounded-full px-3 h-6 w-fit hover:cursor-pointer"
                                 onClick={() => {
                                     window.location.href = "/calendar";
                                 }}
                             >
-                                <Calendar strokeWidth={1.7} />
-                                <span className="flex text-xs">Calendar</span>
+                                {/* <Calendar strokeWidth={1.7} /> */}
+                                <span className="flex text-sm">Calendar</span>
                             </Button>
 
+                            <div className="h-4">
+                                <Separator orientation="vertical" />
+                            </div>
+
                             <Button
-                                variant="outline"
+                                variant="ghost"
                                 size="sm"
-                                className="hidden sm:flex rounded-full px-3 w-8 h-8 sm:w-fit"
+                                className="hidden sm:flex rounded-full px-3 w-8 h-6 sm:w-fit hover:cursor-pointer"
                                 onClick={() => {
                                     window.location.href = "/tracker";
                                 }}
                             >
-                                <Droplets strokeWidth={1.7} />
-                                <span className="hidden md:flex text-xs">
+                                {/* <Droplets strokeWidth={1.7} /> */}
+                                <span className="hidden md:flex text-sm">
                                     Cycle
                                 </span>
                             </Button>
+
                             {/* <Button
-                                variant="outline"
+                                variant="ghost"
                                 size="sm"
                                 className="rounded-full px-3 w-8 h-8 sm:w-fit"
                                 onClick={() => {
@@ -125,36 +142,40 @@ export function NavBar() {
                                 }}
                             >
                                 <Dices />
-                                <span className="hidden md:flex text-xs">
+                                <span className="hidden md:flex text-sm">
                                     Roulette
                                 </span>
                             </Button> */}
 
-                            {/* <Button
-                                variant="outline"
+                            <div className="h-4">
+                                <Separator orientation="vertical" />
+                            </div>
+
+                            <Button
+                                variant="ghost"
                                 size="sm"
-                                className="hidden sm:flex rounded-full px-3 w-8 h-8 sm:w-fit"
+                                className="hidden sm:flex rounded-full px-3 w-8 h-6 sm:w-fit hover:cursor-pointer"
                                 onClick={() => {
                                     window.location.href = "/map";
                                 }}
                             >
-                                <MapPinned />
-                                <span className="hidden md:flex text-xs">
+                                {/* <MapPinned strokeWidth={1.7} /> */}
+                                <span className="hidden md:flex text-sm">
                                     Map
                                 </span>
-                            </Button> */}
+                            </Button>
 
                             <Button
-                                variant="outline"
+                                variant="ghost"
                                 size="sm"
-                                className="flex sm:hidden rounded-full px-3 w-8 h-8 w-fit h-6"
+                                className="flex sm:hidden rounded-full px-3 w-8 h-8 w-fit h-4"
                                 onClick={() => {
                                     window.location.href = "/calendar";
                                 }}
                                 disabled
                             >
                                 <Download strokeWidth={1.7} />
-                                <span className="flex text-xs">IPhone</span>
+                                <span className="flex text-sm">IPhone</span>
                             </Button>
                         </div>
                     </div>
@@ -167,7 +188,7 @@ export function NavBar() {
 
                     <div className="flex items-center gap-2">
                         {/* <Button
-                            variant="outline"
+                            variant="ghost"
                             size="sm"
                             className="hidden sm:flex rounded-full px-3 w-8 h-8 w-fit"
                             onClick={() => {
@@ -176,18 +197,22 @@ export function NavBar() {
                             disabled
                         >
                             <Download />
-                            <span className="flex text-xs">IPhone</span>
+                            <span className="flex text-sm">IPhone</span>
                         </Button> */}
 
-                        <div className="hidden sm:flex items-center gap-2">
+                        <div className="hidden sm:flex items-center gap-2 font-serif">
                             {startedDatingDday && (
                                 <a
                                     href="/profile"
-                                    className="border rounded-full w-fit px-3 h-8 flex items-center justify-center text-sm"
+                                    className="border rounded-full w-fit px-3 h-6 flex items-center justify-center text-sm bg-card dark:bg-card inset-shadow-sm"
                                 >
                                     {startedDatingDday}
                                 </a>
                             )}
+                        </div>
+
+                        <div className="h-4 mx-2">
+                            <Separator orientation="vertical" />
                         </div>
 
                         <DropdownMenu.DropdownMenu>
@@ -200,30 +225,42 @@ export function NavBar() {
                                     <Paintbrush />
                                 </Button>
                             </DropdownMenu.DropdownMenuTrigger>
-                            <DropdownMenu.DropdownMenuContent align="end">
+                            <DropdownMenu.DropdownMenuContent
+                                align="end"
+                                className="font-sans"
+                            >
+                                <DropdownMenu.DropdownMenuLabel>
+                                    Rose
+                                </DropdownMenu.DropdownMenuLabel>
                                 <DropdownMenu.DropdownMenuItem
                                     onClick={() => setTheme("pink")}
                                 >
-                                    <Flower className="mr-2 h-4 w-4" />
-                                    Rose Light
+                                    <Flower className="mr-2 h-4 w-4 text-rose-400" />
+                                    Light
                                 </DropdownMenu.DropdownMenuItem>
                                 <DropdownMenu.DropdownMenuItem
                                     onClick={() => setTheme("pinkdark")}
                                 >
-                                    <Flower className="mr-2 h-4 w-4" />
-                                    Rose Dark
+                                    <Flower className="mr-2 h-4 w-4 text-purple-800/70" />
+                                    Dark
                                 </DropdownMenu.DropdownMenuItem>
+
+                                <DropdownMenu.DropdownMenuSeparator />
+
+                                <DropdownMenu.DropdownMenuLabel>
+                                    Default
+                                </DropdownMenu.DropdownMenuLabel>
                                 <DropdownMenu.DropdownMenuItem
                                     onClick={() => setTheme("light")}
                                 >
-                                    <Sun className="mr-2 h-4 w-4" />
-                                    Default Light
+                                    <Sun className="mr-2 h-4 w-4 text-yellow-500" />
+                                    Light
                                 </DropdownMenu.DropdownMenuItem>
                                 <DropdownMenu.DropdownMenuItem
                                     onClick={() => setTheme("dark")}
                                 >
-                                    <Moon className="mr-2 h-4 w-4" />
-                                    Default Dark
+                                    <Moon className="mr-2 h-4 w-4 text-sky-700/70" />
+                                    Dark
                                 </DropdownMenu.DropdownMenuItem>
                             </DropdownMenu.DropdownMenuContent>
                         </DropdownMenu.DropdownMenu>
@@ -235,10 +272,10 @@ export function NavBar() {
                                         variant="outline"
                                         className="h-8 w-8 rounded-full"
                                     >
-                                        <Menu className="h-6" />
+                                        <Menu className="h-4" />
                                     </Button>
                                 </DropdownMenu.DropdownMenuTrigger>
-                                <DropdownMenu.DropdownMenuContent className="w-56">
+                                <DropdownMenu.DropdownMenuContent className="w-56 font-sans">
                                     <DropdownMenu.DropdownMenuLabel>
                                         {authState.user?.name}
                                     </DropdownMenu.DropdownMenuLabel>
@@ -246,7 +283,7 @@ export function NavBar() {
                                         {startedDatingDday ? (
                                             <a
                                                 href="/profile"
-                                                className="border rounded-full w-fit px-3 h-6 flex items-center justify-center text-sm"
+                                                className="border rounded-full w-fit px-3 h-6 flex items-center justify-center text-sm font-serif"
                                             >
                                                 {startedDatingDday}
                                             </a>
@@ -342,10 +379,10 @@ export function NavBar() {
                             <DropdownMenu.DropdownMenu>
                                 <DropdownMenu.DropdownMenuTrigger asChild>
                                     <Button
-                                        variant="outline"
+                                        variant="ghost"
                                         className="h-8 w-8 rounded-full"
                                     >
-                                        <Menu className="h-6" />
+                                        <Menu className="h-4" />
                                     </Button>
                                 </DropdownMenu.DropdownMenuTrigger>
                                 <DropdownMenu.DropdownMenuContent className="w-56">

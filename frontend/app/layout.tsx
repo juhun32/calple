@@ -1,7 +1,7 @@
 import { Analytics } from "@vercel/analytics/next";
 
 import type { Metadata } from "next";
-import { Lora } from "next/font/google";
+import { Bricolage_Grotesque, Lora } from "next/font/google";
 import "./globals.css";
 
 import { cookies } from "next/headers";
@@ -15,6 +15,11 @@ const lora = Lora({
     subsets: ["latin"],
     variable: "--font-serif",
     weight: ["400", "500", "600", "700"],
+});
+const bricolageGrotesque = Bricolage_Grotesque({
+    subsets: ["latin"],
+    variable: "--font-sans",
+    weight: ["200", "300", "400", "500", "600", "700", "800"],
 });
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -67,19 +72,25 @@ export default async function RootLayout({
     const authState = await getAuthStatus();
 
     return (
-        <html lang="en" suppressHydrationWarning className="h-full font-serif">
-            <body className={`${lora.variable} h-full flex flex-col`}>
+        <html
+            lang="en"
+            suppressHydrationWarning
+            className={`${lora.variable} ${bricolageGrotesque.variable}`}
+        >
+            <head />
+            <body className="h-full flex flex-col font-serif">
                 <ThemeProvider
                     attribute="class"
                     defaultTheme="system"
                     enableSystem
+                    disableTransitionOnChange
                 >
                     <AuthProvider initialState={authState}>
+                        <Analytics />
                         <NavBar />
                         <div className="h-full">{children}</div>
-                        <Analytics />
-                        <div className="fixed bottom-0 left-0 h-8 w-full flex justify-center z-50 border-t px-4 md:px-8 backdrop-blur">
-                            <div className="container flex itms-center justify-between">
+                        <footer className="fixed font-sans bottom-0 left-0 h-8 w-full flex justify-center z-50 border-t px-4 md:px-8 backdrop-blur">
+                            <div className="container flex items-center justify-between">
                                 <div className="flex sm:px-8 py-2 container text-muted-foreground text-xs">
                                     For Emily by Juhun &copy; 2025
                                 </div>
@@ -92,7 +103,7 @@ export default async function RootLayout({
                                     </a>
                                 </div>
                             </div>
-                        </div>
+                        </footer>
                     </AuthProvider>
                 </ThemeProvider>
                 <Toaster />

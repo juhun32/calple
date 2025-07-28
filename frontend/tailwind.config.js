@@ -11,6 +11,10 @@ module.exports = {
                 positive: "var(--positive)",
                 negative: "var(--negative)",
             },
+            fontFamily: {
+                sans: ["var(--font-sans)"],
+                serif: ["var(--font-serif)"],
+            },
         },
     },
     plugins: [

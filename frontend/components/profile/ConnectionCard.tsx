@@ -8,7 +8,7 @@ export const ConnectionCard = () => {
             <Card.CardHeader>
                 <Card.CardTitle className="flex items-center gap-2 mb-2">
                     <Users className="w-4 h-4" />
-                    Partner Connection
+                    Connect with your partner
                 </Card.CardTitle>
                 <Card.CardDescription className="text-sm">
                     Manage your calendar connection with your partner

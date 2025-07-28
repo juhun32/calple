@@ -1,3 +1,5 @@
+// FIX: undated events aren't showing up
+
 "use client";
 
 import { useState } from "react";

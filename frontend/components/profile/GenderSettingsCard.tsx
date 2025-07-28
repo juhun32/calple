@@ -20,7 +20,7 @@ export const GenderSettingsCard = ({
             <Card.CardHeader>
                 <Card.CardTitle className="flex items-center gap-2 mb-2">
                     <User className="w-4 h-4" />
-                    Gender setting
+                    Tell us about yourself
                 </Card.CardTitle>
                 <Card.CardDescription className="text-sm">
                     This setting controls period data visibility and editing
@@ -61,7 +61,7 @@ export const GenderSettingsCard = ({
                 {userSex && (
                     <Badge
                         variant="outline"
-                        className="w-fit bg-background dark:bg-background inset-shadow-sm"
+                        className="w-fit bg-background dark:bg-background inset-shadow-sm border-none"
                     >
                         Current Setting :{" "}
                         {userSex === "female" ? "Female" : "Male"}

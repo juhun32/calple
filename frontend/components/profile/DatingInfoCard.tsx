@@ -60,7 +60,7 @@ export function DatingInfoCard({
         <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                    <Users className="w-4 h-4" /> Details
+                    <Users className="w-4 h-4" /> When did you start dating?
                 </CardTitle>
                 <p className="text-sm text-muted-foreground py-2">
                     When did you start dating your partner?
@@ -73,7 +73,7 @@ export function DatingInfoCard({
                             id="date"
                             value={value}
                             placeholder="MM/DD/YYYY"
-                            className="bg-background flex items-center rounded-full"
+                            className="bg-background dark:bg-background flex items-center rounded-full"
                             onChange={(e) => {
                                 setValue(e.target.value);
                             }}
@@ -130,16 +130,16 @@ export function DatingInfoCard({
                         isLoading || !value || !isValidDate(new Date(value))
                     }
                     variant={"outline"}
-                    className="rounded-full inset-shadow-sm w-fit border-none"
+                    className="rounded-full inset-shadow-sm w-fit border-none dark:bg-background"
                 >
                     <Save />
-                    {isLoading ? "Saving..." : "Save Date"}
+                    {isLoading ? "Saving..." : "Save"}
                 </Button>
             </CardContent>
             <CardContent className="pt-2">
                 {startedDating && isValidDate(new Date(startedDating)) ? (
                     <div className="flex items-center gap-2">
-                        <p className="text-sm text-muted-foreground bg-background dark:bg-background w-fit px-3 py-1 rounded-lg">
+                        <p className="text-sm text-muted-foreground bg-background dark:bg-background w-fit px-3 py-1 rounded-lg inset-shadow-sm">
                             {calculateDDay(new Date(startedDating))}
                         </p>
                         <p className="text-xs text-muted-foreground">

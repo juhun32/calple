@@ -143,8 +143,6 @@ export function useDDays(currentDate: Date = new Date()) {
                 editable: dday.editable,
             }));
 
-            console.log("Fetched D-days:", formattedDdays);
-
             setDdays(formattedDdays);
             setEventLayout(calculateEventLayout(formattedDdays));
             setError(null);
