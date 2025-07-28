@@ -1,4 +1,4 @@
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+import { BACKEND_URL } from "@/lib/utils";
 
 export interface Feedback {
     id: string;

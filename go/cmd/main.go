@@ -206,6 +206,15 @@ func main() {
 		// feedback routes
 		api.POST("/feedback", handlers.SubmitFeedback)
 		api.GET("/feedback", handlers.GetUserFeedback)
+
+		// map pin routes
+		pins := api.Group("/pins")
+		{
+			pins.GET("", handlers.GetPins)
+			pins.POST("", handlers.CreatePin)
+			pins.PUT("/:id", handlers.UpdatePin)
+			pins.DELETE("/:id", handlers.DeletePin)
+		}
 	}
 
 	// run server

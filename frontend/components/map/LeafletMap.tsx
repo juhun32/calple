@@ -1,22 +1,26 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { format } from "date-fns";
 
+// leaflet map components
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+
 import { MapPin } from "lucide-react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 const LucideIcon = L.divIcon({
-    // remove leaflets default .leaflet-div-icon styles
+    // remove leaflet’s default .leaflet-div-icon styles
     className: "",
     html: renderToStaticMarkup(<MapPin size={32} strokeWidth={2} />),
     iconSize: [32, 32],
-    // pins tip at bottom center
+    // pin’s tip at bottom-center
     iconAnchor: [16, 32],
 });
 
+// components
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -26,8 +30,6 @@ import {
     PopoverTrigger,
     PopoverContent,
 } from "@/components/ui/popover";
-import { format } from "date-fns";
-import { CalendarIcon, Edit2, Trash2 } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -35,24 +37,21 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { CalendarIcon, Edit2, Trash2 } from "lucide-react";
 
-// Fix Leaflet’s default icon paths once
+// utils
+import { BACKEND_URL } from "@/lib/utils";
+
+// types
+import { DatePin } from "@/lib/types/map";
+
+// fix leaflets default icon paths
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconRetinaUrl: "/leaflet/marker-icon-2x.png",
     iconUrl: "/leaflet/marker-icon.png",
     shadowUrl: "/leaflet/marker-shadow.png",
 });
-
-interface DatePin {
-    id: string;
-    lat: number;
-    lng: number;
-    title: string;
-    description: string;
-    location: string;
-    date: Date;
-}
 
 export default function LeafletMap() {
     const [pins, setPins] = useState<DatePin[]>([]);
@@ -69,21 +68,36 @@ export default function LeafletMap() {
         date: new Date(),
     });
 
-    // load/save from localStorage
-    useEffect(() => {
-        const stored = localStorage.getItem("datePins");
-        if (stored) {
-            setPins(
-                JSON.parse(stored).map((p: any) => ({
+    // fetch pins (user + partner)
+    const fetchPins = useCallback(async () => {
+        try {
+            const res = await fetch(`${BACKEND_URL}/api/pins`, {
+                credentials: "include",
+            });
+            if (!res.ok) throw new Error("Failed to fetch pins");
+
+            const { pins: userPins, partnerPins } = await res.json();
+
+            console.log("Fetched pins:", userPins);
+
+            // merge and parse dates
+            const all = [
+                ...userPins.map((p: any) => ({ ...p, date: new Date(p.date) })),
+                ...(partnerPins ?? []).map((p: any) => ({
                     ...p,
                     date: new Date(p.date),
-                }))
-            );
+                })),
+            ];
+
+            setPins(all);
+        } catch (err) {
+            console.error(err);
         }
     }, []);
+
     useEffect(() => {
-        localStorage.setItem("datePins", JSON.stringify(pins));
-    }, [pins]);
+        fetchPins();
+    }, [fetchPins]);
 
     // attach click handler inside the map
     function MapClickHandler() {
@@ -99,35 +113,66 @@ export default function LeafletMap() {
                     date: new Date(),
                 });
                 setAddingPin(false);
-                setIsEditing(true); // this opens dialog
+                setIsEditing(true); // open dialog
                 setSelectedPin(null);
             },
         });
         return null;
     }
 
-    function savePin() {
-        if (selectedPin && isEditing) {
-            setPins(
-                pins.map((p) =>
-                    p.id === selectedPin.id
-                        ? { ...formData, id: selectedPin.id }
-                        : p
-                )
-            );
-        } else {
-            setPins([...pins, { ...formData, id: Date.now().toString() }]);
+    // Save (create or update) via API
+    async function savePin() {
+        const payload = {
+            lat: formData.lat,
+            lng: formData.lng,
+            title: formData.title,
+            description: formData.description,
+            location: formData.location,
+            date: format(formData.date, "yyyy-MM-dd"),
+        };
+
+        try {
+            if (selectedPin) {
+                // update existing
+                await fetch(`${BACKEND_URL}/api/pins`, {
+                    method: "POST",
+                    credentials: "include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        ...payload,
+                        id: selectedPin.id,
+                    }),
+                });
+            } else {
+                // create new
+                await fetch(`${BACKEND_URL}/api/pins`, {
+                    method: "POST",
+                    credentials: "include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                });
+            }
+            setIsEditing(false);
+            setSelectedPin(null);
+            fetchPins();
+        } catch (err) {
+            console.error("savePin error", err);
         }
-        setIsEditing(false);
-        setSelectedPin(null);
     }
 
-    function deletePin(id: string) {
-        setPins(pins.filter((p) => p.id !== id));
-        setSelectedPin(null);
-        setIsEditing(false);
+    // Delete via API
+    async function deletePin(id: string) {
+        try {
+            await fetch(`${BACKEND_URL}/api/pins/${id}`, { method: "DELETE" });
+            setSelectedPin(null);
+            setIsEditing(false);
+            fetchPins();
+        } catch (err) {
+            console.error("deletePin error", err);
+        }
     }
 
+    // Start editing an existing pin
     function editPin(pin: DatePin) {
         setFormData({
             lat: pin.lat,
@@ -184,13 +229,14 @@ export default function LeafletMap() {
                         />
                     ))}
 
+                    {/* View Dialog */}
                     <Dialog
                         open={!!selectedPin && !isEditing}
                         onOpenChange={(open) => {
                             if (!open) setSelectedPin(null);
                         }}
                     >
-                        <DialogContent className="">
+                        <DialogContent>
                             <DialogHeader>
                                 <DialogTitle>{selectedPin?.title}</DialogTitle>
                             </DialogHeader>
@@ -231,6 +277,8 @@ export default function LeafletMap() {
                         </DialogContent>
                     </Dialog>
                 </MapContainer>
+
+                {/* Add/Edit Dialog */}
                 <Dialog
                     open={isEditing}
                     onOpenChange={(open) => {

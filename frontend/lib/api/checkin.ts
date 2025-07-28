@@ -36,7 +36,7 @@ export interface PartnerCheckin {
     createdAt: string;
 }
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+import { BACKEND_URL } from "@/lib/utils";
 
 // Get today's checkin
 export const getTodayCheckin = async (
