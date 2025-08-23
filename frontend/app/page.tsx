@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 
 // icons
 import { Calendar, Droplets, SquareCheckBig } from "lucide-react";
-import Rectangle from "@/lib/assets/rectangle";
 import Start from "./start";
 
 export default function Home() {
@@ -22,7 +21,6 @@ export default function Home() {
 
     return (
         <div className="container w-full min-h-screen flex flex-col items-center justify-center pt-32 md:px-8 mx-auto">
-            <Rectangle className="absolute inset-0 w-full h-full z-[-1]" />
             <div className="container px-4 md:px-8 gap-4 h-full w-full md:border-8 border-border/20 bg-background/50 md:px-20 md:py-20 rounded-lg flex flex-col">
                 <div className="flex flex-col gap-2 items-start justify-start">
                     <h1 className="flex flex-col md:flex-row sm:gap-2 text-3xl sm:text-4xl font-medium">
