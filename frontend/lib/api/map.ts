@@ -36,6 +36,38 @@ export async function savePin(payload: any, selectedPin?: DatePin) {
     });
 }
 
+export async function editPin(id: string, payload: any): Promise<DatePin> {
+    const res = await fetch(
+        `${BACKEND_URL}/api/pins/${encodeURIComponent(id)}`,
+        {
+            method: "PUT",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        }
+    );
+
+    if (!res.ok) {
+        const text = await res.text().catch(() => null);
+        throw new Error(
+            `Failed to update pin: ${res.status} ${res.statusText} ${
+                text ?? ""
+            }`
+        );
+    }
+
+    if (res.status === 204) {
+        return { id, ...payload, date: new Date(payload.date) } as DatePin;
+    }
+
+    const data = await res.json().catch(() => null);
+    const updated = data?.pin ?? data?.updatedPin ?? data;
+    if (!updated)
+        throw new Error("Invalid response from server when updating pin");
+
+    return { ...updated, date: new Date(updated.date) } as DatePin;
+}
+
 export async function deletePin(id: string) {
     await fetch(`${BACKEND_URL}/api/pins/${id}`, {
         method: "DELETE",

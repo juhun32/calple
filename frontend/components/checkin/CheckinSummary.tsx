@@ -25,7 +25,7 @@ const SummaryItem = ({
     value?: string;
     icon?: React.ElementType;
 }) => (
-    <div className="text-center p-2 rounded-lg bg-background inset-shadow-sm">
+    <div className="text-center p-2 bg-background inset-shadow-sm border rounded-full w-full">
         <div className="text-xs text-muted-foreground mb-1">{label}</div>
         <div className="text-lg mb-2">
             {Icon && <Icon className="mx-auto w-4 h-4 text-muted-foreground" />}
@@ -42,8 +42,8 @@ export const CheckinSummary = ({ checkin, userName }: CheckinSummaryProps) => {
     );
 
     return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-between gap-2 mb-4">
+        <div className="flex flex-col gap-4 h-full">
+            <div className="flex items-center justify-between mb-4">
                 <div className="font-medium">{userName}</div>
                 <div className="text-sm text-muted-foreground bg-background inset-shadow-sm px-2 py-1 rounded flex flex-row gap-1">
                     <p className="hidden md:block">Checked in at</p>
@@ -51,7 +51,7 @@ export const CheckinSummary = ({ checkin, userName }: CheckinSummaryProps) => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="flex flex-col lg:flex-row gap-4 justify-center items-center h-full">
                 <SummaryItem
                     label="My Mood"
                     value={mood?.label}

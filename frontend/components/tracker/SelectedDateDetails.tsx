@@ -25,7 +25,7 @@ export function SelectedDateDetails({
         <Card.Card className="h-full gap-4">
             <Card.CardContent className="h-full flex flex-col">
                 <Card.CardTitle>
-                    <p className="text-lg font-semibold rounded h-7 w-fit px-2 inset-shadow-sm bg-background">
+                    <p className="text-lg font-semibold rounded h-7 w-fit px-2 inset-shadow-sm bg-card">
                         {date.toLocaleDateString("en-US", {
                             weekday: "long",
                             month: "long",

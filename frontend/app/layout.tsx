@@ -10,7 +10,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/components/auth-provider";
 import { NavBar } from "@/components/navbar";
 import { Toaster } from "@/components/ui/sonner";
-import { Education } from "@/components/tracker/Education";
+import { Education } from "@/components/Education";
+import { articles } from "@/lib/constants/articles";
 
 const lora = Lora({
     subsets: ["latin"],
@@ -65,12 +66,20 @@ async function getAuthStatus() {
     }
 }
 
+function getRandomArticles(count = 2) {
+    const shuffled = [...articles].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, count);
+}
+
 export default async function RootLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
     const authState = await getAuthStatus();
+
+    // Precompute random articles on the server
+    const randomArticles = getRandomArticles();
 
     return (
         <html
@@ -92,7 +101,7 @@ export default async function RootLayout({
                         <div className="h-full">
                             {children}
                             <div className="container mx-auto px-4 md:px-8">
-                                <Education />
+                                <Education articles={randomArticles} />
                             </div>
                         </div>
                         <footer className="fixed bottom-0 left-0 h-8 w-full flex justify-center z-50 border-t px-4 md:px-8 backdrop-blur">

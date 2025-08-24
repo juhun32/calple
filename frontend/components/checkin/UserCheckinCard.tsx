@@ -25,7 +25,7 @@ export const UserCheckinCard = ({
                     <User className="w-4 h-4" />
                     Your Today
                     {todayCheckin && (
-                        <div className="ml-auto flex gap-2">
+                        <div className="ml-auto flex">
                             <Button
                                 variant="ghost"
                                 size="sm"

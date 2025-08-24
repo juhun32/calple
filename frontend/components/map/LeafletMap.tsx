@@ -6,7 +6,7 @@ import "leaflet/dist/leaflet.css";
 import { MapPins } from "./MapPins";
 import { ViewPinDialog, EditPinDialog } from "./PinDialogs";
 import { DatePin } from "@/lib/types/map";
-import { fetchPins, savePin, deletePin } from "@/lib/api/map";
+import { editPin, savePin, deletePin } from "@/lib/api/map";
 
 // fix leaflets default icon paths
 import L from "leaflet";
@@ -105,12 +105,26 @@ export default function LeafletMap({
         };
 
         try {
-            await savePin(payload, selectedPin ?? undefined);
+            if (selectedPin) {
+                // Update existing pin
+                const updatedPin = await editPin(selectedPin.id, payload);
+                if (updatedPin) {
+                    console.log("Pin updated:", updatedPin);
+                } else {
+                    console.log(
+                        "Pin updated successfully (no content returned)."
+                    );
+                }
+            } else {
+                // Create new pin
+                await savePin(payload);
+            }
+        } catch (err) {
+            console.error("Error saving pin:", err);
+        } finally {
             setIsEditing(false);
             setSelectedPin(null);
             reloadPins();
-        } catch (err) {
-            console.error("savePin error", err);
         }
     }
 
@@ -123,20 +137,6 @@ export default function LeafletMap({
         } catch (err) {
             console.error("deletePin error", err);
         }
-    }
-
-    // this is also add
-    function editPin(pin: DatePin) {
-        setFormData({
-            lat: pin.lat,
-            lng: pin.lng,
-            title: pin.title,
-            description: pin.description,
-            location: pin.location,
-            date: pin.date,
-        });
-        setSelectedPin(pin);
-        setIsEditing(true);
     }
 
     return (
@@ -178,7 +178,17 @@ export default function LeafletMap({
                         selectedPin={selectedPin}
                         isEditing={isEditing}
                         setSelectedPin={setSelectedPin}
-                        editPin={editPin}
+                        editPin={(pin) => {
+                            setFormData({
+                                lat: pin.lat,
+                                lng: pin.lng,
+                                title: pin.title,
+                                description: pin.description,
+                                location: pin.location,
+                                date: new Date(pin.date),
+                            });
+                            setIsEditing(true);
+                        }}
                     />
                     <EditPinDialog
                         isEditing={isEditing}

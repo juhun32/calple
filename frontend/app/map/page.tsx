@@ -83,14 +83,22 @@ export default function MapPage() {
                                     className="cursor-pointer"
                                     onClick={() => setSelectedPin(pin)}
                                 >
-                                    <TableCell>{pin.title}</TableCell>
-                                    <TableCell className="hidden lg:block w-fit">
-                                        <p className="bg-background dark:bg-background px-2 rounded inset-shadow-sm w-fit">
-                                            [{pin.lat.toFixed(4)},{" "}
-                                            {pin.lng.toFixed(4)}]
+                                    <TableCell>
+                                        <p className="max-w-[200px] truncate">
+                                            {pin.title}
                                         </p>
                                     </TableCell>
-                                    <TableCell>{pin.location}</TableCell>
+                                    <TableCell className="hidden lg:block w-fit">
+                                        <p className="bg-background dark:bg-background px-2 rounded inset-shadow-sm w-fit">
+                                            [{pin.lat.toFixed(2)},{" "}
+                                            {pin.lng.toFixed(2)}]
+                                        </p>
+                                    </TableCell>
+                                    <TableCell>
+                                        <p className="max-w-[200px] truncate">
+                                            {pin.location}
+                                        </p>
+                                    </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>

@@ -1,6 +1,6 @@
 import * as Card from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { User, MessageCircle } from "lucide-react";
+import { User, MessageCircle, ArrowUpRight } from "lucide-react";
 
 export const NoPartnerCard = () => (
     <Card.Card className="w-full flex flex-col">
@@ -11,8 +11,8 @@ export const NoPartnerCard = () => (
             </Card.CardTitle>
         </Card.CardHeader>
         <Card.CardContent className="flex-1 flex flex-col items-center justify-center">
-            <div className="text-center py-8 text-muted-foreground">
-                <User className="w-12 h-12 mx-auto mb-3 opacity-50" />
+            <div className="text-center text-muted-foreground">
+                <User className="w-8 h-8 mx-auto mb-3 opacity-50" />
                 <p>Connect with a partner to share daily check-ins</p>
                 <p className="text-sm">
                     Go to your profile to manage connections
@@ -22,7 +22,7 @@ export const NoPartnerCard = () => (
                     className="mt-4 bg-background dark:bg-background"
                     onClick={() => (window.location.href = "/profile")}
                 >
-                    Go to Profile
+                    Go to Profile <ArrowUpRight className="w-4 h-4" />
                 </Button>
             </div>
         </Card.CardContent>

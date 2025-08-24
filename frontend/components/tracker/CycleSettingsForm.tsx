@@ -12,6 +12,7 @@ import { Settings, Save } from "lucide-react";
 // types
 import { CycleSettingsFormProps } from "@/lib/types/periods";
 import { cn } from "@/lib/utils";
+import { Separator } from "../ui/separator";
 
 export function CycleSettingsForm({
     cycleLength,
@@ -83,7 +84,7 @@ export function CycleSettingsForm({
     return (
         <Card.Card className="w-full gap-4">
             <Card.CardHeader>
-                <div className="p-4 inset-shadow-sm rounded-lg bg-background inset-shadow-sm">
+                <div className="p-4 rounded-lg">
                     <Card.CardTitle className="flex items-center gap-2">
                         <Settings className="w-4 h-4" />
                         Cycle Settings
@@ -93,9 +94,11 @@ export function CycleSettingsForm({
                         predictions
                     </Card.CardDescription>
                 </div>
+                <Separator />
             </Card.CardHeader>
+
             <Card.CardContent>
-                <form onSubmit={handleSubmit} className="space-y-8">
+                <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="flex flex-col lg:flex-row gap-4">
                         <div className="flex flex-col gap-2 w-full">
                             <Label htmlFor="cycleLength" className="px-3">
@@ -114,7 +117,7 @@ export function CycleSettingsForm({
                                     )
                                 }
                                 placeholder="28"
-                                className={cn("bg-background inset-shadow-sm", {
+                                className={cn("bg-card inset-shadow-sm", {
                                     "border-red-500": errors.cycleLength,
                                 })}
                             />
@@ -146,7 +149,7 @@ export function CycleSettingsForm({
                                     )
                                 }
                                 placeholder="5"
-                                className={cn("bg-background inset-shadow-sm", {
+                                className={cn("bg-card inset-shadow-sm", {
                                     "border-red-500": errors.periodLength,
                                 })}
                             />

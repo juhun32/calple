@@ -1,4 +1,11 @@
-export const articles = [
+export type Article = {
+    title: string;
+    href: string;
+    source: string;
+    summary: string;
+};
+
+export const articles: Article[] = [
     {
         title: "What does a healthy relationship look like?",
         href: "https://www.ny.gov/teen-dating-violence-awareness-and-prevention/what-does-healthy-relationship-look",

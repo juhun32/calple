@@ -266,7 +266,7 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
                         <ChevronLeft className="w-4 h-4" />
                     </Button>
                     <div className="hidden lg:flex text-center gap-4">
-                        <span className="font-semibold flex items-center rounded px-2 inset-shadow-sm bg-background">
+                        <span className="font-semibold flex items-center rounded px-2 inset-shadow-sm bg-card">
                             {prevMonthDate.toLocaleDateString("en-US", {
                                 month: "short",
                                 year: "2-digit",
@@ -275,7 +275,7 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
 
                         <Separator orientation="vertical" />
 
-                        <span className="font-semibold flex items-center rounded px-2 inset-shadow-sm bg-background">
+                        <span className="font-semibold flex items-center rounded px-2 inset-shadow-sm bg-card">
                             {currentMonth.toLocaleDateString("en-US", {
                                 month: "short",
                                 year: "2-digit",
@@ -284,7 +284,7 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
                     </div>
 
                     <div className="flex lg:hidden text-center justify-center items-center">
-                        <span className="font-semibold flex items-center justify-center rounded w-40 h-7 inset-shadow-sm bg-background">
+                        <span className="font-semibold flex items-center justify-center rounded w-40 h-7 inset-shadow-sm bg-card">
                             {currentMonth.toLocaleDateString("en-US", {
                                 month: "short",
                                 year: "2-digit",

@@ -75,7 +75,11 @@ export function ViewPinDialog({
 
                 <div className="flex flex-col gap-4 p-2 px-4 bg-card dark:bg-card rounded-lg inset-shadow-sm">
                     <div className="py-2">
-                        <p className="text-sm">{selectedPin?.description}</p>
+                        {selectedPin?.description ? (
+                            <p className="text-sm">{selectedPin.description}</p>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">N/A</p>
+                        )}
                     </div>
                 </div>
 

@@ -45,7 +45,7 @@ export function CycleStatusCard({
         <Card.Card className="w-full h-full">
             <Card.CardContent>
                 <div className="flex items-baseline gap-2">
-                    <p className="text-lg font-semibold h-7 px-2 inset-shadow-sm bg-background rounded">
+                    <p className="text-lg font-semibold h-7 px-2 inset-shadow-sm bg-card rounded">
                         Day {currentCycleDay ?? "—"}
                     </p>
                     <p className="text-sm text-muted-foreground">
@@ -68,7 +68,7 @@ export function CycleStatusCard({
                             </span>
                         </div>
                         <div className="flex items-baseline gap-1 text-center">
-                            <div className="text-lg font-semibold bg-background p-0 px-0 py-0 rounded h-7 w-7 inset-shadow-sm">
+                            <div className="text-lg font-semibold bg-card p-0 px-0 py-0 rounded h-7 w-7 inset-shadow-sm">
                                 {daysUntilNextPeriod ?? "—"}
                             </div>
                             <p className="text-sm text-muted-foreground">
@@ -88,7 +88,7 @@ export function CycleStatusCard({
                 </div>
 
                 <div className="grid">
-                    <div className="mt-2 lg:mt-4 inset-shadow-sm rounded-lg bg-background">
+                    <div className="mt-2 lg:mt-4 inset-shadow-sm rounded-lg bg-card">
                         <div className="flex items-center gap-4 px-4 py-4">
                             <Droplets className="w-4 h-4 text-rose-500" />
                             <div>
@@ -112,7 +112,7 @@ export function CycleStatusCard({
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4 mt-2 lg:mt-4 inset-shadow-sm rounded-lg px-4 py-4 bg-background">
+                    <div className="flex items-center gap-4 mt-2 lg:mt-4 inset-shadow-sm rounded-lg px-4 py-4 bg-card">
                         <Heart className="w-4 h-4 text-blue-400" />
                         <div>
                             <p className="text-sm font-medium">
@@ -137,7 +137,7 @@ export function CycleStatusCard({
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4 mt-2 lg:mt-4 inset-shadow-sm rounded-lg px-4 py-4 bg-background">
+                    <div className="flex items-center gap-4 mt-2 lg:mt-4 inset-shadow-sm rounded-lg px-4 py-4 bg-card">
                         <Moon className="w-4 h-4 text-yellow-500" />
                         <div>
                             <p className="text-sm font-medium">

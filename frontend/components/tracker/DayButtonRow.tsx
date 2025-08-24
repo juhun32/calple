@@ -210,7 +210,7 @@ export const DayButtonRow = memo(function DayButtonRow({
                         >
                             <ChevronLeft className="w-4 h-4" />
                         </Button>
-                        <span className="flex items-center justify-center text-center rounded w-40 h-7 inset-shadow-sm bg-background">
+                        <span className="flex items-center justify-center text-center rounded w-40 h-7 inset-shadow-sm bg-card">
                             {(() => {
                                 // Calculate middle day index based on days per page
                                 const middleDayIndex = Math.floor(
@@ -278,12 +278,13 @@ export const DayButtonRow = memo(function DayButtonRow({
                                     | "ghost"
                                     | "link" = "outline";
                                 let className =
-                                    "w-7 sm:w-10 md:w-12 h-24 rounded-lg text-xs font-medium flex flex-col items-center justify-center p-0 has-[>svg]:px-0";
+                                    "w-7 sm:w-10 md:w-12 h-24 rounded-lg text-xs font-medium flex flex-col items-center justify-center p-0 has-[>svg]:px-0 bg-card";
 
                                 if (isPeriod) {
                                     buttonVariant = "outline";
                                     className +=
                                         " bg-rose-400 text-white hover:bg-rose-500 border-rose-400 " +
+                                        " dark:bg-rose-400 dark:border-rose-400 dark:hover:bg-rose-500 " +
                                         " pink:bg-pink-500 pink:border-pink-500 pink:hover:bg-pink-600 " +
                                         " pinkdark:bg-primary pinkdark:border-primary pinkdark:hover:bg-rose-600";
                                 } else if (isPredicted) {

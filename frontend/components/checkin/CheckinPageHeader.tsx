@@ -1,8 +1,8 @@
 import { Calendar } from "lucide-react";
 
 export const CheckinPageHeader = () => (
-    <div className="flex flex-col items-start px-4 lg:px-8">
-        <h1 className="text-xl font-bold">Daily Check-in</h1>
+    <div className="flex flex-col items-start">
+        <h1 className="text-2xl font-semibold">Daily Check-in</h1>
         <p className="text-muted-foreground">
             Share your mood and day with your partner
         </p>

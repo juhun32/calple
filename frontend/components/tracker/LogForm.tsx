@@ -118,7 +118,7 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
             <Card.CardHeader>
                 <Card.CardTitle className="flex items-center gap-2">
                     Log Data for{" "}
-                    <p className="px-2 py-1 inset-shadow-sm bg-background rounded">
+                    <p className="px-2 py-1 inset-shadow-sm bg-card rounded">
                         {date.toLocaleDateString()}
                     </p>
                 </Card.CardTitle>
@@ -298,14 +298,14 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                         placeholder="Additional notes..."
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
-                        className="mt-2 flex-1 bg-background inset-shadow-sm"
+                        className="mt-2 flex-1 bg-card inset-shadow-sm"
                         rows={3}
                     />
                 </div>
 
-                <div className="mt-auto md:pt-4">
+                <div className="mt-auto md:pt-4 w-full flex justify-end">
                     <Button
-                        className="w-full"
+                        className="w-fit"
                         variant="default"
                         size={"sm"}
                         onClick={handleSubmit}
@@ -315,7 +315,7 @@ export function LogForm({ date, existingLog, onSave, onUpdate }: LogFormProps) {
                             ? "Saving..."
                             : existingLog
                             ? "Update Entry"
-                            : "Save Entry"}
+                            : "Save Log"}
                     </Button>
                 </div>
             </Card.CardContent>

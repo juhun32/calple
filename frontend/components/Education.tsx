@@ -1,20 +1,10 @@
 "use client";
 
 import { Sad } from "@/lib/assets/sad";
-import { useState, useRef, useEffect, useMemo } from "react";
-import { articles } from "@/lib/constants/articles";
+import { useState, useRef, useEffect } from "react";
+import { Article } from "@/lib/constants/articles";
 
-export const Education = () => {
-    // pick 2 random articles once on mount
-    const selectedArticles = useMemo(() => {
-        const copy = [...articles];
-        for (let i = copy.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [copy[i], copy[j]] = [copy[j], copy[i]];
-        }
-        return copy.slice(0, 2);
-    }, []); // run once
-
+export const Education = ({ articles }: { articles: Article[] }) => {
     // store loaded previews keyed by href
     const [previews, setPreviews] = useState<Record<string, string | null>>({});
     // refs for each resource card to observe intersection
@@ -55,13 +45,13 @@ export const Education = () => {
             }
         );
 
-        selectedArticles.forEach((r) => {
+        articles.forEach((r) => {
             const el = refs.current[r.href];
             if (el) observer.observe(el);
         });
 
         return () => observer.disconnect();
-    }, []);
+    }, [articles]);
 
     return (
         <section className="pb-12 md:pb-16">
@@ -70,8 +60,8 @@ export const Education = () => {
                 Short articles about healthy relationships and intimacy.
             </p>
 
-            <div className="grid grid-cols-2 gap-4 mt-3">
-                {selectedArticles.map((r) => (
+            <div className="grid sm:grid-cols-2 gap-4 mt-3">
+                {articles.map((r) => (
                     <a
                         key={r.href}
                         href={r.href}
@@ -81,10 +71,9 @@ export const Education = () => {
                         ref={(el) => {
                             refs.current[r.href] = el;
                         }}
-                        className="block p-3 rounded-lg bg-background border hover:shadow-md inset-shadow-sm flex gap-4"
+                        className="block p-3 rounded-lg bg-card border hover:shadow-md inset-shadow-sm flex flex-col sm:flex-row gap-4"
                     >
-                        <div className="w-28 h-20 flex-shrink-0 rounded overflow-hidden bg-muted/10">
-                            {/* show OG image thumbnail when available */}
+                        <div className="w-full h-auto aspect-[16/9] flex-shrink-0 rounded overflow-hidden bg-muted/10">
                             {previews[r.href] === undefined ? (
                                 <div className="w-full h-full bg-gradient-to-br from-muted/20 to-muted/10" />
                             ) : previews[r.href] ? (
