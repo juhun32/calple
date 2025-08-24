@@ -13,10 +13,8 @@ import { calculateDDay, login, logout } from "@/lib/utils";
 // ui
 import { Button } from "@/components/ui/button";
 import * as DropdownMenu from "@/components/ui/dropdown-menu";
-import { Separator } from "@/components/ui/separator";
 
 // assets
-import { Calple } from "@/lib/assets/calple";
 import { Logo } from "@/lib/assets/logo";
 
 // icons
@@ -28,7 +26,6 @@ import {
     Menu,
     User,
     Flower,
-    Download,
     Home,
     Calendar,
     SquareCheckBig,
@@ -56,16 +53,32 @@ export function NavBar() {
     const [startedDating, setStartedDating] = useState<Date | null>(null);
 
     useEffect(() => {
+        let mounted = true;
         async function fetchMetadata() {
-            const metadata = await getUserMetadata();
-            if (metadata && metadata.startedDating) {
-                setStartedDating(new Date(metadata.startedDating));
-            } else {
-                setStartedDating(null);
+            // dont call server when user is not authenticated
+            if (!authState?.isAuthenticated) {
+                if (mounted) setStartedDating(null);
+                return;
+            }
+
+            try {
+                const metadata = await getUserMetadata();
+                if (!mounted) return;
+                setStartedDating(
+                    metadata && metadata.startedDating
+                        ? new Date(metadata.startedDating)
+                        : null
+                );
+            } catch (err) {
+                if (mounted) setStartedDating(null);
             }
         }
+
         fetchMetadata();
-    }, []);
+        return () => {
+            mounted = false;
+        };
+    }, [authState?.isAuthenticated]);
 
     const startedDatingDday = startedDating
         ? calculateDDay(startedDating)

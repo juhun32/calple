@@ -261,15 +261,15 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
     return (
         <Card.Card>
             <Card.CardContent className="px-4 lg:px-8">
-                <div className="flex justify-between mb-4">
+                <div className="flex justify-between mb-4 w-70">
                     <Button variant="ghost" size="icon" onClick={prevMonth}>
                         <ChevronLeft className="w-4 h-4" />
                     </Button>
                     <div className="hidden lg:flex text-center gap-4">
                         <span className="font-semibold flex items-center rounded px-2 inset-shadow-sm bg-background">
                             {prevMonthDate.toLocaleDateString("en-US", {
-                                month: "long",
-                                year: "numeric",
+                                month: "short",
+                                year: "2-digit",
                             })}
                         </span>
 
@@ -277,8 +277,8 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
 
                         <span className="font-semibold flex items-center rounded px-2 inset-shadow-sm bg-background">
                             {currentMonth.toLocaleDateString("en-US", {
-                                month: "long",
-                                year: "numeric",
+                                month: "short",
+                                year: "2-digit",
                             })}
                         </span>
                     </div>
@@ -286,8 +286,8 @@ export const ButtonRowCalendar = memo(function ButtonRowCalendar({
                     <div className="flex lg:hidden text-center justify-center items-center">
                         <span className="font-semibold flex items-center justify-center rounded w-40 h-7 inset-shadow-sm bg-background">
                             {currentMonth.toLocaleDateString("en-US", {
-                                month: "long",
-                                year: "numeric",
+                                month: "short",
+                                year: "2-digit",
                             })}
                         </span>
                     </div>

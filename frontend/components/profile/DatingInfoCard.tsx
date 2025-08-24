@@ -4,7 +4,6 @@ import React, { useEffect } from "react";
 import { formatDate } from "date-fns";
 
 // components
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
@@ -16,6 +15,8 @@ import { calculateDDay } from "@/lib/utils";
 
 // types
 import { DatingInfoCardProps } from "@/lib/types/profile";
+import { Separator } from "../ui/separator";
+import { Meh } from "@/lib/assets/meh";
 
 function isValidDate(date: Date | undefined) {
     if (!date) {
@@ -57,72 +58,69 @@ export function DatingInfoCard({
     };
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <Users className="w-4 h-4" /> When did you start dating?
-                </CardTitle>
-                <p className="text-sm text-muted-foreground py-2">
+        <div>
+            <div>
+                <p className="text-lg">When did you start dating?</p>
+                <p className="text-sm text-muted-foreground">
                     When did you start dating your partner?
                 </p>
-            </CardHeader>
-            <CardContent className="flex gap-4">
-                <div>
-                    <div className="relative flex gap-2 w-fit">
-                        <Input
-                            id="date"
-                            value={value}
-                            placeholder="MM/DD/YYYY"
-                            className="bg-background dark:bg-background flex items-center rounded-full"
-                            onChange={(e) => {
-                                setValue(e.target.value);
-                            }}
-                            onKeyDown={(e) => {
-                                if (e.key === "ArrowDown") {
-                                    e.preventDefault();
-                                    setOpen(true);
-                                }
-                            }}
-                        />
-                        <Popover.Popover open={open} onOpenChange={setOpen}>
-                            <Popover.PopoverTrigger asChild>
-                                <Button
-                                    id="date-picker"
-                                    variant="ghost"
-                                    className="absolute top-1/2 right-2 size-6 -translate-y-1/2"
-                                >
-                                    <CalendarIcon className="size-3.5" />
-                                    <span className="sr-only">Select date</span>
-                                </Button>
-                            </Popover.PopoverTrigger>
-                            <Popover.PopoverContent
-                                className="w-auto overflow-hidden p-0"
-                                align="end"
-                                alignOffset={-8}
-                                sideOffset={10}
+            </div>
+            <Separator className="my-2" />
+            <div className="flex justify-between gap-4 mt-4">
+                <div className="relative flex gap-2 w-full">
+                    <Input
+                        id="date"
+                        value={value}
+                        placeholder="MM/DD/YYYY"
+                        className="w-full bg-background dark:bg-background flex items-center"
+                        onChange={(e) => {
+                            setValue(e.target.value);
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key === "ArrowDown") {
+                                e.preventDefault();
+                                setOpen(true);
+                            }
+                        }}
+                    />
+                    <Popover.Popover open={open} onOpenChange={setOpen}>
+                        <Popover.PopoverTrigger asChild>
+                            <Button
+                                id="date-picker"
+                                variant="ghost"
+                                className="absolute top-1/2 right-2 size-6 -translate-y-1/2"
                             >
-                                <Calendar
-                                    mode="single"
-                                    selected={date}
-                                    captionLayout="dropdown"
-                                    month={month}
-                                    onMonthChange={setMonth}
-                                    onSelect={(selectedDate) => {
-                                        if (selectedDate) {
-                                            setValue(
-                                                formatDate(
-                                                    selectedDate,
-                                                    "MM/dd/yyyy"
-                                                )
-                                            );
-                                            setMonth(selectedDate);
-                                        }
-                                        setOpen(false);
-                                    }}
-                                />
-                            </Popover.PopoverContent>
-                        </Popover.Popover>
-                    </div>
+                                <CalendarIcon className="size-3.5" />
+                                <span className="sr-only">Select date</span>
+                            </Button>
+                        </Popover.PopoverTrigger>
+                        <Popover.PopoverContent
+                            className="w-auto overflow-hidden p-0"
+                            align="end"
+                            alignOffset={-8}
+                            sideOffset={10}
+                        >
+                            <Calendar
+                                mode="single"
+                                selected={date}
+                                captionLayout="dropdown"
+                                month={month}
+                                onMonthChange={setMonth}
+                                onSelect={(selectedDate) => {
+                                    if (selectedDate) {
+                                        setValue(
+                                            formatDate(
+                                                selectedDate,
+                                                "MM/dd/yyyy"
+                                            )
+                                        );
+                                        setMonth(selectedDate);
+                                    }
+                                    setOpen(false);
+                                }}
+                            />
+                        </Popover.PopoverContent>
+                    </Popover.Popover>
                 </div>
                 <Button
                     onClick={handleSave}
@@ -130,16 +128,16 @@ export function DatingInfoCard({
                         isLoading || !value || !isValidDate(new Date(value))
                     }
                     variant={"outline"}
-                    className="rounded-full inset-shadow-sm w-fit border-none dark:bg-background"
+                    className="w-fit dark:bg-background"
                 >
                     <Save />
                     {isLoading ? "Saving..." : "Save"}
                 </Button>
-            </CardContent>
-            <CardContent className="pt-2">
+            </div>
+            <div className="pt-2">
                 {startedDating && isValidDate(new Date(startedDating)) ? (
                     <div className="flex items-center gap-2">
-                        <p className="text-sm text-muted-foreground bg-background dark:bg-background w-fit px-3 py-1 rounded-lg inset-shadow-sm">
+                        <p className="text-sm text-muted-foreground bg-background dark:bg-background w-fit rounded-lg">
                             {calculateDDay(new Date(startedDating))}
                         </p>
                         <p className="text-xs text-muted-foreground">
@@ -149,7 +147,16 @@ export function DatingInfoCard({
                 ) : (
                     <p className="text-sm text-muted-foreground">Not set</p>
                 )}
-            </CardContent>
-        </Card>
+            </div>
+            <div className="flex gap-4 pt-2 items-center">
+                <Meh className="w-40" />
+                <p className="text-sm text-muted-foreground">
+                    I am using this date to calculate how long you have been
+                    dating your partner! You will be able to see this on the top
+                    after you make changes and refresh the page. I am also going
+                    to add this date to your calendar.
+                </p>
+            </div>
+        </div>
     );
 }

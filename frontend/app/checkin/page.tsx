@@ -140,7 +140,7 @@ export default function Checkin() {
         <div className="container mx-auto flex flex-col pt-20 pb-12 lg:pb-16 px-4 lg:px-8 gap-6 min-h-screen">
             <CheckinPageHeader />
 
-            <div className="flex items-stretch gap-4 flex-col lg:flex-row flex-1">
+            <div className="flex items-stretch gap-4 flex-col lg:grid lg:grid-cols-2 flex-1">
                 <UserCheckinCard
                     todayCheckin={todayCheckin}
                     userName={authState.user?.name || "You"}

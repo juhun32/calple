@@ -10,6 +10,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/components/auth-provider";
 import { NavBar } from "@/components/navbar";
 import { Toaster } from "@/components/ui/sonner";
+import { Education } from "@/components/tracker/Education";
 
 const lora = Lora({
     subsets: ["latin"],
@@ -88,7 +89,12 @@ export default async function RootLayout({
                     <AuthProvider initialState={authState}>
                         <Analytics />
                         <NavBar />
-                        <div className="h-full">{children}</div>
+                        <div className="h-full">
+                            {children}
+                            <div className="container mx-auto px-4 md:px-8">
+                                <Education />
+                            </div>
+                        </div>
                         <footer className="fixed bottom-0 left-0 h-8 w-full flex justify-center z-50 border-t px-4 md:px-8 backdrop-blur">
                             <div className="container flex items-center justify-between">
                                 <div className="flex sm:px-8 py-2 container text-muted-foreground text-xs">

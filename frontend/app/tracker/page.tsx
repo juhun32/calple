@@ -24,6 +24,7 @@ import { usePeriods } from "@/lib/hooks/usePeriod";
 // api
 import { getUserMetadata } from "@/lib/api/profile";
 import { getPartnerPeriodDays } from "@/lib/api/periods";
+import { Education } from "@/components/tracker/Education";
 
 const formatDateKey = (date: Date) => {
     const year = date.getFullYear();
@@ -592,8 +593,8 @@ export default function Tracker() {
     };
 
     return (
-        <div className="min-h-screen">
-            <div className="min-h-screen container mx-auto px-4 md:px-8 pt-16 md:pt-20 pb-12 md:pb-16 flex flex-col">
+        <div className="min-h-screen pt-16 md:pt-20 pb-12 md:pb-16 flex flex-col gap-8">
+            <div className="min-h-screen container mx-auto flex flex-col px-4 md:px-8">
                 <Tabs
                     value={selectedTab}
                     onValueChange={setSelectedTab}

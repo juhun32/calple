@@ -13,6 +13,7 @@ import * as AlertDialog from "@/components/ui/alert-dialog";
 // types
 import { Connection, Invitation } from "@/lib/types/connection";
 import { Blend } from "lucide-react";
+import { Separator } from "../ui/separator";
 
 export function ConnectionManager() {
     const [open, setOpen] = useState(false);
@@ -174,299 +175,251 @@ export function ConnectionManager() {
     };
 
     return (
-        <div>
-            <Dialog.Dialog
-                open={open}
-                onOpenChange={(value) => {
-                    setOpen(value);
-                    if (value) {
-                        setActiveTab("connection");
-                        setInviteEmail("");
-                        setIsLoading(false);
-                    }
-                }}
+        // make container fill available height
+        <div className="h-full flex flex-col">
+            <div>
+                <p className="text-lg">Manage your connection</p>
+                <p className="text-sm text-muted-foreground">
+                    Invite your partner!
+                </p>
+            </div>
+            <Separator className="my-2" />
+            {/* tabs take the remaining vertical space */}
+            <Tabs
+                defaultValue={activeTab}
+                onValueChange={setActiveTab}
+                className="w-full mt-4 flex-1 flex flex-col"
             >
-                <Dialog.DialogTrigger asChild>
-                    <Button
-                        variant="outline"
-                        className="w-fit border-none sm:w-auto rounded-full bg-background dark:bg-background hover:cursor-pointer"
-                    >
-                        <Blend className="w-4 h-4" />
-                        Manage Connection
-                    </Button>
-                </Dialog.DialogTrigger>
-                <Dialog.DialogContent>
-                    <Dialog.DialogHeader>
-                        <Dialog.DialogTitle>
-                            Calple Connection
-                        </Dialog.DialogTitle>
-                        <Dialog.DialogDescription>
-                            Connect with your partner
-                        </Dialog.DialogDescription>
-                    </Dialog.DialogHeader>
+                <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="connection">My Connection</TabsTrigger>
+                    {!connection ? (
+                        <TabsTrigger
+                            value="invitations"
+                            data-count={pendingInvitations.length}
+                        >
+                            Invitations
+                            {pendingInvitations.length > 0 &&
+                                `(${pendingInvitations.length})`}
+                        </TabsTrigger>
+                    ) : (
+                        <TabsTrigger
+                            value="invitations"
+                            data-count={pendingInvitations.length}
+                            disabled
+                        >
+                            Invitations
+                            {pendingInvitations.length > 0 &&
+                                `(${pendingInvitations.length})`}
+                        </TabsTrigger>
+                    )}
+                </TabsList>
 
-                    <Tabs
-                        defaultValue={activeTab}
-                        onValueChange={setActiveTab}
-                        className="w-full"
-                    >
-                        <TabsList className="grid w-full grid-cols-2 rounded-full">
-                            <TabsTrigger
-                                value="connection"
-                                className="rounded-full"
-                            >
-                                My Connection
-                            </TabsTrigger>
-                            {!connection ? (
-                                <TabsTrigger
-                                    value="invitations"
-                                    data-count={pendingInvitations.length}
-                                    className="rounded-full"
-                                >
-                                    Invitations
-                                    {pendingInvitations.length > 0 &&
-                                        `(${pendingInvitations.length})`}
-                                </TabsTrigger>
-                            ) : (
-                                <TabsTrigger
-                                    value="invitations"
-                                    data-count={pendingInvitations.length}
-                                    disabled
-                                >
-                                    Invitations
-                                    {pendingInvitations.length > 0 &&
-                                        `(${pendingInvitations.length})`}
-                                </TabsTrigger>
-                            )}
-                        </TabsList>
-
-                        <TabsContent value="connection">
-                            {connection ? (
-                                <Card.Card>
-                                    <Card.CardHeader>
-                                        <Card.CardTitle>
-                                            Connected Partner
-                                        </Card.CardTitle>
-                                        <Card.CardDescription className="pt-2">
-                                            You are sharing with:
-                                        </Card.CardDescription>
-                                    </Card.CardHeader>
-                                    <Card.CardContent>
-                                        <div className="flex flex-col bg-background dark:bg-background inset-shadow-sm p-4 rounded-md">
-                                            <p className="font-medium">
-                                                {connection.partner?.name ||
-                                                    "Unknown"}
-                                            </p>
-                                            <p className="text-sm text-muted-foreground">
-                                                {connection.partner?.email}
-                                            </p>
-                                        </div>
-                                    </Card.CardContent>
-                                </Card.Card>
-                            ) : (
-                                <Card.Card className="gap-4">
-                                    <Card.CardHeader className="gap-2">
-                                        <Card.CardTitle>
-                                            No Connection
-                                        </Card.CardTitle>
-                                        <Card.CardDescription>
-                                            Invite someone to share your calple
-                                        </Card.CardDescription>
-                                    </Card.CardHeader>
-                                    <Card.CardContent>
-                                        <div className="flex flex-col gap-2">
-                                            <Label
-                                                htmlFor="email"
-                                                className="text-sm text-muted-foreground"
-                                            >
-                                                Email address
-                                            </Label>
-                                            <div className="flex flex-col md:flex-row gap-2 lg:gap-4">
-                                                <Input
-                                                    id="email"
-                                                    placeholder="partner@example.com"
-                                                    type="email"
-                                                    value={inviteEmail}
-                                                    onChange={(e) =>
-                                                        setInviteEmail(
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    className="rounded-full bg-background dark:bg-background inset-shadow-sm"
-                                                    disabled={
-                                                        isLoading ||
-                                                        pendingInvitations.length !==
-                                                            0
-                                                    }
-                                                />
-                                                <Button
-                                                    onClick={handleInvite}
-                                                    className="rounded-full bg-background dark:bg-background inset-shadow-sm text-foreground"
-                                                    disabled={
-                                                        isLoading ||
-                                                        !inviteEmail.trim()
-                                                    }
-                                                >
-                                                    {isLoading
-                                                        ? "Sending..."
-                                                        : "Invite"}
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </Card.CardContent>
-                                </Card.Card>
-                            )}
-                        </TabsContent>
-
-                        <TabsContent value="invitations">
-                            {pendingInvitations.length === 0 ? (
-                                <Card.Card>
-                                    <Card.CardHeader className="gap-2">
-                                        <Card.CardTitle>
-                                            No Pending Invitations
-                                        </Card.CardTitle>
-                                        <Card.CardDescription>
-                                            You don't have any pending
-                                            invitations.
-                                        </Card.CardDescription>
-                                    </Card.CardHeader>
-                                </Card.Card>
-                            ) : (
-                                <div className="space-y-4">
-                                    {pendingInvitations.map((invitation) => {
-                                        const isReceiver =
-                                            invitation.role === "receiver";
-                                        console.log(invitation);
-                                        console.log(isReceiver);
-
-                                        return (
-                                            <Card.Card key={invitation.id}>
-                                                <Card.CardHeader>
-                                                    <Card.CardTitle className="pb-2">
-                                                        Calple Invitation
-                                                    </Card.CardTitle>
-                                                    <Card.CardDescription>
-                                                        {isReceiver ? (
-                                                            <div className="flex gap-2 items-center">
-                                                                <p className="bg-background dark:bg-background inset-shadow-sm px-2 rounded-md">
-                                                                    {invitation.from_name
-                                                                        ? invitation.from_name
-                                                                        : invitation.from_email}
-                                                                </p>
-                                                                <p>
-                                                                    wants to
-                                                                    connect
-                                                                </p>
-                                                            </div>
-                                                        ) : (
-                                                            <p>
-                                                                Pending
-                                                                invitation
-                                                            </p>
-                                                        )}
-                                                    </Card.CardDescription>
-                                                </Card.CardHeader>
-                                                <Card.CardContent className="pt-2">
-                                                    <div className="bg-background dark:bg-background inset-shadow-sm p-4 rounded-md">
-                                                        <p className="text-sm">
-                                                            {
-                                                                invitation.from_email
-                                                            }
-                                                        </p>
-                                                        <p className="text-xs text-muted-foreground mt-1">
-                                                            Sent on{" "}
-                                                            {new Date(
-                                                                invitation.createdAt
-                                                            ).toLocaleDateString()}
-                                                        </p>
-                                                    </div>
-                                                </Card.CardContent>
-                                                {isReceiver && (
-                                                    <Card.CardFooter className="flex justify-between pt-2">
-                                                        <Button
-                                                            variant="destructive"
-                                                            onClick={() =>
-                                                                handleCancelInvitation(
-                                                                    invitation.id
-                                                                )
-                                                            }
-                                                            disabled={isLoading}
-                                                        >
-                                                            Reject
-                                                        </Button>
-                                                        <Button
-                                                            onClick={() =>
-                                                                handleAcceptInvitation(
-                                                                    invitation.id
-                                                                )
-                                                            }
-                                                            disabled={isLoading}
-                                                        >
-                                                            Accept
-                                                        </Button>
-                                                    </Card.CardFooter>
-                                                )}
-                                            </Card.Card>
-                                        );
-                                    })}
+                <TabsContent
+                    value="connection"
+                    className="flex-1 flex flex-col"
+                >
+                    {connection ? (
+                        <Card.Card className="h-full flex flex-col">
+                            <Card.CardHeader>
+                                <Card.CardTitle>
+                                    Connected Partner
+                                </Card.CardTitle>
+                                <Card.CardDescription className="pt-2">
+                                    You are sharing with:
+                                </Card.CardDescription>
+                            </Card.CardHeader>
+                            <Card.CardContent className="flex-1 overflow-auto">
+                                <div className="flex flex-col bg-background dark:bg-background inset-shadow-sm p-4 rounded-md">
+                                    <p className="font-medium">
+                                        {connection.partner?.name || "Unknown"}
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">
+                                        {connection.partner?.email}
+                                    </p>
                                 </div>
-                            )}
-                        </TabsContent>
-                    </Tabs>
-
-                    <Dialog.DialogFooter>
-                        {connection && (
-                            <AlertDialog.AlertDialog>
-                                <AlertDialog.AlertDialogTrigger asChild>
-                                    <Button
-                                        variant="destructive"
-                                        disabled={isLoading}
-                                        className="rounded-full inset-shadow-sm"
+                            </Card.CardContent>
+                        </Card.Card>
+                    ) : (
+                        <Card.Card className="h-full flex flex-col gap-4">
+                            <Card.CardHeader>
+                                <Card.CardTitle>No Connection</Card.CardTitle>
+                                <Card.CardDescription>
+                                    Invite someone to share your calple
+                                </Card.CardDescription>
+                            </Card.CardHeader>
+                            <Card.CardContent className="flex-1 overflow-auto">
+                                <div className="flex flex-col gap-1">
+                                    <Label
+                                        htmlFor="email"
+                                        className="text-sm text-muted-foreground"
                                     >
-                                        Disconnect
-                                    </Button>
-                                </AlertDialog.AlertDialogTrigger>
-                                <AlertDialog.AlertDialogContent>
-                                    <AlertDialog.AlertDialogHeader>
-                                        <AlertDialog.AlertDialogTitle>
-                                            Are you absolutely sure?
-                                        </AlertDialog.AlertDialogTitle>
-                                        <AlertDialog.AlertDialogDescription>
-                                            This action cannot be undone. This
-                                            will permanently delete your account
-                                            and remove your data from our
-                                            servers.
-                                        </AlertDialog.AlertDialogDescription>
-                                    </AlertDialog.AlertDialogHeader>
-                                    <AlertDialog.AlertDialogFooter>
-                                        <AlertDialog.AlertDialogCancel>
-                                            Cancel
-                                        </AlertDialog.AlertDialogCancel>
-                                        <AlertDialog.AlertDialogAction
-                                            onClick={() =>
-                                                handleCancelInvitation(
-                                                    connection.connectionId
-                                                )
+                                        Email address
+                                    </Label>
+                                    <div className="flex flex-col md:flex-row gap-2 lg:gap-4">
+                                        <Input
+                                            id="email"
+                                            placeholder="partner@example.com"
+                                            type="email"
+                                            value={inviteEmail}
+                                            onChange={(e) =>
+                                                setInviteEmail(e.target.value)
+                                            }
+                                            className="bg-background dark:bg-background inset-shadow-sm"
+                                            disabled={
+                                                isLoading ||
+                                                pendingInvitations.length !== 0
+                                            }
+                                        />
+                                        <Button
+                                            onClick={handleInvite}
+                                            className=" bg-background dark:bg-background inset-shadow-sm text-foreground"
+                                            disabled={
+                                                isLoading || !inviteEmail.trim()
                                             }
                                         >
-                                            Disconnect
-                                        </AlertDialog.AlertDialogAction>
-                                    </AlertDialog.AlertDialogFooter>
-                                </AlertDialog.AlertDialogContent>
-                            </AlertDialog.AlertDialog>
-                        )}
+                                            {isLoading
+                                                ? "Sending..."
+                                                : "Invite"}
+                                        </Button>
+                                    </div>
+                                </div>
+                            </Card.CardContent>
+                        </Card.Card>
+                    )}
+                </TabsContent>
 
+                <TabsContent
+                    value="invitations"
+                    className="flex-1 flex flex-col"
+                >
+                    {pendingInvitations.length === 0 ? (
+                        <Card.Card className="h-full flex flex-col">
+                            <Card.CardHeader>
+                                <Card.CardTitle>
+                                    No Pending Invitations
+                                </Card.CardTitle>
+                                <Card.CardDescription>
+                                    You don't have any pending invitations.
+                                </Card.CardDescription>
+                            </Card.CardHeader>
+                        </Card.Card>
+                    ) : (
+                        <div className="space-y-4 overflow-auto flex-1">
+                            {pendingInvitations.map((invitation) => {
+                                const isReceiver =
+                                    invitation.role === "receiver";
+                                console.log(invitation);
+                                console.log(isReceiver);
+
+                                return (
+                                    <Card.Card
+                                        key={invitation.id}
+                                        className="flex flex-col"
+                                    >
+                                        <Card.CardHeader>
+                                            <Card.CardTitle className="pb-2">
+                                                Calple Invitation
+                                            </Card.CardTitle>
+                                            <Card.CardDescription>
+                                                {isReceiver ? (
+                                                    <div className="flex gap-2 items-center">
+                                                        <p className="bg-background dark:bg-background inset-shadow-sm px-2 rounded-md">
+                                                            {invitation.from_name
+                                                                ? invitation.from_name
+                                                                : invitation.from_email}
+                                                        </p>
+                                                        <p>wants to connect</p>
+                                                    </div>
+                                                ) : (
+                                                    <p>Pending invitation</p>
+                                                )}
+                                            </Card.CardDescription>
+                                        </Card.CardHeader>
+                                        <Card.CardContent className="pt-2">
+                                            <div className="bg-background dark:bg-background inset-shadow-sm p-4 rounded-md">
+                                                <p className="text-sm">
+                                                    {invitation.from_email}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                    Sent on{" "}
+                                                    {new Date(
+                                                        invitation.createdAt
+                                                    ).toLocaleDateString()}
+                                                </p>
+                                            </div>
+                                        </Card.CardContent>
+                                        {isReceiver && (
+                                            <Card.CardFooter className="flex justify-between pt-2">
+                                                <Button
+                                                    variant="destructive"
+                                                    onClick={() =>
+                                                        handleCancelInvitation(
+                                                            invitation.id
+                                                        )
+                                                    }
+                                                    disabled={isLoading}
+                                                >
+                                                    Reject
+                                                </Button>
+                                                <Button
+                                                    onClick={() =>
+                                                        handleAcceptInvitation(
+                                                            invitation.id
+                                                        )
+                                                    }
+                                                    disabled={isLoading}
+                                                >
+                                                    Accept
+                                                </Button>
+                                            </Card.CardFooter>
+                                        )}
+                                    </Card.Card>
+                                );
+                            })}
+                        </div>
+                    )}
+                </TabsContent>
+            </Tabs>
+
+            {connection && (
+                <AlertDialog.AlertDialog>
+                    <AlertDialog.AlertDialogTrigger asChild>
                         <Button
-                            variant="outline"
-                            onClick={() => setOpen(false)}
-                            className="rounded-full border-none inset-shadow-sm bg-card dark:bg-card text-foreground"
+                            variant="destructive"
                             disabled={isLoading}
+                            className=" inset-shadow-sm"
                         >
-                            Close
+                            Disconnect
                         </Button>
-                    </Dialog.DialogFooter>
-                </Dialog.DialogContent>
-            </Dialog.Dialog>
+                    </AlertDialog.AlertDialogTrigger>
+                    <AlertDialog.AlertDialogContent>
+                        <AlertDialog.AlertDialogHeader>
+                            <AlertDialog.AlertDialogTitle>
+                                Are you absolutely sure?
+                            </AlertDialog.AlertDialogTitle>
+                            <AlertDialog.AlertDialogDescription>
+                                This action cannot be undone. This will
+                                permanently delete your account and remove your
+                                data from our servers.
+                            </AlertDialog.AlertDialogDescription>
+                        </AlertDialog.AlertDialogHeader>
+                        <AlertDialog.AlertDialogFooter>
+                            <AlertDialog.AlertDialogCancel>
+                                Cancel
+                            </AlertDialog.AlertDialogCancel>
+                            <AlertDialog.AlertDialogAction
+                                onClick={() =>
+                                    handleCancelInvitation(
+                                        connection.connectionId
+                                    )
+                                }
+                            >
+                                Disconnect
+                            </AlertDialog.AlertDialogAction>
+                        </AlertDialog.AlertDialogFooter>
+                    </AlertDialog.AlertDialogContent>
+                </AlertDialog.AlertDialog>
+            )}
         </div>
     );
 }

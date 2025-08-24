@@ -94,9 +94,9 @@ export default function FeedbackPage() {
     };
 
     return (
-        <div className="container mx-auto max-w-5xl px-8 pt-20 pb-16 grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="container mx-auto max-w-5xl px-4 sm:px-8 pt-20 pb-16 grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="flex flex-col gap-4">
-                <h2 className="text-lg flex items-center gap-2">
+                <h2 className="text-lg flex items-center gap-2 px-4">
                     <MessageSquarePlus className="h-4 w-4" /> Submit Feedback
                 </h2>
                 <Card className="gap-4">

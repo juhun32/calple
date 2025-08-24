@@ -21,13 +21,13 @@ export const getUserMetadata = async (): Promise<UserMetadata | null> => {
         }
 
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error("getUserMetadata error:", {
+            const errorText = await response.text().catch(() => null);
+            console.debug("getUserMetadata error:", {
                 status: response.status,
                 statusText: response.statusText,
                 body: errorText,
             });
-            throw new Error("Failed to fetch user metadata");
+            return null;
         }
 
         const data = await response.json();

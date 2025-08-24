@@ -28,14 +28,16 @@ export const CheckinForm = ({
         <div className="space-y-4">
             {/* Mood Selection */}
             <div>
-                <h3 className="font-medium mb-3">How are you feeling today?</h3>
-                <div className="grid grid-cols-5 gap-2">
+                <h3 className="font-normal text-muted-foreground text-sm mb-3">
+                    How are you feeling today?
+                </h3>
+                <div className="flex justify-between">
                     {moodOptions.map((mood) => (
                         <Button
                             key={mood.value}
                             variant="outline"
                             className={cn(
-                                "flex flex-col items-center gap-1 h-auto p-3",
+                                "flex flex-col items-center gap-1 h-fit p-2 rounded-full h-12 w-12 sm:h-15 sm:w-15",
                                 currentMood === mood.value
                                     ? "bg-accent dark:bg-accent"
                                     : "bg-background dark:bg-background"
@@ -51,16 +53,16 @@ export const CheckinForm = ({
 
             {/* Energy Level */}
             <div>
-                <h3 className="font-medium mb-3">
+                <h3 className="font-normal text-muted-foreground text-sm mb-3">
                     How's your energy level today?
                 </h3>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="flex justify-between gap-2">
                     {energyOptions.map((energy) => (
                         <Button
                             key={energy.value}
                             variant="outline"
                             className={cn(
-                                "flex flex-col items-center gap-1 h-auto p-3",
+                                "flex flex-col items-center gap-1 h-auto p-2 rounded-full h-12 w-12 sm:h-15 sm:w-15",
                                 currentEnergy === energy.value
                                     ? "bg-accent dark:bg-accent"
                                     : "bg-background dark:bg-background"
@@ -80,16 +82,16 @@ export const CheckinForm = ({
 
             {/* Sexual Mood */}
             <div>
-                <h3 className="font-medium mb-3">
+                <h3 className="font-normal text-muted-foreground text-sm mb-3">
                     Are you in the mood today? (Optional)
                 </h3>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="flex justify-between gap-2">
                     {sexualMoodOptions.map((sexualMood) => (
                         <Button
                             key={sexualMood.value}
                             variant="outline"
                             className={cn(
-                                "flex flex-col items-center gap-1 h-auto p-3",
+                                "flex flex-col items-center gap-1 h-auto p-2 rounded-full h-12 w-12 sm:h-15 sm:w-15",
                                 currentSexualMood === sexualMood.value
                                     ? "bg-accent dark:bg-accent"
                                     : "bg-background dark:bg-background"
@@ -109,12 +111,14 @@ export const CheckinForm = ({
 
             {/* Note */}
             <div>
-                <h3 className="font-medium mb-3">Add a note (Optional)</h3>
+                <h3 className="font-normal text-muted-foreground text-sm mb-3">
+                    Add a note (Optional)
+                </h3>
                 <Textarea
                     placeholder="Share something about your day..."
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
-                    className="min-h-[100px] resize-none bg-background dark:bg-background inset-shadow-sm"
+                    className="min-h-[100px] text-sm sm:text-base resize-none bg-background dark:bg-background inset-shadow-sm"
                     maxLength={500}
                 />
                 <div className="text-xs text-muted-foreground mt-1 text-right">
@@ -123,24 +127,26 @@ export const CheckinForm = ({
             </div>
 
             {/* Submit Button */}
-            <Button
-                onClick={handleSubmit}
-                disabled={!currentMood || !currentEnergy || isSubmitting}
-                className="w-full"
-                size="lg"
-            >
-                {isSubmitting ? (
-                    <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                        Submitting...
-                    </>
-                ) : (
-                    <>
-                        <Send className="w-4 h-4" />
-                        Share with Partner
-                    </>
-                )}
-            </Button>
+            <div className="w-full flex justify-end">
+                <Button
+                    onClick={handleSubmit}
+                    disabled={!currentMood || !currentEnergy || isSubmitting}
+                    className="w-fit"
+                    size="sm"
+                >
+                    {isSubmitting ? (
+                        <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            Submitting...
+                        </>
+                    ) : (
+                        <>
+                            <Send className="w-4 h-4" />
+                            Share with Partner
+                        </>
+                    )}
+                </Button>
+            </div>
         </div>
     );
 };

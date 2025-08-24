@@ -19,6 +19,7 @@ export const moodsPositive = [
 ];
 
 export const moodsNegative = [
+    "Sad",
     "Angry",
     "Frustrated",
     "Overwhelmed",
