@@ -78,7 +78,7 @@ export default async function RootLayout({
             className={`${lora.variable} ${bricolageGrotesque.variable}`}
         >
             <head />
-            <body className="h-full flex flex-col font-serif">
+            <body className="h-full flex flex-col">
                 <ThemeProvider
                     attribute="class"
                     defaultTheme="system"
@@ -89,10 +89,10 @@ export default async function RootLayout({
                         <Analytics />
                         <NavBar />
                         <div className="h-full">{children}</div>
-                        <footer className="fixed font-sans bottom-0 left-0 h-8 w-full flex justify-center z-50 border-t px-4 md:px-8 backdrop-blur">
+                        <footer className="fixed bottom-0 left-0 h-8 w-full flex justify-center z-50 border-t px-4 md:px-8 backdrop-blur">
                             <div className="container flex items-center justify-between">
                                 <div className="flex sm:px-8 py-2 container text-muted-foreground text-xs">
-                                    For Emily by Juhun &copy; 2025
+                                    Juhun &copy; 2025
                                 </div>
                                 <div className="flex items-center justify-end gap-2 sm:px-8 py-2 container text-muted-foreground text-xs w-fit">
                                     <a
@@ -101,6 +101,14 @@ export default async function RootLayout({
                                     >
                                         [Privacy]
                                     </a>
+                                    <a
+                                        href="https://github.com/juhun32/calple"
+                                        target="_blank"
+                                        className="text-muted-foreground hover:text-stone-500 underline"
+                                    >
+                                        [GitHub]
+                                    </a>
+                                    <p className="text-nowrap">For Emily</p>
                                 </div>
                             </div>
                         </footer>

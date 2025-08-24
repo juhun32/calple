@@ -2,15 +2,14 @@ import React from "react";
 
 export default function PrivacyPage() {
     return (
-        <div className="container mx-auto px-8 py-32 font-serif">
+        <div className="container mx-auto px-8 py-32">
             <section className="mb-8">
                 <h2 className="text-lg font-semibold mb-4">Introduction</h2>
                 <p className="mb-4 text-sm">
                     Welcome to Calple. I, as sole developer, respect your
                     privacy and am committed to protecting your personal data.
-                    This Privacy Policy explains how I collect, use, and
-                    safeguard your information when you use our calendar
-                    application.
+                    This privacy policy explains how I collect, use, and
+                    safeguard your information when you use Calple.
                 </p>
             </section>
 
@@ -23,8 +22,7 @@ export default function PrivacyPage() {
                 </p>
                 <ul className="list-disc ml-6 mb-4 text-sm">
                     <li>Your Google account information (email, name)</li>
-                    <li>Any events you add to the calendar</li>
-                    <li>User preferences and settings</li>
+                    <li>Any data you choose to add to the app</li>
                     <li>Device information and usage statistics</li>
                 </ul>
             </section>
@@ -35,10 +33,11 @@ export default function PrivacyPage() {
                 </h2>
                 <p className="mb-4 text-sm">I use your information to:</p>
                 <ul className="list-disc ml-6 mb-4 text-sm">
-                    <li>Provide and maintain our service</li>
-                    <li>Notify you about upcoming features</li>
-                    <li>Improve and personalize your experience</li>
-                    <li>Respond to your requests and support needs</li>
+                    <li>Provide, improve and maintain Calple</li>
+                    <li>Develop upcoming features</li>
+                    <li>
+                        Respond to your requests, feedback and support needs
+                    </li>
                 </ul>
             </section>
 
@@ -57,12 +56,13 @@ export default function PrivacyPage() {
                     Updates to This Policy
                 </h2>
                 <p className="mb-4 text-sm">
-                    I may update this Privacy Policy from time to time.
+                    I may update this privacy policy from time to time,
+                    according to the additional features I may add.
                 </p>
             </section>
 
             <section className="mb-8">
-                <h2 className="text-lg font-semibold mb-4">Contact Us</h2>
+                <h2 className="text-lg font-semibold mb-4">Contact Me</h2>
                 <p className="mb-4 text-sm">
                     If you have any questions about this Privacy Policy, please
                     contact me at:
@@ -77,7 +77,7 @@ export default function PrivacyPage() {
             </section>
 
             <footer className="text-sm text-muted-foreground">
-                Last Updated: June 22, 2025
+                Juhun &copy; 2025
             </footer>
         </div>
     );
