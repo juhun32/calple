@@ -71,7 +71,7 @@ export const Education = ({ articles }: { articles: Article[] }) => {
                         ref={(el) => {
                             refs.current[r.href] = el;
                         }}
-                        className="block p-3 rounded-lg bg-card border hover:shadow-md inset-shadow-sm flex flex-col sm:flex-row gap-4"
+                        className="w-full p-3 rounded-lg bg-card border hover:shadow-md inset-shadow-sm flex flex-col sm:grid sm:grid-cols-[1fr_2fr] gap-4"
                     >
                         <div className="w-full h-auto aspect-[16/9] flex-shrink-0 rounded overflow-hidden bg-muted/10">
                             {previews[r.href] === undefined ? (
