@@ -16,15 +16,8 @@ import (
 	"google.golang.org/api/option"
 )
 
-var oauthConfig *oauth2.Config
-
-func InitOAuth() {
-	clientID := os.Getenv("OAUTH2_CLIENT_ID")
-	clientSecret := os.Getenv("OAUTH2_CLIENT_SECRET")
+func getOAuthConfig() *oauth2.Config {
 	env := os.Getenv("ENV")
-
-	fmt.Printf("Initializing OAuth with client ID")
-
 	var redirectURL string
 	if env == "development" {
 		redirectURL = "http://localhost:5000/google/oauth/callback"
@@ -32,11 +25,9 @@ func InitOAuth() {
 		redirectURL = "https://api.calple.date/google/oauth/callback"
 	}
 
-	fmt.Printf("Using redirect URL: %s\n", redirectURL)
-
-	oauthConfig = &oauth2.Config{
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
+	return &oauth2.Config{
+		ClientID:     os.Getenv("OAUTH2_CLIENT_ID"),
+		ClientSecret: os.Getenv("OAUTH2_CLIENT_SECRET"),
 		RedirectURL:  redirectURL,
 		Scopes: []string{
 			"openid",
@@ -49,12 +40,32 @@ func InitOAuth() {
 
 // init OAuth2 configuration
 func Login(c *gin.Context) {
+	oauthConfig := getOAuthConfig()
 	fmt.Printf("Using Redirect URI: %s\n", oauthConfig.RedirectURL)
 
 	state := fmt.Sprintf("%d", time.Now().UnixNano())
 	session := sessions.Default(c)
+
+	// Clear any existing state first
+	session.Delete("state")
+
+	// Add diagnostic logging
+	fmt.Printf("DEBUG: Setting new session state '%s'\n", state)
+	fmt.Printf("DEBUG: Session ID: %v\n", session.ID())
+
 	session.Set("state", state)
-	session.Save()
+	err := session.Save()
+	if err != nil {
+		fmt.Printf("ERROR: Failed to save session: %v\n", err)
+		c.String(http.StatusInternalServerError, "Failed to save session")
+		return
+	}
+
+	// Verify the state was saved
+	if savedState := session.Get("state"); savedState != state {
+		fmt.Printf("ERROR: State verification failed. Expected: %s, Got: %v\n", state, savedState)
+	}
+
 	authURL := oauthConfig.AuthCodeURL(state, oauth2.AccessTypeOffline)
 	c.Redirect(http.StatusFound, authURL)
 }
@@ -76,12 +87,30 @@ func Callback(c *gin.Context) {
 
 	// validate state
 	session := sessions.Default(c)
+	fmt.Printf("DEBUG: Session ID in callback: %v\n", session.ID())
+
 	storedState := session.Get("state")
-	if storedState == nil || c.Query("state") != storedState {
-		c.String(http.StatusBadRequest, "Invalid OAuth state")
+	fmt.Printf("DEBUG: Stored state: %v, Received state: %s\n", storedState, c.Query("state"))
+
+	if storedState == nil {
+		fmt.Printf("ERROR: Session state is nil. All session data: %+v\n", session)
+		c.String(http.StatusBadRequest, "Invalid OAuth state: session state is nil")
 		return
 	}
 
+	if c.Query("state") != storedState.(string) {
+		fmt.Printf("ERROR: State mismatch. Expected: %s, Received: %s\n", storedState.(string), c.Query("state"))
+		// Clear the invalid session
+		session.Clear()
+		session.Save()
+		c.String(http.StatusBadRequest, fmt.Sprintf("Invalid OAuth state: received %s, expected %s", c.Query("state"), storedState.(string)))
+		return
+	}
+
+	// Clear the state after successful validation
+	session.Delete("state")
+
+	oauthConfig := getOAuthConfig()
 	// exchange code for token
 	token, err := oauthConfig.Exchange(context.Background(), c.Query("code"))
 	if err != nil {
@@ -137,7 +166,11 @@ func Callback(c *gin.Context) {
 
 	// set user_id in session
 	session.Set("user_id", userinfo.Id)
-	session.Save()
+	err = session.Save()
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Failed to save session after login")
+		return
+	}
 
 	var frontendURL = os.Getenv("FRONTEND_URL")
 	c.Redirect(http.StatusFound, frontendURL)

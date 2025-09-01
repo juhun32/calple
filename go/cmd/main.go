@@ -20,17 +20,15 @@ import (
 )
 
 func main() {
-	// Load .env file only in development environment
-	if os.Getenv("ENV") == "development" {
-		err := godotenv.Load()
-		if err != nil {
-			fmt.Println("Error loading .env file:", err)
-		}
-	}
-	fmt.Println("ENV:", os.Getenv("ENV"))
+	_ = godotenv.Load()
 
-	// initialize OAuth configuration
-	handlers.InitOAuth()
+	env := os.Getenv("ENV")
+	fmt.Println("ENV:", env)
+
+	if os.Getenv("SECRET_KEY") == "" {
+		panic("FATAL: SECRET_KEY environment variable is not set")
+	}
+
 	// create context
 	ctx := context.Background()
 
@@ -61,13 +59,19 @@ func main() {
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   os.Getenv("ENV") != "development",
-		SameSite: http.SameSiteLaxMode,
+		SameSite: func() http.SameSite {
+			if os.Getenv("ENV") == "development" {
+				return http.SameSiteLaxMode
+			}
+			return http.SameSiteNoneMode
+		}(),
 		Domain: func() string {
 			if os.Getenv("ENV") == "development" {
 				return ""
 			}
 			return ".calple.date"
 		}(),
+		MaxAge: 12 * 60 * 60,
 	})
 	router.Use(sessions.Sessions("calple_session", store))
 
