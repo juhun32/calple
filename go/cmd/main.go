@@ -20,9 +20,12 @@ import (
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		fmt.Println("Error loading .env file:", err)
+	// Load .env file only in development environment
+	if os.Getenv("ENV") == "development" {
+		err := godotenv.Load()
+		if err != nil {
+			fmt.Println("Error loading .env file:", err)
+		}
 	}
 	fmt.Println("ENV:", os.Getenv("ENV"))
 

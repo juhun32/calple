@@ -1,3 +1,5 @@
 .env
+env.yaml
+
 firebase_credentials.json
 client_secret.json

@@ -10,8 +10,5 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
 WORKDIR /app
 COPY --from=builder /app/server /app/server
-COPY .env /app/.env
-COPY client_secret.json /app/client_secret.json
-COPY firebase_credentials.json /app/firebase_credentials.json
 EXPOSE 5000
 CMD ["/app/server"]
