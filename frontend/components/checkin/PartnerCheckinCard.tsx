@@ -36,7 +36,7 @@ const SummaryItem = ({
     value?: string;
     icon?: React.ElementType;
 }) => (
-    <div className="text-center p-2 rounded-lg bg-background inset-shadow-sm">
+    <div className="text-center p-2 rounded-full bg-background inset-shadow-sm border">
         <div className="text-xs text-muted-foreground mb-1">{label}</div>
         <div className="text-lg mb-2">
             {Icon && <Icon className="mx-auto w-4 h-4 text-muted-foreground" />}

@@ -55,7 +55,7 @@ export const Education = ({ articles }: { articles: Article[] }) => {
 
     return (
         <section className="pb-12 md:pb-16">
-            <h2 className="text-2xl font-semibold">Educational Resources</h2>
+            <h2 className="text-lg font-normal">Check these out...</h2>
             <p className="text-sm text-muted-foreground">
                 Short articles about healthy relationships and intimacy.
             </p>

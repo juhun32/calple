@@ -42,9 +42,9 @@ export const CheckinForm = ({
                         {moodOptions.map((mood) => (
                             <Button
                                 key={mood.value}
-                                variant="outline"
+                                variant="secondary"
                                 className={cn(
-                                    "flex flex-col items-center gap-1 h-fit p-2 rounded-full h-12 w-12 sm:h-15 sm:w-15",
+                                    "flex flex-col border items-center gap-1 h-fit p-2 rounded-full h-12 w-12 sm:h-15 sm:w-15",
                                     currentMood === mood.value
                                         ? "bg-accent dark:bg-accent"
                                         : "bg-background dark:bg-background"
@@ -63,10 +63,10 @@ export const CheckinForm = ({
                             </Button>
                         ))}
                     </div>
-                    <div className="absolute w-full mx-2 z-1">
+                    <div className="absolute w-full z-1">
                         <Progress
                             value={moodCurrentProgress}
-                            className="w-160"
+                            className="w-full"
                         />
                     </div>
                 </div>
@@ -82,9 +82,9 @@ export const CheckinForm = ({
                         {energyOptions.map((energy) => (
                             <Button
                                 key={energy.value}
-                                variant="outline"
+                                variant="secondary"
                                 className={cn(
-                                    "flex flex-col items-center gap-1 h-auto p-2 rounded-full h-12 w-12 sm:h-15 sm:w-15",
+                                    "flex flex-col border items-center gap-1 h-auto p-2 rounded-full h-12 w-12 sm:h-15 sm:w-15",
                                     currentEnergy === energy.value
                                         ? "bg-accent dark:bg-accent"
                                         : "bg-background dark:bg-background"
@@ -103,10 +103,10 @@ export const CheckinForm = ({
                             </Button>
                         ))}
                     </div>
-                    <div className="absolute w-full mx-2 z-1">
+                    <div className="absolute w-full z-1">
                         <Progress
                             value={energyCurrentProgress}
-                            className="w-160"
+                            className="w-full"
                         />
                     </div>
                 </div>
@@ -122,9 +122,9 @@ export const CheckinForm = ({
                         {sexualMoodOptions.map((sexualMood: any) => (
                             <Button
                                 key={sexualMood.value}
-                                variant="outline"
+                                variant="secondary"
                                 className={cn(
-                                    "flex flex-col items-center gap-1 h-auto p-2 rounded-full h-12 w-12 sm:h-15 sm:w-15",
+                                    "flex flex-col border items-center gap-1 h-auto p-2 rounded-full h-12 w-12 sm:h-15 sm:w-15",
                                     currentSexualMood === sexualMood.value
                                         ? "bg-accent dark:bg-accent"
                                         : "bg-background dark:bg-background"
@@ -147,10 +147,10 @@ export const CheckinForm = ({
                             </Button>
                         ))}
                     </div>
-                    <div className="absolute w-full mx-2 z-1">
+                    <div className="absolute w-full z-1">
                         <Progress
                             value={sexualMoodCurrentProgress}
-                            className="w-160"
+                            className="w-full"
                         />
                     </div>
                 </div>
